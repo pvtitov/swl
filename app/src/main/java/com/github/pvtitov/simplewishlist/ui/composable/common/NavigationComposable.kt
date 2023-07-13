@@ -1,0 +1,381 @@
+package com.github.pvtitov.simplewishlist.ui.composable.common
+
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.painter.ColorPainter
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import coil3.compose.AsyncImage
+import com.github.pvtitov.simplewishlist.R
+import com.github.pvtitov.simplewishlist.ui.composable.screen.*
+import com.github.pvtitov.simplewishlist.ui.model.Screen
+import com.github.pvtitov.simplewishlist.ui.theme.AwlTheme
+import com.github.pvtitov.simplewishlist.ui.viewmodel.AwlViewModel
+import com.github.pvtitov.simplewishlist.utils.DI
+import com.github.pvtitov.simplewishlist.utils.logger.Logger
+
+@Preview
+@Composable
+fun NavigationComposable(
+    modifier: Modifier = Modifier
+) {
+    val viewModel = viewModel<AwlViewModel>(factory = AwlViewModel.Factory)
+
+    val currentScreenState = rememberSaveable { mutableStateOf<Screen>(Screen.Login) }
+    val screensBackStackState = rememberSaveable { mutableStateListOf<Screen>() }
+
+    val navigation: Navigation =
+        remember { createNavigation(currentScreenState, screensBackStackState) }
+    val logger: Logger = remember { DI.logger }
+
+    val backContentDescription = stringResource(R.string.back_content_description)
+    val newWishContentDescription = stringResource(R.string.new_wish_title)
+    val newFriendContentDescription = stringResource(R.string.new_friend_title)
+    val myWishesTitle = stringResource(R.string.my_wishes_title)
+    val friendsTitle = stringResource(R.string.friends_title)
+    val saveButton = stringResource(R.string.save_button)
+
+    val paddingM = dimensionResource(R.dimen.padding_m)
+
+    val navigationBarDestinations = remember { listOf(Screen.MyWishes, Screen.Friends) }
+    val navigationBarIcons = remember { listOf(R.drawable.ic_heart_24, R.drawable.ic_friends_24) }
+    val navigationBarTitles = remember { listOf(myWishesTitle, friendsTitle) }
+
+    val currentScreen by navigation.currentScreenState
+
+    val isBottomBarAvailable = currentScreen is Screen.MyWishes || currentScreen is Screen.Friends
+
+    val (topBarTitle, setTopBarTitle) = remember { mutableStateOf<String?>(null) }
+    var isSaveClicked by remember { mutableStateOf(false) }
+
+    val avatarUrl by viewModel.avatarUrlFlow.collectAsStateWithLifecycle()
+    val isAuthorized by viewModel.isAuthorizedFlow.collectAsStateWithLifecycle()
+
+    val isLoading by viewModel.isLoadingFlow.collectAsStateWithLifecycle()
+    val myWishList by viewModel.myWishListFlow.collectAsStateWithLifecycle()
+    val friendList by viewModel.friendListFlow.collectAsStateWithLifecycle()
+    val wishListByFriend by viewModel.wishListByFriendFlow.collectAsStateWithLifecycle()
+
+    LaunchedEffect(isAuthorized) {
+        val screen = if (isAuthorized) Screen.MyWishes else Screen.Login
+        logger.debug(TAG, "isAuthorized = $isAuthorized, open screen $screen")
+        navigation.open(screen)
+    }
+
+    AwlTheme {
+        Scaffold(
+            modifier = modifier,
+            topBar = {
+                @OptIn(ExperimentalMaterial3Api::class)
+                TopAppBar(
+                    title = {
+                        if (topBarTitle != null) {
+                            Text(
+                                text = topBarTitle,
+                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.headlineSmall,
+                                softWrap = false
+                            )
+                        }
+                    },
+                    modifier = Modifier.padding(horizontal = paddingM),
+                    navigationIcon = {
+                        if (navigation.isBackAvailable) {
+                            IconButton(
+                                onClick = { navigation.back() },
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_back_24),
+                                    contentDescription = backContentDescription
+                                )
+                            }
+                        }
+                    },
+                    actions = {
+                        if (currentScreen is Screen.NewWish || currentScreen is Screen.NewFriend || currentScreen is Screen.MyWish) {
+                            Button(
+                                onClick = {
+                                    isSaveClicked = true
+                                }
+                            ) {
+                                Text(saveButton)
+                            }
+                        } else if (currentScreen is Screen.MyWishes || currentScreen is Screen.Friends) {
+                            Avatar(
+                                url = avatarUrl,
+                                onLogout = {
+                                    viewModel.logout()
+                                }
+                            )
+                        }
+                    }
+                )
+            },
+            bottomBar = {
+                if (isBottomBarAvailable) {
+                    NavigationBar(windowInsets = NavigationBarDefaults.windowInsets) {
+                        navigationBarDestinations.forEachIndexed { index, screen ->
+                            val title = navigationBarTitles[index]
+                            val iconRes = navigationBarIcons[index]
+                            NavigationBarItem(
+                                selected = screen == currentScreen,
+                                onClick = {
+                                    navigation.open(screen)
+                                },
+                                icon = {
+                                    Icon(
+                                        painterResource(iconRes),
+                                        contentDescription = title,
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                },
+                                label = { Text(title) }
+                            )
+                        }
+                    }
+                }
+            },
+            floatingActionButton = {
+                if (currentScreen is Screen.MyWishes || currentScreen is Screen.Friends) {
+                    FloatingActionButton(
+                        onClick = {
+                            navigation.open(
+                                if (currentScreen is Screen.Friends) {
+                                    Screen.NewFriend
+                                } else {
+                                    Screen.NewWish
+                                }
+                            )
+                        },
+                        modifier = Modifier.padding(paddingM)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_add_24),
+                            contentDescription = if (currentScreen is Screen.Friends) {
+                                newFriendContentDescription
+                            } else {
+                                newWishContentDescription
+                            }
+                        )
+                    }
+                }
+            }
+        ) { contentPadding ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(contentPadding),
+                contentAlignment = Alignment.Center
+            ) {
+                val updateTitle: (String) -> Unit = { setTopBarTitle(it) }
+                updateTitle("")
+
+                when (val screen = currentScreen) {
+                    is Screen.Login -> LoginScreen(
+                        onLoginWithGoogle = {
+                            viewModel.loginWithGoogle()
+                        }
+                    )
+
+                    is Screen.MyWishes -> MyWishesScreen(
+                        wishes = myWishList,
+                        onMyWishClicked = { navigation.open(Screen.MyWish(it)) },
+                        onTopBarTitle = updateTitle,
+                        onDeleteWish = { viewModel.deleteWish(it) }
+                    )
+
+                    is Screen.NewWish -> NewWishScreen(
+                        onTopBarTitle = updateTitle,
+                        isSaveClicked = isSaveClicked,
+                        onSaveClickHandled = {
+                            viewModel.addWish(it)
+                            isSaveClicked = false
+                            navigation.back()
+                        }
+                    )
+
+                    is Screen.NewFriend -> NewFriendScreen(
+                        onTopBarTitle = updateTitle,
+                        isSaveClicked = isSaveClicked,
+                        onSaveClickHandled = { name, login ->
+                            viewModel.saveFriend(name, login)
+                            isSaveClicked = false
+                            navigation.back()
+                        }
+                    )
+
+                    is Screen.MyWish -> {
+                        val wishIndex = screen.wishIndex
+                        val wish = myWishList[wishIndex]
+                        MyWishScreen(
+                            wish = wish,
+                            onTopBarTitle = updateTitle,
+                            isSaveClicked = isSaveClicked,
+                            onSaveClickHandled = {
+                                viewModel.editWish(wish, it)
+                                isSaveClicked = false
+                                navigation.back()
+                            }
+                        )
+                    }
+
+                    is Screen.Friends -> FriendsScreen(
+                        friends = friendList,
+                        onFriendClicked = { navigation.open(Screen.Wishes(it)) },
+                        onTopBarTitle = updateTitle
+                    )
+
+                    is Screen.Wishes -> {
+                        val friendIndex = screen.friendIndex
+                        val friend = friendList[friendIndex]
+                        val wishList = wishListByFriend[friendIndex]
+                        WishesScreen(
+                            friend = friend,
+                            wishes = wishList,
+                            onWishClicked = { wishIndex ->
+                                navigation.open(
+                                    Screen.Wish(
+                                        friendIndex,
+                                        wishIndex
+                                    )
+                                )
+                            }
+                        )
+                    }
+
+                    is Screen.Wish -> {
+                        val friendIndex = screen.friendIndex
+                        val wishIndex = screen.wishIndex
+                        val wishList = wishListByFriend[friendIndex]
+                        val wish = wishList[wishIndex]
+                        WishScreen(
+                            wish = wish,
+                            onTopBarTitle = updateTitle
+                        )
+                    }
+                }
+
+                if (isLoading) {
+                    CircularProgressIndicator()
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun Avatar(
+    url: String? = null,
+    onLogout: () -> Unit = {},
+) {
+    val borderWidth = dimensionResource(R.dimen.border_width)
+    val avatarM = dimensionResource(R.dimen.avatar_m)
+    val logoutText = stringResource(R.string.logout)
+
+    var isExpanded by remember { mutableStateOf(false) }
+
+    Box {
+        AsyncImage(
+            model = url,
+            contentDescription = null,
+            modifier = Modifier
+                .size(avatarM)
+                .border(
+                    BorderStroke(borderWidth, MaterialTheme.colorScheme.primary),
+                    CircleShape
+                )
+                .padding(borderWidth)
+                .clip(CircleShape)
+                .clickable {
+                    isExpanded = true
+                },
+            placeholder = ColorPainter(MaterialTheme.colorScheme.primaryContainer),
+            error = ColorPainter(MaterialTheme.colorScheme.primaryContainer),
+            contentScale = ContentScale.Crop,
+        )
+
+        DropdownMenu(
+            expanded = isExpanded,
+            onDismissRequest = { isExpanded = false }
+        ) {
+            DropdownMenuItem(
+                text = { Text(logoutText) },
+                onClick = {
+                    onLogout()
+                    isExpanded = false
+                }
+            )
+        }
+    }
+}
+
+fun createNavigation(
+    currentScreenState: MutableState<Screen>,
+    screensBackStackState: SnapshotStateList<Screen>
+): Navigation {
+    return object : Navigation {
+        override val currentScreenState: State<Screen>
+            get() = currentScreenState
+
+        override val isBackAvailable: Boolean
+            get() {
+                val currentScreen = currentScreenState.value
+                return screensBackStackState.isNotEmpty() && (
+                        currentScreen is Screen.Wishes
+                                || currentScreen is Screen.MyWish
+                                || currentScreen is Screen.Wish
+                                || currentScreen is Screen.NewWish
+                                || currentScreen is Screen.NewFriend
+                        )
+            }
+
+        override fun open(screen: Screen) {
+            saveToBackStack(currentScreenState.value)
+            currentScreenState.value = screen
+
+        }
+
+        override fun back() {
+            val previousScreen = screensBackStackState.removeLastOrNull()
+            if (previousScreen != null) currentScreenState.value = previousScreen
+        }
+
+        private fun saveToBackStack(screen: Screen) {
+            when (screen) {
+                is Screen.Friends,
+                is Screen.MyWishes,
+                is Screen.Wishes -> screensBackStackState.add(screen)
+
+                else -> screensBackStackState.clear()
+            }
+        }
+    }
+}
+
+interface Navigation {
+    val currentScreenState: State<Screen>
+    val isBackAvailable: Boolean
+    fun open(screen: Screen)
+    fun back()
+}
+
+private const val TAG = "NavigationComposable"
