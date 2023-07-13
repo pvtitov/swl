@@ -1,6 +1,6 @@
-package com.github.pvtitov.simplewishlist.core.data.model
+package com.github.pvtitov.simplewishlist.domain.data.model
 
-import com.github.pvtitov.simplewishlist.core.domain.model.Wish
+import com.github.pvtitov.simplewishlist.domain.model.Wish
 
 /**
  * Модель data-слоя - персональный вишлист, одна модель и для своего вишлиста, и для вишлистов

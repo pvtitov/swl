@@ -1,6 +1,6 @@
-package com.github.pvtitov.simplewishlist.core.data
+package com.github.pvtitov.simplewishlist.domain.data
 
-import com.github.pvtitov.simplewishlist.core.data.model.AccountData
+import com.github.pvtitov.simplewishlist.domain.data.model.AccountData
 
 /**
  * Всего три метода - чтение и запись всей информации по своему аккаунту и чтение информации по

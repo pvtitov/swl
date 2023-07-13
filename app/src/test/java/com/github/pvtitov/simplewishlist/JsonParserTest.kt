@@ -1,7 +1,7 @@
 package com.github.pvtitov.simplewishlist
 
-import com.github.pvtitov.simplewishlist.core.data.model.AccountData
-import com.github.pvtitov.simplewishlist.core.domain.model.Wish
+import com.github.pvtitov.simplewishlist.domain.data.model.AccountData
+import com.github.pvtitov.simplewishlist.domain.model.Wish
 import com.github.pvtitov.simplewishlist.utils.DI
 import org.junit.Test
 

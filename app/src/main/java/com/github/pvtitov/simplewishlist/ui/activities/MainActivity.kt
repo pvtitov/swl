@@ -1,4 +1,4 @@
-package com.github.pvtitov.simplewishlist
+package com.github.pvtitov.simplewishlist.ui.activities
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

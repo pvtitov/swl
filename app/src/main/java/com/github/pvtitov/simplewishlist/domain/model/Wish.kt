@@ -1,4 +1,4 @@
-package com.github.pvtitov.simplewishlist.core.domain.model
+package com.github.pvtitov.simplewishlist.domain.model
 
 data class Wish(
     val title: String,
