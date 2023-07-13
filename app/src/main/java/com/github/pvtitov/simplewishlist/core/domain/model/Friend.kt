@@ -1,4 +1,4 @@
-package com.github.pvtitov.simplewishlist.core.domain
+package com.github.pvtitov.simplewishlist.core.domain.model
 
 /**
  * Вся информация о другом пользователе.
