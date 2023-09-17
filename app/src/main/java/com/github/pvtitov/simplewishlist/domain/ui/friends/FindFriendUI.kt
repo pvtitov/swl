@@ -1,7 +1,7 @@
 package com.github.pvtitov.simplewishlist.domain.ui.friends
 
-import com.github.pvtitov.simplewishlist.domain.model.Friend
+import com.github.pvtitov.simplewishlist.domain.model.User
 
 interface FindFriendUI {
-    fun findFriend(query: String): List<Friend>
+    fun findUser(query: String): List<User>
 }
