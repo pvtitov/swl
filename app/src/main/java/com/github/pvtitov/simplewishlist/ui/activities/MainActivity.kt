@@ -3,18 +3,31 @@ package com.github.pvtitov.simplewishlist.ui.activities
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.github.pvtitov.simplewishlist.domain.data.source.AccountDataSource
 import com.github.pvtitov.simplewishlist.ui.theme.SimpleWishListTheme
+import com.github.pvtitov.simplewishlist.ui.viewmodels.MainViewModel
+import com.github.pvtitov.simplewishlist.utils.DI
 
 class MainActivity : ComponentActivity() {
+    private val mainViewModel: MainViewModel by viewModels()
+    private val manualAccountDataSource: AccountDataSource = DI.getAccountDataSource(this)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        mainViewModel.setManualAccountDataSource(manualAccountDataSource)
+
         setContent {
             SimpleWishListTheme {
                 // A surface container using the 'background' color from the theme
@@ -22,25 +35,45 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Greeting("Android")
+                    Column {
+                        Button(onClick = {
+                            mainViewModel.download(mainViewModel.getMyLogin())
+                        }) {
+                            Text(text = "Download")
+                        }
+                        Button(onClick = {
+                            mainViewModel.upload()
+                        }) {
+                            Text(text = "Upload")
+                        }
+                        WishListTestOutput(mainViewModel)
+                    }
                 }
             }
         }
     }
-}
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    SimpleWishListTheme {
-        Greeting("Android")
+    @Composable
+    fun WishListTestOutput(mainViewModel: MainViewModel) {
+        val userState by mainViewModel.userDataState.collectAsStateWithLifecycle()
+        val errorState by mainViewModel.errorState.collectAsStateWithLifecycle()
+        val stringBuilder = StringBuilder(userState.name)
+        userState.wishes.forEach { wish ->
+            stringBuilder.append("\n")
+            if (wish.title.isNotEmpty()) {
+                stringBuilder.append("\n").append(wish.title)
+            }
+            if (wish.description?.isNotEmpty() == true) {
+                stringBuilder.append("\n").append(wish.description)
+            }
+            if (wish.wishUrl?.isNotEmpty() == true) {
+                stringBuilder.append("\n").append(wish.wishUrl)
+            }
+        }
+        if (errorState != MainViewModel.NO_ERROR) {
+            stringBuilder.clear()
+            stringBuilder.append(errorState.message)
+        }
+        Text(text = stringBuilder.toString())
     }
 }

@@ -1,7 +1,7 @@
 package com.github.pvtitov.simplewishlist
 
 import com.github.pvtitov.simplewishlist.domain.data.model.AccountData
-import com.github.pvtitov.simplewishlist.domain.model.Wish
+import com.github.pvtitov.simplewishlist.domain.model.WishModel
 import com.github.pvtitov.simplewishlist.utils.DI
 import org.junit.Test
 
@@ -25,14 +25,15 @@ class JsonParserTest {
 }
 
 private val ACCOUNT_DATA = AccountData(
+    login = "",
     name = "Jack",
     wishes = listOf(
-        Wish(
+        WishModel(
             title = "Spiderman",
             description = "toy",
             wishUrl = "http://google.com"
         ),
-        Wish(
+        WishModel(
             title = "Jenga",
             description = "game",
             wishUrl = "http://yandex.ru"
@@ -42,6 +43,7 @@ private val ACCOUNT_DATA = AccountData(
 
 private val ACCOUNT_JSON = """
     {
+        "login": "",
         "name": "Jack",
         "wishes": [
             {

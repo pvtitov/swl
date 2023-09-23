@@ -1,6 +1,6 @@
 package com.github.pvtitov.simplewishlist.domain.model
 
-data class Wish(
+data class WishModel(
     val title: String,
     val description: String? = null,
     val imageUrl: String? = null,

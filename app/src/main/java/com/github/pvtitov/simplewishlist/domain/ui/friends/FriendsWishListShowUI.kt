@@ -2,6 +2,6 @@ package com.github.pvtitov.simplewishlist.domain.ui.friends
 
 import com.github.pvtitov.simplewishlist.domain.model.LoginModel
 
-interface DeleteFriendUI {
-    fun deleteFromMyFriendList(friend: LoginModel)
+interface FriendsWishListShowUI {
+    fun showFriendsWishList(login: LoginModel)
 }
