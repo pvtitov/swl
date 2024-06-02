@@ -1,7 +1,7 @@
 package com.github.pvtitov.simplewishlist.domain.ui.friends
 
-import com.github.pvtitov.simplewishlist.domain.model.LoginModel
+import com.github.pvtitov.simplewishlist.domain.model.User
 
 interface AddFriendUI {
-    fun addToMyFriendList(friend: LoginModel)
+    fun addToMyFriendList(friend: User)
 }

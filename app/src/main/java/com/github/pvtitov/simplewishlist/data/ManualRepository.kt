@@ -1,14 +1,13 @@
-package com.github.pvtitov.simplewishlist.data.source
+package com.github.pvtitov.simplewishlist.data
 
 import android.content.ContentResolver
 import android.net.Uri
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
-import com.github.pvtitov.simplewishlist.domain.data.source.AccountDataSource
-import com.github.pvtitov.simplewishlist.domain.model.LoginModel
-import com.github.pvtitov.simplewishlist.domain.model.UserDataModel
-import com.github.pvtitov.simplewishlist.utils.JsonParser
+import com.github.pvtitov.simplewishlist.domain.data.Dto
+import com.github.pvtitov.simplewishlist.domain.data.Repository
+import com.github.pvtitov.simplewishlist.utils.DI
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -19,10 +18,10 @@ import java.io.FileOutputStream
 import java.io.InputStreamReader
 import kotlin.coroutines.resume
 
-class ManualAccountDataSource(activity: ComponentActivity) : AccountDataSource {
-    private val jsonParser = JsonParser<UserDataModel>()
+class ManualRepository(activity: ComponentActivity) : Repository {
+    private val jsonParser = DI.jsonParser
     private val coroutineScope = activity.lifecycleScope
-    private var downloadContinuation: CancellableContinuation<UserDataModel?>? = null
+    private var downloadContinuation: CancellableContinuation<Dto?>? = null
     private val downloadLauncher = activity.registerForActivityResult(
         ActivityResultContracts.OpenDocument()
     ) { uri ->
@@ -34,7 +33,7 @@ class ManualAccountDataSource(activity: ComponentActivity) : AccountDataSource {
         }
     }
 
-    private lateinit var dataToUpload: UserDataModel
+    private lateinit var dataToUpload: Dto
     private var uploadContinuation: CancellableContinuation<Boolean>? = null
     private val uploadLauncher = activity.registerForActivityResult(
         ActivityResultContracts.CreateDocument(JSON_MIME_TYPE)
@@ -47,7 +46,7 @@ class ManualAccountDataSource(activity: ComponentActivity) : AccountDataSource {
         }
     }
 
-    override suspend fun downloadUserData(login: LoginModel): UserDataModel? =
+    override suspend fun import(): Dto? =
         suspendCancellableCoroutine { continuation ->
             downloadContinuation = continuation
             downloadLauncher.launch(arrayOf(JSON_MIME_TYPE))
@@ -57,8 +56,8 @@ class ManualAccountDataSource(activity: ComponentActivity) : AccountDataSource {
             }
         }
 
-    override suspend fun uploadUserData(userData: UserDataModel): Boolean {
-        dataToUpload = userData
+    override suspend fun export(data: Dto): Boolean {
+        dataToUpload = data
         return suspendCancellableCoroutine { continuation ->
             uploadContinuation = continuation
             uploadLauncher.launch("")
@@ -72,7 +71,7 @@ class ManualAccountDataSource(activity: ComponentActivity) : AccountDataSource {
     private suspend fun readFromFile(
         uri: Uri,
         contentResolver: ContentResolver
-    ): UserDataModel? {
+    ): Dto? {
         return withContext(Dispatchers.IO) {
             runCatching {
                 val stringBuilder = StringBuilder()
@@ -85,13 +84,13 @@ class ManualAccountDataSource(activity: ComponentActivity) : AccountDataSource {
                         }
                     }
                 }
-                jsonParser.fromJson(stringBuilder.toString(), UserDataModel::class.java)
+                jsonParser.fromJson(stringBuilder.toString(), Dto::class.java)
             }.getOrNull()
         }
     }
 
     private suspend fun writeToFile(
-        data: UserDataModel,
+        data: Dto,
         uri: Uri,
         contentResolver: ContentResolver
     ): Boolean {

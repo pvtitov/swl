@@ -1,7 +1,7 @@
 package com.github.pvtitov.simplewishlist
 
 import com.github.pvtitov.simplewishlist.domain.data.model.AccountData
-import com.github.pvtitov.simplewishlist.domain.model.WishModel
+import com.github.pvtitov.simplewishlist.domain.model.Wish
 import com.github.pvtitov.simplewishlist.utils.DI
 import org.junit.Test
 
@@ -28,12 +28,12 @@ private val ACCOUNT_DATA = AccountData(
     login = "",
     name = "Jack",
     wishes = listOf(
-        WishModel(
+        Wish(
             title = "Spiderman",
             description = "toy",
             wishUrl = "http://google.com"
         ),
-        WishModel(
+        Wish(
             title = "Jenga",
             description = "game",
             wishUrl = "http://yandex.ru"

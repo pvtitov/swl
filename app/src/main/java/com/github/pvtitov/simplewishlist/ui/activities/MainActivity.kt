@@ -12,21 +12,23 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.github.pvtitov.simplewishlist.domain.data.source.AccountDataSource
+import com.github.pvtitov.simplewishlist.domain.data.Repository
 import com.github.pvtitov.simplewishlist.ui.theme.SimpleWishListTheme
 import com.github.pvtitov.simplewishlist.ui.viewmodels.MainViewModel
 import com.github.pvtitov.simplewishlist.utils.DI
 
 class MainActivity : ComponentActivity() {
     private val mainViewModel: MainViewModel by viewModels()
-    private val manualAccountDataSource: AccountDataSource = DI.getAccountDataSource(this)
+    private val manualRepository: Repository = DI.getAccountDataSource(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        mainViewModel.setManualAccountDataSource(manualAccountDataSource)
+        mainViewModel.setManualAccountDataSource(manualRepository)
 
         setContent {
             SimpleWishListTheme {
@@ -37,14 +39,14 @@ class MainActivity : ComponentActivity() {
                 ) {
                     Column {
                         Button(onClick = {
-                            mainViewModel.download(mainViewModel.getMyLogin())
+                            mainViewModel.download()
                         }) {
-                            Text(text = "Download")
+                            Text(text = "Import")
                         }
                         Button(onClick = {
                             mainViewModel.upload()
                         }) {
-                            Text(text = "Upload")
+                            Text(text = "Export")
                         }
                         WishListTestOutput(mainViewModel)
                     }
@@ -55,10 +57,14 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun WishListTestOutput(mainViewModel: MainViewModel) {
-        val userState by mainViewModel.userDataState.collectAsStateWithLifecycle()
+        //TODO не работает, не загружается контент
+        val userState by mainViewModel.userDataState
+            .collectAsStateWithLifecycle()
         val errorState by mainViewModel.errorState.collectAsStateWithLifecycle()
-        val stringBuilder = StringBuilder(userState.name)
-        userState.wishes.forEach { wish ->
+        val currentUserData = userState.data.firstOrNull()// { it.user == mainViewModel.getMyLogin() }
+            ?: return
+        val stringBuilder = StringBuilder(currentUserData.user.name)
+        currentUserData.wishList.forEach { wish ->
             stringBuilder.append("\n")
             if (wish.title.isNotEmpty()) {
                 stringBuilder.append("\n").append(wish.title)

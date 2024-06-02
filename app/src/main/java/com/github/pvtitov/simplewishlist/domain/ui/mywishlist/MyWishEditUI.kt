@@ -1,7 +1,7 @@
 package com.github.pvtitov.simplewishlist.domain.ui.mywishlist
 
-import com.github.pvtitov.simplewishlist.domain.model.WishModel
+import com.github.pvtitov.simplewishlist.domain.model.Wish
 
 interface MyWishEditUI {
-    fun editWish(oldWish: WishModel, newWish: WishModel)
+    fun editWish(oldWish: Wish, newWish: Wish)
 }
