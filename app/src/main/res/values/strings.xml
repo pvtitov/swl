@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Simple Wish List</string>
+    <string name="button_import">Загрузить</string>
+    <string name="button_export">Отправить</string>
 </resources>
