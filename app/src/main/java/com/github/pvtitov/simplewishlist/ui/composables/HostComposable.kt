@@ -90,15 +90,5 @@ fun HostComposable(
 
 val PREVIEW_SCREEN_MODEL = WishlistScreenModel(emptyList())
 val PREVIEW_CONTENT_COMPOSABLE: @Composable (ScreenModel) -> Unit = {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.LightGray),
-    ) {
-        Text(
-            modifier = Modifier
-                .align(Alignment.Center),
-            text = "Preview content"
-        )
-    }
+    WishListComposable()
 }
