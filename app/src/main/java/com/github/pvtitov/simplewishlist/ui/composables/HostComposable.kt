@@ -13,12 +13,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.github.pvtitov.simplewishlist.R
 import com.github.pvtitov.simplewishlist.ui.model.ScreenModel
 import com.github.pvtitov.simplewishlist.ui.model.WishlistScreenModel
-import com.github.pvtitov.simplewishlist.ui.theme.PaddingM
 import com.github.pvtitov.simplewishlist.ui.theme.SimpleWishListTheme
 
 @Preview
@@ -27,6 +27,8 @@ fun HostComposable(
     screenModel: ScreenModel = PREVIEW_SCREEN_MODEL,
     contentComposable: @Composable (ScreenModel) -> Unit = PREVIEW_CONTENT_COMPOSABLE
 ) {
+    val paddingM = dimensionResource(id = R.dimen.padding_m)
+
     SimpleWishListTheme {
         Surface(
             modifier = Modifier.fillMaxSize()
@@ -41,42 +43,41 @@ fun HostComposable(
                     FloatingActionButton(
                         modifier = Modifier
                             .align(Alignment.Start)
-                            .padding(start = PaddingM, bottom = PaddingM),
+                            .padding(start = paddingM, bottom = paddingM),
                         onClick = {
                             // TODO
                         },
                     ) {
                         Text(
-                            modifier = Modifier.padding(PaddingM),
+                            modifier = Modifier.padding(paddingM),
                             text = stringResource(id = R.string.button_import)
                         )
                     }
                     Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         FloatingActionButton(
                             modifier = Modifier
-                                .padding(start = PaddingM, bottom = PaddingM),
+                                .padding(start = paddingM, bottom = paddingM),
                             onClick = {
                                 // TODO
                             },
                         ) {
                             Text(
-                                modifier = Modifier.padding(PaddingM),
+                                modifier = Modifier.padding(paddingM),
                                 text = stringResource(id = R.string.button_export)
                             )
                         }
                         FloatingActionButton(
                             modifier = Modifier
                                 .align(Alignment.TopEnd)
-                                .padding(end = PaddingM, bottom = PaddingM),
+                                .padding(end = paddingM, bottom = paddingM),
                             onClick = {
                                 // TODO
                             },
                         ) {
                             Text(
-                                modifier = Modifier.padding(PaddingM),
+                                modifier = Modifier.padding(paddingM),
                                 text = stringResource(id = R.string.button_new_wish)
                             )
                         }

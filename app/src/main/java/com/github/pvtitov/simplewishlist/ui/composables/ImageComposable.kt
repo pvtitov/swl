@@ -1,8 +1,10 @@
 package com.github.pvtitov.simplewishlist.ui.composables
 
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.bumptech.glide.integration.compose.placeholder
@@ -18,7 +20,7 @@ fun ImageComposable(
     imageUrl?.let { url ->
         GlideImage(
             model = url,
-            modifier = modifier,
+            modifier = modifier.padding(0.dp),
             contentDescription = null,
             loading = loadingPlaceholderId?.let { id -> placeholder(id) },
             failure = failurePlaceholderId?.let { id -> placeholder(id) }
