@@ -20,7 +20,7 @@ import com.github.pvtitov.simplewishlist.domain.model.Wish
 
 @Preview
 @Composable
-fun WishComposable(wish: Wish = PREVEIW_WISH) {
+fun WishItemComposable(wish: Wish = PREVEIW_WISH) {
     val paddingS = dimensionResource(id = R.dimen.padding_s)
     val paddingM = dimensionResource(id = R.dimen.padding_m)
     val imageSize = dimensionResource(id = R.dimen.wish_item_image_size)

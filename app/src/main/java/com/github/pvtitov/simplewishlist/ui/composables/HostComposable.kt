@@ -1,25 +1,20 @@
 package com.github.pvtitov.simplewishlist.ui.composables
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.github.pvtitov.simplewishlist.R
 import com.github.pvtitov.simplewishlist.ui.model.ScreenModel
 import com.github.pvtitov.simplewishlist.ui.model.WishlistScreenModel
-import com.github.pvtitov.simplewishlist.ui.theme.SimpleWishListTheme
 
 @Preview
 @Composable
@@ -29,59 +24,53 @@ fun HostComposable(
 ) {
     val paddingM = dimensionResource(id = R.dimen.padding_m)
 
-    SimpleWishListTheme {
-        Surface(
-            modifier = Modifier.fillMaxSize()
+    Box {
+        contentComposable(screenModel)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomStart)
         ) {
-            Box {
-                contentComposable(screenModel)
-                Column(
+            FloatingActionButton(
+                modifier = Modifier
+                    .align(Alignment.Start)
+                    .padding(start = paddingM, bottom = paddingM),
+                onClick = {
+                    // TODO
+                },
+            ) {
+                Text(
+                    modifier = Modifier.padding(paddingM),
+                    text = stringResource(id = R.string.button_import)
+                )
+            }
+            Box(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                FloatingActionButton(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .align(Alignment.BottomStart)
+                        .padding(start = paddingM, bottom = paddingM),
+                    onClick = {
+                        // TODO
+                    },
                 ) {
-                    FloatingActionButton(
-                        modifier = Modifier
-                            .align(Alignment.Start)
-                            .padding(start = paddingM, bottom = paddingM),
-                        onClick = {
-                            // TODO
-                        },
-                    ) {
-                        Text(
-                            modifier = Modifier.padding(paddingM),
-                            text = stringResource(id = R.string.button_import)
-                        )
-                    }
-                    Box(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        FloatingActionButton(
-                            modifier = Modifier
-                                .padding(start = paddingM, bottom = paddingM),
-                            onClick = {
-                                // TODO
-                            },
-                        ) {
-                            Text(
-                                modifier = Modifier.padding(paddingM),
-                                text = stringResource(id = R.string.button_export)
-                            )
-                        }
-                        FloatingActionButton(
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .padding(end = paddingM, bottom = paddingM),
-                            onClick = {
-                                // TODO
-                            },
-                        ) {
-                            Text(
-                                modifier = Modifier.padding(paddingM),
-                                text = stringResource(id = R.string.button_new_wish)
-                            )
-                        }
-                    }
+                    Text(
+                        modifier = Modifier.padding(paddingM),
+                        text = stringResource(id = R.string.button_export)
+                    )
+                }
+                FloatingActionButton(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(end = paddingM, bottom = paddingM),
+                    onClick = {
+                        // TODO
+                    },
+                ) {
+                    Text(
+                        modifier = Modifier.padding(paddingM),
+                        text = stringResource(id = R.string.button_new_wish)
+                    )
                 }
             }
         }

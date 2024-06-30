@@ -11,7 +11,7 @@ fun WishListComposable(wishlist: List<Wish> = PREVIEW_WISH_LIST) {
     LazyColumn {
         wishlist.forEach { wish ->
             item {
-                WishComposable(wish)
+                WishItemComposable(wish)
             }
         }
     }

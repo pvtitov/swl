@@ -1,5 +1,10 @@
 <resources>
     <string name="app_name">Simple Wish List</string>
+
+    <string name="field_login">Логин</string>
+    <string name="field_password">Пароль</string>
+    <string name="button_login">Логин</string>
+
     <string name="button_import">Загрузить</string>
     <string name="button_export">Отправить</string>
     <string name="button_new_wish">Создать</string>
