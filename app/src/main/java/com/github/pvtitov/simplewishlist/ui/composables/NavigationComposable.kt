@@ -33,8 +33,11 @@ fun NavigationComposable(
                 if (firstData != null) {
                     HostComposable(
                         screenModel = WishlistScreenModel(firstData.wishList)
-                    ) {
-                        WishListComposable(firstData.wishList)
+                    ) { scr, mod ->
+                        when (scr) {
+                            is WishlistScreenModel -> WishListComposable(firstData.wishList, mod)
+                            else -> Unit
+                        }
                     }
                 }
             } else {

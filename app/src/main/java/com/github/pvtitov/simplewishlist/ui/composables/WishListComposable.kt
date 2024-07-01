@@ -2,13 +2,19 @@ package com.github.pvtitov.simplewishlist.ui.composables
 
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.github.pvtitov.simplewishlist.domain.model.Wish
 
 @Preview
 @Composable
-fun WishListComposable(wishlist: List<Wish> = PREVIEW_WISH_LIST) {
-    LazyColumn {
+fun WishListComposable(
+    wishlist: List<Wish> = PREVIEW_WISH_LIST,
+    modifier: Modifier = Modifier
+) {
+    LazyColumn(
+        modifier = modifier
+    ) {
         wishlist.forEach { wish ->
             item {
                 WishItemComposable(wish)
