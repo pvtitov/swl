@@ -2,7 +2,6 @@ package com.github.pvtitov.simplewishlist.ui.composables
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Text
@@ -26,14 +25,52 @@ fun HostComposable(
 
     Box {
         contentComposable(screenModel)
+        Column {
+            Text(
+                modifier = Modifier.padding(paddingM),
+                text = "test_login"
+            )
+            IndicatorComposable(
+                modifier = Modifier.padding(start = paddingM)
+            )
+        }
         Column(
             modifier = Modifier
-                .fillMaxWidth()
+                .align(Alignment.TopEnd)
+        ) {
+            FloatingActionButton(
+                modifier = Modifier
+                    .align(Alignment.End)
+                    .padding(top = paddingM, end = paddingM),
+                onClick = {
+                    // TODO
+                },
+            ) {
+                Text(
+                    modifier = Modifier.padding(paddingM),
+                    text = stringResource(id = R.string.host_button_login)
+                )
+            }
+            FloatingActionButton(
+                modifier = Modifier
+                    .align(Alignment.End)
+                    .padding(top = paddingM, end = paddingM),
+                onClick = {
+                    // TODO
+                },
+            ) {
+                Text(
+                    modifier = Modifier.padding(paddingM),
+                    text = stringResource(id = R.string.host_button_friends)
+                )
+            }
+        }
+        Column(
+            modifier = Modifier
                 .align(Alignment.BottomStart)
         ) {
             FloatingActionButton(
                 modifier = Modifier
-                    .align(Alignment.Start)
                     .padding(start = paddingM, bottom = paddingM),
                 onClick = {
                     // TODO
@@ -41,38 +78,34 @@ fun HostComposable(
             ) {
                 Text(
                     modifier = Modifier.padding(paddingM),
-                    text = stringResource(id = R.string.button_import)
+                    text = stringResource(id = R.string.host_button_import)
                 )
             }
-            Box(
-                modifier = Modifier.fillMaxWidth()
+            FloatingActionButton(
+                modifier = Modifier
+                    .padding(start = paddingM, bottom = paddingM),
+                onClick = {
+                    // TODO
+                },
             ) {
-                FloatingActionButton(
-                    modifier = Modifier
-                        .padding(start = paddingM, bottom = paddingM),
-                    onClick = {
-                        // TODO
-                    },
-                ) {
-                    Text(
-                        modifier = Modifier.padding(paddingM),
-                        text = stringResource(id = R.string.button_export)
-                    )
-                }
-                FloatingActionButton(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(end = paddingM, bottom = paddingM),
-                    onClick = {
-                        // TODO
-                    },
-                ) {
-                    Text(
-                        modifier = Modifier.padding(paddingM),
-                        text = stringResource(id = R.string.button_new_wish)
-                    )
-                }
+                Text(
+                    modifier = Modifier.padding(paddingM),
+                    text = stringResource(id = R.string.host_button_export)
+                )
             }
+        }
+        FloatingActionButton(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = paddingM, bottom = paddingM),
+            onClick = {
+                // TODO
+            },
+        ) {
+            Text(
+                modifier = Modifier.padding(paddingM),
+                text = stringResource(id = R.string.host_button_new_wish)
+            )
         }
     }
 }

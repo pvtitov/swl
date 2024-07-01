@@ -33,7 +33,7 @@ fun LoginComposable(
             onValueChange = { value -> login.value = value },
             modifier = Modifier.align(Alignment.CenterHorizontally),
             label = {
-                Text(text = stringResource(id = R.string.field_login))
+                Text(text = stringResource(id = R.string.login_field_login))
             }
         )
 
@@ -42,7 +42,7 @@ fun LoginComposable(
             onValueChange = { value -> password.value = value },
             modifier = Modifier.align(Alignment.CenterHorizontally),
             label = {
-                Text(text = stringResource(id = R.string.field_password))
+                Text(text = stringResource(id = R.string.login_field_password))
             }
         )
 
@@ -56,7 +56,7 @@ fun LoginComposable(
             },
             modifier = Modifier.align(Alignment.CenterHorizontally),
         ) {
-            Text(text = stringResource(id = R.string.button_login))
+            Text(text = stringResource(id = R.string.login_button_login))
         }
     }
 }
