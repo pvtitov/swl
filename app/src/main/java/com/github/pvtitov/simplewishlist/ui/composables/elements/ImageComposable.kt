@@ -1,4 +1,4 @@
-package com.github.pvtitov.simplewishlist.ui.composables
+package com.github.pvtitov.simplewishlist.ui.composables.elements
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.padding

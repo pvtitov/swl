@@ -1,4 +1,4 @@
-package com.github.pvtitov.simplewishlist.ui.composables
+package com.github.pvtitov.simplewishlist.ui.composables.items
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,6 +17,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import com.github.pvtitov.simplewishlist.R
 import com.github.pvtitov.simplewishlist.domain.model.Wish
+import com.github.pvtitov.simplewishlist.ui.composables.elements.ImageComposable
 
 @Preview
 @Composable
@@ -28,6 +29,7 @@ fun WishItemComposable(wish: Wish = PREVEIW_WISH) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(bottom = dimensionResource(id = R.dimen.padding_xs))
     ) {
         Row(
             modifier = Modifier.padding(paddingM)

@@ -7,7 +7,7 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import com.github.pvtitov.simplewishlist.domain.data.Repository
-import com.github.pvtitov.simplewishlist.ui.composables.NavigationComposable
+import com.github.pvtitov.simplewishlist.ui.composables.common.NavigationComposable
 import com.github.pvtitov.simplewishlist.ui.viewmodels.LoginViewModel
 import com.github.pvtitov.simplewishlist.ui.viewmodels.MainViewModel
 import com.github.pvtitov.simplewishlist.utils.DI

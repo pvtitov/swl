@@ -1,10 +1,13 @@
-package com.github.pvtitov.simplewishlist.ui.composables
+package com.github.pvtitov.simplewishlist.ui.composables.common
 
 import android.view.MotionEvent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -16,10 +19,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInteropFilter
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.github.pvtitov.simplewishlist.R
+import com.github.pvtitov.simplewishlist.ui.composables.screens.WishListComposable
+import com.github.pvtitov.simplewishlist.ui.composables.elements.IndicatorComposable
 import com.github.pvtitov.simplewishlist.ui.model.ScreenModel
 import com.github.pvtitov.simplewishlist.ui.model.WishlistScreenModel
 
@@ -31,7 +37,7 @@ fun HostComposable(
     screenModel: ScreenModel = PREVIEW_SCREEN_MODEL,
     contentComposable: @Composable (ScreenModel, Modifier) -> Unit = PREVIEW_CONTENT_COMPOSABLE
 ) {
-    val paddingM = dimensionResource(id = R.dimen.padding_m)
+    val padding = dimensionResource(id = R.dimen.padding_l)
     var isControlsVisible by remember {
         mutableStateOf(true)
     }
@@ -50,20 +56,25 @@ fun HostComposable(
                     true
                 }
         )
-        Column {
+        Row {
             AnimatedVisibility(
                 visible = isControlsVisible,
-                modifier = Modifier.padding(start = paddingM, top = paddingM)
+                modifier = Modifier.padding(start = padding, top = padding)
             ) {
-                Text(
-                    text = "test_login"
-                )
+                IndicatorComposable()
             }
             AnimatedVisibility(
                 visible = isControlsVisible,
-                modifier = Modifier.padding(start = paddingM, top = paddingM)
+                modifier = Modifier.padding(start = padding, top = padding)
             ) {
-                IndicatorComposable()
+                Text(
+                    text = "test_login",
+                    modifier = Modifier
+                        .background(
+                            colorResource(id = R.color.white), 
+                            shape = RoundedCornerShape(dimensionResource(id = R.dimen.corner_radius))
+                        )
+                )
             }
         }
         Column(
@@ -74,7 +85,7 @@ fun HostComposable(
                 visible = isControlsVisible,
                 modifier = Modifier
                     .align(Alignment.End)
-                    .padding(top = paddingM, end = paddingM)
+                    .padding(top = padding, end = padding)
             ) {
                 FloatingActionButton(
                     onClick = {
@@ -82,7 +93,7 @@ fun HostComposable(
                     },
                 ) {
                     Text(
-                        modifier = Modifier.padding(paddingM),
+                        modifier = Modifier.padding(padding),
                         text = stringResource(id = R.string.host_button_login)
                     )
                 }
@@ -91,7 +102,7 @@ fun HostComposable(
                 visible = isControlsVisible,
                 modifier = Modifier
                     .align(Alignment.End)
-                    .padding(top = paddingM, end = paddingM)
+                    .padding(top = padding, end = padding)
             ) {
                 FloatingActionButton(
                     onClick = {
@@ -99,7 +110,7 @@ fun HostComposable(
                     },
                 ) {
                     Text(
-                        modifier = Modifier.padding(paddingM),
+                        modifier = Modifier.padding(padding),
                         text = stringResource(id = R.string.host_button_friends)
                     )
                 }
@@ -113,7 +124,7 @@ fun HostComposable(
             AnimatedVisibility(
                 visible = isControlsVisible,
                 modifier = Modifier
-                    .padding(start = paddingM, bottom = paddingM)
+                    .padding(start = padding, bottom = padding)
             ) {
                 FloatingActionButton(
                     onClick = {
@@ -121,7 +132,7 @@ fun HostComposable(
                     },
                 ) {
                     Text(
-                        modifier = Modifier.padding(paddingM),
+                        modifier = Modifier.padding(padding),
                         text = stringResource(id = R.string.host_button_import)
                     )
                 }
@@ -129,7 +140,7 @@ fun HostComposable(
             AnimatedVisibility(
                 visible = isControlsVisible,
                 modifier = Modifier
-                    .padding(start = paddingM, bottom = paddingM)
+                    .padding(start = padding, bottom = padding)
             ) {
                 FloatingActionButton(
                     onClick = {
@@ -137,7 +148,7 @@ fun HostComposable(
                     },
                 ) {
                     Text(
-                        modifier = Modifier.padding(paddingM),
+                        modifier = Modifier.padding(padding),
                         text = stringResource(id = R.string.host_button_export)
                     )
                 }
@@ -147,7 +158,7 @@ fun HostComposable(
             visible = isControlsVisible,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = paddingM, bottom = paddingM)
+                .padding(end = padding, bottom = padding)
         ) {
             FloatingActionButton(
                 onClick = {
@@ -155,7 +166,7 @@ fun HostComposable(
                 },
             ) {
                 Text(
-                    modifier = Modifier.padding(paddingM),
+                    modifier = Modifier.padding(padding),
                     text = stringResource(id = R.string.host_button_new_wish)
                 )
             }

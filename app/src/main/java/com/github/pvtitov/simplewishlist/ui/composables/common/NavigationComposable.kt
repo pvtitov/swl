@@ -1,12 +1,12 @@
-package com.github.pvtitov.simplewishlist.ui.composables
+package com.github.pvtitov.simplewishlist.ui.composables.common
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.github.pvtitov.simplewishlist.ui.composables.screens.LoginComposable
+import com.github.pvtitov.simplewishlist.ui.composables.screens.WishListComposable
 import com.github.pvtitov.simplewishlist.ui.model.WishlistScreenModel
 import com.github.pvtitov.simplewishlist.ui.theme.SimpleWishListTheme
 import com.github.pvtitov.simplewishlist.ui.viewmodels.LoginViewModel
@@ -19,12 +19,13 @@ fun NavigationComposable(
     modifier: Modifier
 ) {
     val credentials by loginViewModel.credentialsState.collectAsStateWithLifecycle()
+    val isAuthenticated = credentials != null
 
     SimpleWishListTheme {
         Surface(
             modifier = modifier
         ) {
-            if (credentials != null) {
+            if (isAuthenticated) {
                 val dtoState = mainViewModel
                     .userDataState
                     .collectAsStateWithLifecycle()
@@ -41,15 +42,9 @@ fun NavigationComposable(
                     }
                 }
             } else {
-                Box(
-                    modifier = modifier
-                ) {
-                    LoginComposable(
-                        loginViewModel = loginViewModel,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-                }
-
+                LoginComposable(
+                    loginViewModel = loginViewModel
+                )
             }
         }
     }
