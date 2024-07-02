@@ -7,6 +7,7 @@ import com.github.pvtitov.simplewishlist.domain.data.Repository
 import com.github.pvtitov.simplewishlist.domain.model.Credentials
 import com.github.pvtitov.simplewishlist.domain.model.User
 import com.github.pvtitov.simplewishlist.domain.ui.model.UIError
+import com.github.pvtitov.simplewishlist.ui.model.LoginScreenModel
 import com.github.pvtitov.simplewishlist.ui.model.ScreenModel
 import com.github.pvtitov.simplewishlist.ui.model.UsersScreenModel
 import kotlinx.coroutines.Dispatchers
@@ -18,10 +19,10 @@ import kotlinx.coroutines.withContext
 
 class MainViewModel : ViewModel() {
     // Set up manual data source
-    private lateinit var _manualRepository: Repository
+    private lateinit var _repository: Repository
 
-    fun setManualAccountDataSource(manualRepository: Repository) {
-        this._manualRepository = manualRepository
+    fun setManualAccountDataSource(repository: Repository) {
+        this._repository = repository
     }
 
     // Login
@@ -32,6 +33,7 @@ class MainViewModel : ViewModel() {
         cleanUp()
         viewModelScope.launch(Dispatchers.IO) {
             _credentialsState.emit(credentials)
+            _currentScreenState.emit(UsersScreenModel(getUsers()))
         }
     }
 
@@ -50,7 +52,7 @@ class MainViewModel : ViewModel() {
         val data = dataToUpload ?: return
         viewModelScope.launch(Dispatchers.IO) {
             val isUploaded = withContext(Dispatchers.Main) {
-                _manualRepository.export(data)
+                _repository.export(data)
             }
             if (!isUploaded) {
                 _errorState.emit(UIError("Failed to upload user data"))
@@ -62,7 +64,7 @@ class MainViewModel : ViewModel() {
     fun download() {
         viewModelScope.launch(Dispatchers.IO) {
             val data = withContext(Dispatchers.Main) {
-                _manualRepository.import()
+                _repository.import()
             }
             if (data != null) {
                 downloadedData = data
@@ -81,13 +83,23 @@ class MainViewModel : ViewModel() {
     }
 
     // UI state
-    private val _currentScreenState = MutableStateFlow(EMPTY_USERS)
+    private val _currentScreenState: MutableStateFlow<ScreenModel> =
+        MutableStateFlow(LoginScreenModel)
     val currentScreenState: StateFlow<ScreenModel> = _currentScreenState.asStateFlow()
 
+    // UI callbacks
     fun onOpenUsers() {
         viewModelScope.launch(Dispatchers.IO) {
             _currentScreenState.emit(
                 UsersScreenModel(getUsers())
+            )
+        }
+    }
+
+    fun onOpenLogin() {
+        viewModelScope.launch(Dispatchers.IO) {
+            _currentScreenState.emit(
+                LoginScreenModel
             )
         }
     }
@@ -100,7 +112,7 @@ class MainViewModel : ViewModel() {
         downloadedData = null
         dataToUpload = null
         viewModelScope.launch(Dispatchers.IO) {
-            _currentScreenState.emit(EMPTY_USERS)
+            _currentScreenState.emit(LoginScreenModel)
             _credentialsState.emit(null)
             _errorState.emit(NO_ERROR)
         }
@@ -108,6 +120,5 @@ class MainViewModel : ViewModel() {
 
     companion object {
         val NO_ERROR = UIError("")
-        val EMPTY_USERS = UsersScreenModel(emptyList())
     }
 }

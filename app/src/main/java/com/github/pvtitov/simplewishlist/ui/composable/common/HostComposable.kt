@@ -98,7 +98,7 @@ fun HostComposable(
             ) {
                 FloatingActionButton(
                     onClick = {
-                        // TODO
+                        viewModel.onOpenLogin()
                     },
                 ) {
                     Text(
@@ -115,7 +115,7 @@ fun HostComposable(
             ) {
                 FloatingActionButton(
                     onClick = {
-                        // TODO
+                        viewModel.onOpenUsers()
                     },
                 ) {
                     Text(

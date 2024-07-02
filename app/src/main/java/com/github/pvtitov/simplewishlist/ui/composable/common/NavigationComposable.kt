@@ -8,6 +8,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.pvtitov.simplewishlist.ui.composable.screen.LoginComposable
 import com.github.pvtitov.simplewishlist.ui.composable.screen.UserListComposable
 import com.github.pvtitov.simplewishlist.ui.composable.screen.WishListComposable
+import com.github.pvtitov.simplewishlist.ui.model.LoginScreenModel
 import com.github.pvtitov.simplewishlist.ui.model.UsersScreenModel
 import com.github.pvtitov.simplewishlist.ui.model.WishlistScreenModel
 import com.github.pvtitov.simplewishlist.ui.theme.SimpleWishListTheme
@@ -18,29 +19,27 @@ fun NavigationComposable(
     viewModel: MainViewModel,
     modifier: Modifier
 ) {
-    val credentials by viewModel.credentialsState.collectAsStateWithLifecycle()
-    val isAuthenticated = credentials != null
-
     SimpleWishListTheme {
         Surface(
             modifier = modifier
         ) {
             val screenModel by viewModel.currentScreenState.collectAsStateWithLifecycle()
+            val scr = screenModel
 
-            if (isAuthenticated) {
+            if (scr == LoginScreenModel) {
+                LoginComposable(
+                    viewModel = viewModel
+                )
+            } else {
                 HostComposable(
                     viewModel = viewModel
                 ) {
-                    when (val scr = screenModel) {
+                    when (scr) {
                         is UsersScreenModel -> UserListComposable(scr.users)
                         is WishlistScreenModel -> WishListComposable(scr.wishlist)
                         else -> Unit
                     }
                 }
-            } else {
-                LoginComposable(
-                    viewModel = viewModel
-                )
             }
         }
     }

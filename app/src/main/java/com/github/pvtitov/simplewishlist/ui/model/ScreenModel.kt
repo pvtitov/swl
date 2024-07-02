@@ -5,6 +5,8 @@ import com.github.pvtitov.simplewishlist.domain.model.Wish
 
 sealed interface ScreenModel
 
+object LoginScreenModel: ScreenModel
+
 data class UsersScreenModel(val users: List<User>): ScreenModel
 
 data class WishlistScreenModel(val wishlist: List<Wish>): ScreenModel
