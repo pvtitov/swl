@@ -9,45 +9,28 @@ import com.github.pvtitov.simplewishlist.domain.model.User
 import com.github.pvtitov.simplewishlist.domain.model.UserData
 import com.github.pvtitov.simplewishlist.domain.model.Wish
 import com.github.pvtitov.simplewishlist.domain.ui.model.UIError
+import com.github.pvtitov.simplewishlist.ui.model.ScreenModel
+import com.github.pvtitov.simplewishlist.ui.model.UsersScreenModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class MainViewModel : ViewModel() {
     private lateinit var _manualRepository: Repository
 
+    private val _currentScreenState = MutableStateFlow(EMPTY_USERS)
+    val currentScreenState: StateFlow<ScreenModel> = _currentScreenState.asStateFlow()
+
     private val _userDataState = MutableStateFlow(NO_DATA)
     val userDataState: StateFlow<Dto> = _userDataState.asStateFlow()
 
     private val _errorState = MutableStateFlow(NO_ERROR)
     val errorState: StateFlow<UIError> = _errorState.asStateFlow()
-
-    init {
-        viewModelScope.launch {
-            val wish1 = Wish("wish_01", "description_01", wishUrl = "http://wish_01.net")
-            val wish2 = Wish("wish_02", "description_02", wishUrl = "http://wish_02.net")
-            val wish3 = Wish("wish_03", "description_03", wishUrl = "http://wish_03.net")
-            val user = getMyLogin()
-            _userDataState.emit(
-                Dto(
-                    listOf(
-                        UserData(
-                            user,
-                            listOf(wish1, wish2, wish3),
-                            emptyMap(),
-                            0L,
-                            0
-                        )
-                    ),
-                    user
-                )
-
-            )
-        }
-    }
 
     fun setManualAccountDataSource(manualRepository: Repository) {
         this._manualRepository = manualRepository
@@ -56,7 +39,7 @@ class MainViewModel : ViewModel() {
     fun upload() {
         viewModelScope.launch(Dispatchers.IO) {
             val isUploaded = withContext(Dispatchers.Main) {
-                _manualRepository.export(getMyCurrentUserData())
+                _manualRepository.export(_userDataState.value)
             }
             if (!isUploaded) {
                 _errorState.emit(UIError("Failed to upload user data"))
@@ -77,25 +60,9 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun onFileOpened(uri: Uri) {
-        // TODO open file by uri
-        _userDataState.value = NO_DATA
-    }
-
-    fun onFileSaved(uri: Uri) {
-        // TODO do something
-    }
-
-    fun getMyLogin(): User {
-        return User("test_login", "test_name") //TODO
-    }
-
-    private fun getMyCurrentUserData(): Dto {
-        return userDataState.value
-    }
-
     companion object {
         val NO_DATA = Dto(emptyList(), User("", ""))
         val NO_ERROR = UIError("")
+        val EMPTY_USERS = UsersScreenModel(emptyList())
     }
 }

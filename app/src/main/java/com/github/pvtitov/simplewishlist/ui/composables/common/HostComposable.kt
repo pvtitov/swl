@@ -24,8 +24,8 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.github.pvtitov.simplewishlist.R
-import com.github.pvtitov.simplewishlist.ui.composables.screens.WishListComposable
 import com.github.pvtitov.simplewishlist.ui.composables.elements.IndicatorComposable
+import com.github.pvtitov.simplewishlist.ui.composables.screens.WishListComposable
 import com.github.pvtitov.simplewishlist.ui.model.ScreenModel
 import com.github.pvtitov.simplewishlist.ui.model.WishlistScreenModel
 
@@ -35,27 +35,28 @@ import com.github.pvtitov.simplewishlist.ui.model.WishlistScreenModel
 @Composable
 fun HostComposable(
     screenModel: ScreenModel = PREVIEW_SCREEN_MODEL,
-    contentComposable: @Composable (ScreenModel, Modifier) -> Unit = PREVIEW_CONTENT_COMPOSABLE
+    contentComposable: @Composable () -> Unit = PREVIEW_CONTENT_COMPOSABLE,
 ) {
     val padding = dimensionResource(id = R.dimen.padding_l)
+
     var isControlsVisible by remember {
         mutableStateOf(true)
     }
 
-    Box {
-        contentComposable(
-            screenModel,
-            Modifier
-                .pointerInteropFilter {
-                    when (it.action) {
-                        MotionEvent.ACTION_DOWN,
-                        MotionEvent.ACTION_MOVE -> isControlsVisible = false
-                        MotionEvent.ACTION_UP,
-                        MotionEvent.ACTION_CANCEL -> isControlsVisible = true
-                    }
-                    true
+    Box(
+        modifier = Modifier
+            .pointerInteropFilter {
+                when (it.action) {
+                    MotionEvent.ACTION_DOWN,
+                    MotionEvent.ACTION_MOVE -> isControlsVisible = false
+
+                    MotionEvent.ACTION_UP,
+                    MotionEvent.ACTION_CANCEL -> isControlsVisible = true
                 }
-        )
+                true
+            }
+    ) {
+        contentComposable()
         Row {
             AnimatedVisibility(
                 visible = isControlsVisible,
@@ -71,7 +72,7 @@ fun HostComposable(
                     text = "test_login",
                     modifier = Modifier
                         .background(
-                            colorResource(id = R.color.white), 
+                            colorResource(id = R.color.white),
                             shape = RoundedCornerShape(dimensionResource(id = R.dimen.corner_radius))
                         )
                 )
@@ -175,6 +176,6 @@ fun HostComposable(
 }
 
 val PREVIEW_SCREEN_MODEL = WishlistScreenModel(emptyList())
-val PREVIEW_CONTENT_COMPOSABLE: @Composable (ScreenModel, Modifier) -> Unit = { _, _ ->
+val PREVIEW_CONTENT_COMPOSABLE: @Composable () -> Unit = {
     WishListComposable()
 }
