@@ -1,4 +1,4 @@
-package com.github.pvtitov.simplewishlist.ui.composables.elements
+package com.github.pvtitov.simplewishlist.ui.composable.element
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.height
@@ -14,8 +14,7 @@ import com.github.pvtitov.simplewishlist.R
 @Preview
 @Composable
 fun IndicatorComposable(
-    isIgnited: Boolean = false,
-    modifier: Modifier = Modifier
+    isIgnited: Boolean = false
 ) {
     val indicatorSize =
         dimensionResource(id = R.dimen.indicator_size)
@@ -25,7 +24,7 @@ fun IndicatorComposable(
         Color.Green
     }
     Canvas(
-        modifier = modifier
+        modifier = Modifier
             .height(indicatorSize)
             .width(indicatorSize)
     ) {

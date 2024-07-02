@@ -1,4 +1,4 @@
-package com.github.pvtitov.simplewishlist.ui.composables.screens
+package com.github.pvtitov.simplewishlist.ui.composable.screen
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,12 +16,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.github.pvtitov.simplewishlist.R
 import com.github.pvtitov.simplewishlist.domain.model.Credentials
-import com.github.pvtitov.simplewishlist.ui.viewmodels.LoginViewModel
+import com.github.pvtitov.simplewishlist.ui.viewmodel.MainViewModel
 
 @Preview
 @Composable
 fun LoginComposable(
-    loginViewModel: LoginViewModel = LoginViewModel()
+    viewModel: MainViewModel = MainViewModel()
 ) {
     val login = rememberSaveable {
         mutableStateOf("")
@@ -54,7 +54,7 @@ fun LoginComposable(
 
             Button(
                 onClick = {
-                    loginViewModel.onLogin(
+                    viewModel.onLogin(
                         Credentials(login.value, password.value)
                     )
                     login.value = ""
