@@ -6,6 +6,7 @@ import com.github.pvtitov.simplewishlist.domain.data.Dto
 import com.github.pvtitov.simplewishlist.domain.data.Repository
 import com.github.pvtitov.simplewishlist.domain.model.Credentials
 import com.github.pvtitov.simplewishlist.domain.model.User
+import com.github.pvtitov.simplewishlist.domain.model.Wish
 import com.github.pvtitov.simplewishlist.domain.ui.model.UIError
 import com.github.pvtitov.simplewishlist.ui.model.LoginScreenModel
 import com.github.pvtitov.simplewishlist.ui.model.ScreenModel
@@ -48,7 +49,7 @@ class MainViewModel : ViewModel() {
     private val _isDataUpdatedState = MutableStateFlow(false)
     val isDataUpdatedState: StateFlow<Boolean> = _isDataUpdatedState.asStateFlow()
 
-    fun upload() {
+    private fun upload() {
         val data = dataToUpload ?: return
         viewModelScope.launch(Dispatchers.IO) {
             val isUploaded = withContext(Dispatchers.Main) {
@@ -61,7 +62,7 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun download() {
+    private fun download() {
         viewModelScope.launch(Dispatchers.IO) {
             val data = withContext(Dispatchers.Main) {
                 _repository.import()
@@ -88,7 +89,7 @@ class MainViewModel : ViewModel() {
     val currentScreenState: StateFlow<ScreenModel> = _currentScreenState.asStateFlow()
 
     // UI callbacks
-    fun onOpenUsers() {
+    fun onClickUsers() {
         viewModelScope.launch(Dispatchers.IO) {
             _currentScreenState.emit(
                 UsersScreenModel(getUsers())
@@ -96,12 +97,36 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun onOpenLogin() {
+    fun onClickLogin() {
         viewModelScope.launch(Dispatchers.IO) {
             _currentScreenState.emit(
                 LoginScreenModel
             )
         }
+    }
+
+    fun onClickDownload() {
+        viewModelScope.launch(Dispatchers.IO) {
+            download()
+        }
+    }
+
+    fun onClickUpload() {
+        viewModelScope.launch(Dispatchers.IO) {
+            upload()
+        }
+    }
+
+    fun onClickNewWish() {
+        // TODO
+    }
+
+    fun onClickWish(wish: Wish) {
+        // TODO
+    }
+
+    fun onClickUser(user: User) {
+        // TODO
     }
 
     private fun getUsers(): List<User> {

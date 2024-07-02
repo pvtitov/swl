@@ -97,9 +97,7 @@ fun HostComposable(
                     .padding(top = padding, end = padding)
             ) {
                 FloatingActionButton(
-                    onClick = {
-                        viewModel.onOpenLogin()
-                    },
+                    onClick = viewModel::onClickLogin,
                 ) {
                     Text(
                         modifier = Modifier.padding(padding),
@@ -114,9 +112,7 @@ fun HostComposable(
                     .padding(top = padding, end = padding)
             ) {
                 FloatingActionButton(
-                    onClick = {
-                        viewModel.onOpenUsers()
-                    },
+                    onClick = viewModel::onClickUsers,
                 ) {
                     Text(
                         modifier = Modifier.padding(padding),
@@ -136,9 +132,7 @@ fun HostComposable(
                     .padding(start = padding, bottom = padding)
             ) {
                 FloatingActionButton(
-                    onClick = {
-                        // TODO
-                    },
+                    onClick = viewModel::onClickDownload,
                 ) {
                     Text(
                         modifier = Modifier.padding(padding),
@@ -152,9 +146,7 @@ fun HostComposable(
                     .padding(start = padding, bottom = padding)
             ) {
                 FloatingActionButton(
-                    onClick = {
-                        // TODO
-                    },
+                    onClick = viewModel::onClickUpload,
                 ) {
                     Text(
                         modifier = Modifier.padding(padding),
@@ -170,9 +162,7 @@ fun HostComposable(
                 .padding(end = padding, bottom = padding)
         ) {
             FloatingActionButton(
-                onClick = {
-                    // TODO
-                },
+                onClick = viewModel::onClickNewWish,
             ) {
                 Text(
                     modifier = Modifier.padding(padding),
