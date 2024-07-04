@@ -11,6 +11,7 @@ import com.github.pvtitov.simplewishlist.domain.ui.model.UIError
 import com.github.pvtitov.simplewishlist.ui.model.LoginScreenModel
 import com.github.pvtitov.simplewishlist.ui.model.ScreenModel
 import com.github.pvtitov.simplewishlist.ui.model.UsersScreenModel
+import com.github.pvtitov.simplewishlist.ui.model.WishlistScreenModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -126,7 +127,12 @@ class MainViewModel : ViewModel() {
     }
 
     fun onClickUser(user: User) {
-        // TODO
+        viewModelScope.launch(Dispatchers.IO) {
+            val wishlist = downloadedData?.data?.find { it.user == user }?.wishList ?: emptyList()
+            _currentScreenState.emit(
+                WishlistScreenModel(wishlist)
+            )
+        }
     }
 
     private fun getUsers(): List<User> {

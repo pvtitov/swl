@@ -2,7 +2,6 @@ package com.github.pvtitov.simplewishlist.ui.composable.screen
 
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.github.pvtitov.simplewishlist.domain.model.User
 import com.github.pvtitov.simplewishlist.ui.composable.item.UserItemComposable
@@ -11,11 +10,8 @@ import com.github.pvtitov.simplewishlist.ui.composable.item.UserItemComposable
 @Composable
 fun UserListComposable(
     users: List<User> = PREVIEW_USER_LIST,
-    modifier: Modifier = Modifier
 ) {
-    LazyColumn(
-        modifier = modifier
-    ) {
+    LazyColumn {
         users.forEach { user ->
             item {
                 UserItemComposable(user)
