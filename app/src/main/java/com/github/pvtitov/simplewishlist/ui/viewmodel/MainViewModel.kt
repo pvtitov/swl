@@ -13,9 +13,12 @@ import com.github.pvtitov.simplewishlist.ui.model.ScreenModel
 import com.github.pvtitov.simplewishlist.ui.model.UsersScreenModel
 import com.github.pvtitov.simplewishlist.ui.model.WishlistScreenModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -44,14 +47,23 @@ class MainViewModel : ViewModel() {
     val errorState: StateFlow<UIError> = _errorState.asStateFlow()
 
     // Data transfer
-    private var downloadedData: Dto? = null
-    private var dataToUpload: Dto? = null
+    private val _downloadedDataStateFlow = MutableStateFlow<Dto?>(null)
+    val downloadedDataFlow = _downloadedDataStateFlow
+        .onEach {
+            _updatedDataStateFlow.value = null
+            updateCurrentScreen()
+        }
 
-    private val _isDataUpdatedState = MutableStateFlow(false)
-    val isDataUpdatedState: StateFlow<Boolean> = _isDataUpdatedState.asStateFlow()
+    private val _updatedDataStateFlow = MutableStateFlow<Dto?>(null)
+    val updatedDataFlow = _updatedDataStateFlow
+        .onEach { onDataUpdated() }
+
+    // TODO check if can collect one emition from MutableStateFlow multiple times (multiple subscribes)
+    val isDataUpdatedState: Flow<Boolean> = _updatedDataStateFlow
+        .map { onDataUpdated() }
 
     private fun upload() {
-        val data = dataToUpload ?: return
+        val data = _updatedDataStateFlow.value ?: return
         viewModelScope.launch(Dispatchers.IO) {
             val isUploaded = withContext(Dispatchers.Main) {
                 _repository.export(data)
@@ -69,8 +81,7 @@ class MainViewModel : ViewModel() {
                 _repository.import()
             }
             if (data != null) {
-                downloadedData = data
-                dataToUpload = data
+                _downloadedDataStateFlow.emit(data)
             } else {
                 _errorState.emit(UIError("Failed to download user data"))
             }
@@ -78,16 +89,24 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    private fun onDataUpdated() {
-        viewModelScope.launch(Dispatchers.IO) {
-            _isDataUpdatedState.emit(downloadedData != dataToUpload)
-        }
+    private fun onDataUpdated(): Boolean {
+        val downloadedData = _downloadedDataStateFlow.value
+        val updatedData = _updatedDataStateFlow.value
+        return updatedData != null && updatedData != downloadedData
     }
 
     // UI state
     private val _currentScreenState: MutableStateFlow<ScreenModel> =
         MutableStateFlow(LoginScreenModel)
     val currentScreenState: StateFlow<ScreenModel> = _currentScreenState.asStateFlow()
+
+    private fun updateCurrentScreen() {
+        val updatedScreen = when (_currentScreenState.value) {
+            is UsersScreenModel -> UsersScreenModel(getUsers())
+            else -> TODO()
+        }
+        _currentScreenState.value = updatedScreen
+    }
 
     // UI callbacks
     fun onClickUsers() {
