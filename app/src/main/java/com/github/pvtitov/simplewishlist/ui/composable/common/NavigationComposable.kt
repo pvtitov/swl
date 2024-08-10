@@ -8,9 +8,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.pvtitov.simplewishlist.ui.composable.screen.LoginComposable
 import com.github.pvtitov.simplewishlist.ui.composable.screen.UserListComposable
 import com.github.pvtitov.simplewishlist.ui.composable.screen.WishListComposable
-import com.github.pvtitov.simplewishlist.ui.model.LoginScreenModel
-import com.github.pvtitov.simplewishlist.ui.model.UsersScreenModel
-import com.github.pvtitov.simplewishlist.ui.model.WishlistScreenModel
+import com.github.pvtitov.simplewishlist.ui.model.LoginScreen
+import com.github.pvtitov.simplewishlist.ui.model.UsersScreen
+import com.github.pvtitov.simplewishlist.ui.model.WishlistScreen
 import com.github.pvtitov.simplewishlist.ui.theme.SimpleWishListTheme
 import com.github.pvtitov.simplewishlist.ui.viewmodel.MainViewModel
 
@@ -24,9 +24,8 @@ fun NavigationComposable(
             modifier = modifier
         ) {
             val screenModel by viewModel.currentScreenState.collectAsStateWithLifecycle()
-            val scr = screenModel
 
-            if (scr == LoginScreenModel) {
+            if (screenModel == LoginScreen) {
                 LoginComposable(
                     viewModel = viewModel
                 )
@@ -34,9 +33,16 @@ fun NavigationComposable(
                 HostComposable(
                     viewModel = viewModel
                 ) {
-                    when (scr) {
-                        is UsersScreenModel -> UserListComposable(scr.users)
-                        is WishlistScreenModel -> WishListComposable(scr.wishlist)
+                    when (screenModel) {
+                        is UsersScreen ->
+                            UserListComposable((screenModel as UsersScreen).users)
+
+                        is WishlistScreen ->
+                            WishListComposable(
+                                (screenModel as WishlistScreen).userData?.wishList
+                                    ?: emptyList()
+                            )
+
                         else -> Unit
                     }
                 }

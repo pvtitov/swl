@@ -44,8 +44,8 @@ fun HostComposable(
         mutableStateOf(true)
     }
 
-    val credentials by viewModel.credentialsState.collectAsStateWithLifecycle()
-    val isDataUpdated by viewModel.isDataUpdatedState.collectAsStateWithLifecycle()
+    val currentLogin by viewModel.currentLoginFlow.collectAsStateWithLifecycle("")
+    val isDataUpdated by viewModel.isDataUpdatedState.collectAsStateWithLifecycle(false)
 
     Box {
         Box(
@@ -78,7 +78,7 @@ fun HostComposable(
                 modifier = Modifier.padding(start = padding, top = padding)
             ) {
                 Text(
-                    text = credentials?.login ?: "",
+                    text = currentLogin ?: "",
                     modifier = Modifier
                         .background(
                             colorResource(id = R.color.white),
