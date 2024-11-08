@@ -87,41 +87,20 @@ fun HostComposable(
                 )
             }
         }
-        Column(
+        AnimatedVisibility(
+            visible = isControlsVisible,
             modifier = Modifier
                 .align(Alignment.TopEnd)
+                .padding(top = padding, end = padding)
         ) {
-            AnimatedVisibility(
-                visible = isControlsVisible,
-                modifier = Modifier
-                    .align(Alignment.End)
-                    .padding(top = padding, end = padding)
+            FloatingActionButton(
+                onClick = viewModel::onClickLogin,
             ) {
-                FloatingActionButton(
-                    onClick = viewModel::onClickLogin,
-                ) {
-                    Text(
-                        modifier = Modifier.padding(padding),
-                        text = stringResource(id = R.string.host_button_login)
-                    )
-                }
+                Text(
+                    modifier = Modifier.padding(padding),
+                    text = stringResource(id = R.string.host_button_login)
+                )
             }
-            AnimatedVisibility(
-                visible = isControlsVisible,
-                modifier = Modifier
-                    .align(Alignment.End)
-                    .padding(top = padding, end = padding)
-            ) {
-                FloatingActionButton(
-                    onClick = viewModel::onClickUsers,
-                ) {
-                    Text(
-                        modifier = Modifier.padding(padding),
-                        text = stringResource(id = R.string.host_button_friends)
-                    )
-                }
-            }
-
         }
         Column(
             modifier = Modifier
@@ -156,19 +135,52 @@ fun HostComposable(
                 }
             }
         }
-        AnimatedVisibility(
-            visible = isControlsVisible,
+        Column(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(end = padding, bottom = padding)
         ) {
-            FloatingActionButton(
-                onClick = viewModel::onClickNewWish,
+            AnimatedVisibility(
+                visible = isControlsVisible,
+                modifier = Modifier
+                    .align(Alignment.End)
+                    .padding(bottom = padding)
             ) {
-                Text(
-                    modifier = Modifier.padding(padding),
-                    text = stringResource(id = R.string.host_button_new_wish)
-                )
+                FloatingActionButton(
+                    onClick = viewModel::onClickNewWish,
+                ) {
+                    Text(
+                        modifier = Modifier.padding(padding),
+                        text = stringResource(id = R.string.host_button_new_wish)
+                    )
+                }
+            }
+            Row {
+                AnimatedVisibility(
+                    visible = isControlsVisible,
+                    modifier = Modifier.padding(end = padding)
+                ) {
+                    FloatingActionButton(
+                        onClick = viewModel::onClickUsers,
+                    ) {
+                        Text(
+                            modifier = Modifier.padding(padding),
+                            text = stringResource(id = R.string.host_button_friends)
+                        )
+                    }
+                }
+                AnimatedVisibility(
+                    visible = isControlsVisible
+                ) {
+                    FloatingActionButton(
+                        onClick = viewModel::onClickAddUser,
+                    ) {
+                        Text(
+                            modifier = Modifier.padding(padding),
+                            text = stringResource(id = R.string.host_button_add_friend)
+                        )
+                    }
+                }
             }
         }
     }

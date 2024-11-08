@@ -7,7 +7,7 @@ import com.github.pvtitov.simplewishlist.domain.data.Repository
 import com.github.pvtitov.simplewishlist.domain.model.Credentials
 import com.github.pvtitov.simplewishlist.domain.model.User
 import com.github.pvtitov.simplewishlist.domain.model.Wish
-import com.github.pvtitov.simplewishlist.domain.ui.model.UIError
+import com.github.pvtitov.simplewishlist.ui.model.Error
 import com.github.pvtitov.simplewishlist.ui.model.LoginScreen
 import com.github.pvtitov.simplewishlist.ui.model.Screen
 import com.github.pvtitov.simplewishlist.ui.model.UsersScreen
@@ -55,15 +55,16 @@ class MainViewModel : ViewModel() {
             _currentScreenState.emit(UsersScreen(getUsers()))
         }
         viewModelScope.launch(ioDispatcher) {
-            _downloadedDataStateFlow.collect {
-                updateScreen()
-            }
+            _downloadedDataStateFlow.collect(::updateScreen)
+        }
+        viewModelScope.launch(ioDispatcher) {
+            _updatedDataStateFlow.collect(::updateScreen)
         }
     }
 
     // Error state
     private val _errorState = MutableStateFlow(NO_ERROR)
-    val errorState: StateFlow<UIError> = _errorState.asStateFlow()
+    val errorState: StateFlow<Error> = _errorState.asStateFlow()
 
     // Data transfer
     private val _downloadedDataStateFlow = MutableStateFlow<Dto?>(null)
@@ -78,13 +79,12 @@ class MainViewModel : ViewModel() {
     }
         .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
-    private suspend fun updateScreen() {
-        val newData = _downloadedDataStateFlow.value
-        val newState = when (val oldData = _currentScreenState.value) {
+    private suspend fun updateScreen(data: Dto?) {
+        val newState = when (val oldState = _currentScreenState.value) {
             is UsersScreen -> UsersScreen(getUsers())
             is WishlistScreen ->
-                WishlistScreen(newData?.data?.find { it.user == oldData.userData?.user })
-            else -> oldData
+                WishlistScreen(data?.data?.find { it.user == oldState.userData?.user })
+            else -> oldState
         }
         _currentScreenState.emit(newState)
     }
@@ -96,7 +96,7 @@ class MainViewModel : ViewModel() {
                 _repository.export(data)
             }
             if (!isUploaded) {
-                _errorState.emit(UIError("Failed to upload user data"))
+                _errorState.emit(Error("Failed to upload user data"))
             }
         }
     }
@@ -110,7 +110,29 @@ class MainViewModel : ViewModel() {
                 _downloadedDataStateFlow.emit(data)
                 _updatedDataStateFlow.emit(null)
             } else {
-                _errorState.emit(UIError("Failed to download user data"))
+                _errorState.emit(Error("Failed to download user data"))
+            }
+        }
+    }
+
+    private fun downloadFriend() {
+        viewModelScope.launch(ioDispatcher) {
+            val newData = withContext(Dispatchers.Main) {
+                _repository.import()
+            }
+            val oldData = _updatedDataStateFlow.value
+                ?: _downloadedDataStateFlow.value
+            when {
+                oldData == null -> _errorState.emit(Error("Should load your user data first"))
+                newData == null -> _errorState.emit(Error("Failed to download friend's user data"))
+                else -> {
+                    val oldDataList = oldData.data
+                    val resultData = Dto(
+                        oldDataList + newData.data.filterNot { oldDataList.contains(it) },
+                        oldData.sender
+                    )
+                    _updatedDataStateFlow.emit(resultData)
+                }
             }
         }
     }
@@ -127,6 +149,12 @@ class MainViewModel : ViewModel() {
             _currentScreenState.emit(
                 UsersScreen(getUsers())
             )
+        }
+    }
+
+    fun onClickAddUser() {
+        viewModelScope.launch(ioDispatcher) {
+            downloadFriend()
         }
     }
 
@@ -170,7 +198,7 @@ class MainViewModel : ViewModel() {
     }
 
     private fun getUsers(): List<User> {
-        return _downloadedDataStateFlow.value
+        return (_updatedDataStateFlow.value ?: _downloadedDataStateFlow.value)
             ?.data
             ?.map { it.user }
             ?: emptyList()
@@ -185,6 +213,6 @@ class MainViewModel : ViewModel() {
     }
 
     companion object {
-        val NO_ERROR = UIError("")
+        val NO_ERROR = Error("")
     }
 }

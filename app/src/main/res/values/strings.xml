@@ -7,6 +7,7 @@
 
     <string name="host_button_login">Логин</string>
     <string name="host_button_friends">Друзья</string>
+    <string name="host_button_add_friend">+</string>
     <string name="host_button_import">Загрузить</string>
     <string name="host_button_export">Сохранить</string>
     <string name="host_button_new_wish">Создать</string>

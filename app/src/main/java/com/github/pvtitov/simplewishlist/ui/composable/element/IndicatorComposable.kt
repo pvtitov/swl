@@ -14,7 +14,8 @@ import com.github.pvtitov.simplewishlist.R
 @Preview
 @Composable
 fun IndicatorComposable(
-    isIgnited: Boolean = false
+    modifier: Modifier = Modifier,
+    isIgnited: Boolean = false,
 ) {
     val indicatorSize =
         dimensionResource(id = R.dimen.indicator_size)
