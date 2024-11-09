@@ -9,8 +9,10 @@ import com.github.pvtitov.simplewishlist.domain.model.User
 import com.github.pvtitov.simplewishlist.domain.model.Wish
 import com.github.pvtitov.simplewishlist.ui.model.Error
 import com.github.pvtitov.simplewishlist.ui.model.LoginScreen
+import com.github.pvtitov.simplewishlist.ui.model.NewWishScreen
 import com.github.pvtitov.simplewishlist.ui.model.Screen
 import com.github.pvtitov.simplewishlist.ui.model.UsersScreen
+import com.github.pvtitov.simplewishlist.ui.model.WishScreen
 import com.github.pvtitov.simplewishlist.ui.model.WishlistScreen
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -35,65 +37,40 @@ class MainViewModel : ViewModel() {
         ioDispatcher = dispatcher
     }
 
-    // Set up manual data source
-    private lateinit var _repository: Repository
+    private lateinit var _manualRepository: Repository
 
     fun setManualAccountDataSource(repository: Repository) {
-        this._repository = repository
+        this._manualRepository = repository
     }
 
-    // Login
     private val _credentialsState: MutableStateFlow<Credentials?> = MutableStateFlow(null)
     val currentLoginFlow: StateFlow<String?> = _credentialsState
         .map { it?.login }
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
-    fun onLogin(credentials: Credentials?) {
-        viewModelScope.launch(ioDispatcher) {
-            cleanUp()
-            _credentialsState.emit(credentials)
-            _currentScreenState.emit(UsersScreen(getUsers()))
-        }
-        viewModelScope.launch(ioDispatcher) {
-            _downloadedDataStateFlow.collect(::updateScreen)
-        }
-        viewModelScope.launch(ioDispatcher) {
-            _updatedDataStateFlow.collect(::updateScreen)
-        }
+    private suspend fun Credentials.isVerified(): Boolean {
+        return login.isNotEmpty()
     }
 
-    // Error state
-    private val _errorState = MutableStateFlow(NO_ERROR)
-    val errorState: StateFlow<Error> = _errorState.asStateFlow()
+    private val _errorState = MutableStateFlow<Error?>(null)
+    val errorState: StateFlow<Error?> = _errorState.asStateFlow()
 
-    // Data transfer
     private val _downloadedDataStateFlow = MutableStateFlow<Dto?>(null)
-    private val _updatedDataStateFlow = MutableStateFlow<Dto?>(null)
+    private val _modifiedDataStateFlow = MutableStateFlow<Dto?>(null)
 
-    // TODO check if can collect one emition from MutableStateFlow multiple times (multiple subscribes)
     val isDataUpdatedState: Flow<Boolean> = combine(
         _downloadedDataStateFlow,
-        _updatedDataStateFlow
+        _modifiedDataStateFlow
     ) { downloadedData, updatedData ->
         updatedData != null && updatedData != downloadedData
     }
         .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
-    private suspend fun updateScreen(data: Dto?) {
-        val newState = when (val oldState = _currentScreenState.value) {
-            is UsersScreen -> UsersScreen(getUsers())
-            is WishlistScreen ->
-                WishlistScreen(data?.data?.find { it.user == oldState.userData?.user })
-            else -> oldState
-        }
-        _currentScreenState.emit(newState)
-    }
-
     private fun upload() {
-        val data = _updatedDataStateFlow.value ?: return
+        val data = _modifiedDataStateFlow.value ?: return
         viewModelScope.launch(ioDispatcher) {
             val isUploaded = withContext(Dispatchers.Main) {
-                _repository.export(data)
+                _manualRepository.export(data)
             }
             if (!isUploaded) {
                 _errorState.emit(Error("Failed to upload user data"))
@@ -101,26 +78,23 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    private fun download() {
-        viewModelScope.launch(ioDispatcher) {
-            val data = withContext(Dispatchers.Main) {
-                _repository.import()
-            }
-            if (data != null) {
-                _downloadedDataStateFlow.emit(data)
-                _updatedDataStateFlow.emit(null)
-            } else {
-                _errorState.emit(Error("Failed to download user data"))
-            }
+    private suspend fun download(): Dto? {
+        val data = withContext(Dispatchers.Main) {
+            _manualRepository.import()
         }
+        if (data != null) {
+            _downloadedDataStateFlow.emit(data)
+            _modifiedDataStateFlow.emit(null)
+        }
+        return data
     }
 
     private fun downloadFriend() {
         viewModelScope.launch(ioDispatcher) {
             val newData = withContext(Dispatchers.Main) {
-                _repository.import()
+                _manualRepository.import()
             }
-            val oldData = _updatedDataStateFlow.value
+            val oldData = _modifiedDataStateFlow.value
                 ?: _downloadedDataStateFlow.value
             when {
                 oldData == null -> _errorState.emit(Error("Should load your user data first"))
@@ -131,64 +105,87 @@ class MainViewModel : ViewModel() {
                         oldDataList + newData.data.filterNot { oldDataList.contains(it) },
                         oldData.sender
                     )
-                    _updatedDataStateFlow.emit(resultData)
+                    _modifiedDataStateFlow.emit(resultData)
+                    onClickUsers()
                 }
             }
         }
     }
 
-    // UI state
     private val _currentScreenState: MutableStateFlow<Screen> =
         MutableStateFlow(LoginScreen)
     val currentScreenState: StateFlow<Screen> = _currentScreenState
         .stateIn(viewModelScope, SharingStarted.Eagerly, LoginScreen)
 
-    // UI callbacks
-    fun onClickUsers() {
+    fun onLogin(credentials: Credentials?) {
         viewModelScope.launch(ioDispatcher) {
-            _currentScreenState.emit(
-                UsersScreen(getUsers())
-            )
+            cleanUp()
+            if (credentials?.isVerified() == true) {
+                _credentialsState.emit(credentials)
+                onClickUsers()
+            }
+        }
+    }
+
+    private fun requireAuthorization(action: () -> Unit) {
+        if (_credentialsState.value != null) {
+            action()
+        }
+    }
+
+    fun onClickUsers() {
+        requireAuthorization {
+            viewModelScope.launch(ioDispatcher) {
+                (getCurrentData() ?: download())
+                    ?.data
+                    ?.map { it.user }
+                    ?.let { _currentScreenState.emit(UsersScreen(it)) }
+            }
         }
     }
 
     fun onClickAddUser() {
-        viewModelScope.launch(ioDispatcher) {
+        requireAuthorization {
             downloadFriend()
         }
     }
 
     fun onClickLogin() {
-        viewModelScope.launch(ioDispatcher) {
-            _currentScreenState.emit(
-                LoginScreen
-            )
+        requireAuthorization {
+            _currentScreenState.value = LoginScreen
         }
     }
 
     fun onClickDownload() {
-        viewModelScope.launch(ioDispatcher) {
-            download()
+        requireAuthorization {
+            viewModelScope.launch(ioDispatcher) {
+                download()
+                onClickUsers()
+            }
         }
     }
 
     fun onClickUpload() {
-        viewModelScope.launch(ioDispatcher) {
+        requireAuthorization {
             upload()
         }
     }
 
     fun onClickNewWish() {
-        // TODO
+        requireAuthorization {
+            _currentScreenState.value = NewWishScreen
+        }
     }
 
     fun onClickWish(wish: Wish) {
-        // TODO
+        requireAuthorization {
+            _currentScreenState.value = WishScreen(wish)
+        }
     }
 
     fun onClickUser(user: User) {
         viewModelScope.launch(ioDispatcher) {
-            val wishlist = _downloadedDataStateFlow.value
+            val wishlist = getCurrentData()
                 ?.data
                 ?.find { it.user == user }
             _currentScreenState.emit(
@@ -197,22 +194,18 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    private fun getUsers(): List<User> {
-        return (_updatedDataStateFlow.value ?: _downloadedDataStateFlow.value)
-            ?.data
-            ?.map { it.user }
-            ?: emptyList()
-    }
+    private fun getCurrentData(): Dto? =
+        _modifiedDataStateFlow.value ?: _downloadedDataStateFlow.value
 
     private suspend fun cleanUp() {
         _downloadedDataStateFlow.emit(null)
-        _updatedDataStateFlow.emit(null)
+        _modifiedDataStateFlow.emit(null)
         _currentScreenState.emit(LoginScreen)
         _credentialsState.emit(null)
-        _errorState.emit(NO_ERROR)
+        _errorState.emit(null)
     }
 
     companion object {
-        val NO_ERROR = Error("")
+        val TAG = MainViewModel::class.simpleName
     }
 }
