@@ -18,10 +18,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.github.pvtitov.simplewishlist.R
 import com.github.pvtitov.simplewishlist.domain.model.Wish
 import com.github.pvtitov.simplewishlist.ui.composable.element.ImageComposable
+import com.github.pvtitov.simplewishlist.ui.viewmodel.MainViewModel
 
 @Preview
 @Composable
-fun WishItemComposable(wish: Wish = PREVEIW_WISH) {
+fun WishItemComposable(
+    wish: Wish = PREVEIW_WISH,
+    viewModel: MainViewModel = MainViewModel()
+) {
     val paddingS = dimensionResource(id = R.dimen.padding_s)
     val paddingM = dimensionResource(id = R.dimen.padding_m)
     val imageSize = dimensionResource(id = R.dimen.wish_item_image_size)

@@ -35,12 +35,13 @@ fun NavigationComposable(
                 ) {
                     when (val screen = screenModel) {
                         is UsersScreen ->
-                            UserListComposable(screen.users)
+                            UserListComposable(screen.users, viewModel)
 
                         is WishlistScreen -> {
                             WishListComposable(
                                 screen.userData?.wishList
-                                    ?: emptyList()
+                                    ?: emptyList(),
+                                viewModel
                             )
                         }
 

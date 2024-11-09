@@ -21,7 +21,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -55,19 +54,21 @@ class MainViewModel : ViewModel() {
     private val _errorState = MutableStateFlow<Error?>(null)
     val errorState: StateFlow<Error?> = _errorState.asStateFlow()
 
-    private val _downloadedDataStateFlow = MutableStateFlow<Dto?>(null)
-    private val _modifiedDataStateFlow = MutableStateFlow<Dto?>(null)
+    private var downloadedData: Dto? = null
+        set(value) {
+            field = value
+        }
+    private var modifiedData: Dto? = null
+        set(value) {
+            field = value
+            _isDataUpdatedState.value = value != null && value != downloadedData
+        }
 
-    val isDataUpdatedState: Flow<Boolean> = combine(
-        _downloadedDataStateFlow,
-        _modifiedDataStateFlow
-    ) { downloadedData, updatedData ->
-        updatedData != null && updatedData != downloadedData
-    }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+    private val _isDataUpdatedState = MutableStateFlow(false)
+    val isDataUpdatedState: Flow<Boolean> = _isDataUpdatedState.asStateFlow()
 
     private fun upload() {
-        val data = _modifiedDataStateFlow.value ?: return
+        val data = modifiedData ?: return
         viewModelScope.launch(ioDispatcher) {
             val isUploaded = withContext(Dispatchers.Main) {
                 _manualRepository.export(data)
@@ -83,8 +84,8 @@ class MainViewModel : ViewModel() {
             _manualRepository.import()
         }
         if (data != null) {
-            _downloadedDataStateFlow.emit(data)
-            _modifiedDataStateFlow.emit(null)
+            downloadedData = data
+            modifiedData = data
         }
         return data
     }
@@ -94,8 +95,7 @@ class MainViewModel : ViewModel() {
             val newData = withContext(Dispatchers.Main) {
                 _manualRepository.import()
             }
-            val oldData = _modifiedDataStateFlow.value
-                ?: _downloadedDataStateFlow.value
+            val oldData = getCurrentData()
             when {
                 oldData == null -> _errorState.emit(Error("Should load your user data first"))
                 newData == null -> _errorState.emit(Error("Failed to download friend's user data"))
@@ -105,7 +105,7 @@ class MainViewModel : ViewModel() {
                         oldDataList + newData.data.filterNot { oldDataList.contains(it) },
                         oldData.sender
                     )
-                    _modifiedDataStateFlow.emit(resultData)
+                    modifiedData = resultData
                     onClickUsers()
                 }
             }
@@ -195,17 +195,12 @@ class MainViewModel : ViewModel() {
     }
 
     private fun getCurrentData(): Dto? =
-        _modifiedDataStateFlow.value ?: _downloadedDataStateFlow.value
+        modifiedData ?: downloadedData
 
     private suspend fun cleanUp() {
-        _downloadedDataStateFlow.emit(null)
-        _modifiedDataStateFlow.emit(null)
-        _currentScreenState.emit(LoginScreen)
+        modifiedData = null
+        downloadedData = null
         _credentialsState.emit(null)
         _errorState.emit(null)
-    }
-
-    companion object {
-        val TAG = MainViewModel::class.simpleName
     }
 }

@@ -5,16 +5,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.github.pvtitov.simplewishlist.domain.model.Wish
 import com.github.pvtitov.simplewishlist.ui.composable.item.WishItemComposable
+import com.github.pvtitov.simplewishlist.ui.viewmodel.MainViewModel
 
 @Preview
 @Composable
 fun WishListComposable(
     wishlist: List<Wish> = PREVIEW_WISH_LIST,
+    viewModel: MainViewModel = MainViewModel()
 ) {
     LazyColumn {
         wishlist.forEach { wish ->
             item {
-                WishItemComposable(wish)
+                WishItemComposable(wish, viewModel)
             }
         }
     }
