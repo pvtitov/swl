@@ -11,4 +11,13 @@
     <string name="host_button_import">Загрузить</string>
     <string name="host_button_export">Сохранить</string>
     <string name="host_button_new_wish">Создать</string>
+
+    <string name="wish_button_edit">Редактировать</string>
+    <string name="wish_button_delete">Удалить</string>
+    <string name="wish_button_confirm_delete">Подтвердить удаление</string>
+    <string name="wish_field_title">Название</string>
+    <string name="wish_field_description">Описание</string>
+    <string name="wish_field_image_url">Ссылка на картинку</string>
+    <string name="wish_field_url">Ссылка на желание</string>
+    <string name="wish_button_save">Сохранить</string>
 </resources>

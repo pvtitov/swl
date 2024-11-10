@@ -6,7 +6,10 @@ import com.github.pvtitov.simplewishlist.domain.data.Dto
 import com.github.pvtitov.simplewishlist.domain.data.Repository
 import com.github.pvtitov.simplewishlist.domain.model.Credentials
 import com.github.pvtitov.simplewishlist.domain.model.User
+import com.github.pvtitov.simplewishlist.domain.model.UserData
 import com.github.pvtitov.simplewishlist.domain.model.Wish
+import com.github.pvtitov.simplewishlist.ui.model.DeleteWishScreen
+import com.github.pvtitov.simplewishlist.ui.model.EditWishScreen
 import com.github.pvtitov.simplewishlist.ui.model.Error
 import com.github.pvtitov.simplewishlist.ui.model.LoginScreen
 import com.github.pvtitov.simplewishlist.ui.model.NewWishScreen
@@ -90,24 +93,23 @@ class MainViewModel : ViewModel() {
         return data
     }
 
-    private fun downloadFriend() {
-        viewModelScope.launch(ioDispatcher) {
-            val newData = withContext(Dispatchers.Main) {
-                _manualRepository.import()
-            }
-            val oldData = getCurrentData()
-            when {
-                oldData == null -> _errorState.emit(Error("Should load your user data first"))
-                newData == null -> _errorState.emit(Error("Failed to download friend's user data"))
-                else -> {
-                    val oldDataList = oldData.data
-                    val resultData = Dto(
-                        oldDataList + newData.data.filterNot { oldDataList.contains(it) },
-                        oldData.sender
-                    )
-                    modifiedData = resultData
-                    onClickUsers()
-                }
+    private suspend fun downloadFriend(): Dto? {
+        val newData = withContext(Dispatchers.Main) {
+            _manualRepository.import()
+        }
+        val oldData = getCurrentData()
+        return when {
+            oldData == null -> null
+            newData == null -> oldData
+            else -> {
+                val oldDataList = oldData.data
+                val resultData = Dto(
+                    oldDataList + newData.data.filterNot { oldDataList.contains(it) },
+                    oldData.sender
+                )
+                modifiedData = resultData
+
+                resultData
             }
         }
     }
@@ -117,42 +119,41 @@ class MainViewModel : ViewModel() {
     val currentScreenState: StateFlow<Screen> = _currentScreenState
         .stateIn(viewModelScope, SharingStarted.Eagerly, LoginScreen)
 
-    fun onLogin(credentials: Credentials?) {
+    private fun requireAuthorization(action: (Credentials) -> Unit) {
+        val credentials = _credentialsState.value
+        if (credentials != null) {
+            action(credentials)
+        }
+    }
+
+    fun onClickSubmitLogin(credentials: Credentials?) {
         viewModelScope.launch(ioDispatcher) {
             cleanUp()
             if (credentials?.isVerified() == true) {
                 _credentialsState.emit(credentials)
-                onClickUsers()
+                openUsersScreen()
             }
-        }
-    }
-
-    private fun requireAuthorization(action: () -> Unit) {
-        if (_credentialsState.value != null) {
-            action()
         }
     }
 
     fun onClickUsers() {
         requireAuthorization {
-            viewModelScope.launch(ioDispatcher) {
-                (getCurrentData() ?: download())
-                    ?.data
-                    ?.map { it.user }
-                    ?.let { _currentScreenState.emit(UsersScreen(it)) }
-            }
+            openUsersScreen()
         }
     }
 
     fun onClickAddUser() {
         requireAuthorization {
-            downloadFriend()
+            viewModelScope.launch(ioDispatcher) {
+                downloadFriend()
+                openUsersScreen()
+            }
         }
     }
 
     fun onClickLogin() {
         requireAuthorization {
-            _currentScreenState.value = LoginScreen
+            openLoginScreen()
         }
     }
 
@@ -160,7 +161,7 @@ class MainViewModel : ViewModel() {
         requireAuthorization {
             viewModelScope.launch(ioDispatcher) {
                 download()
-                onClickUsers()
+                openUsersScreen()
             }
         }
     }
@@ -173,14 +174,40 @@ class MainViewModel : ViewModel() {
 
     fun onClickNewWish() {
         requireAuthorization {
-            _currentScreenState.value = NewWishScreen
+            openNewWishScreen()
         }
+    }
+
+    fun onClickSaveNewWish(oldWish: Wish?, newWish: Wish) {
+        requireAuthorization { credentials ->
+            modifyWish(credentials, oldWish, newWish)
+        }
+        openUsersScreen()
     }
 
     fun onClickWish(wish: Wish) {
         requireAuthorization {
-            _currentScreenState.value = WishScreen(wish)
+            openWishScreen(wish)
         }
+    }
+
+    fun onClickEditWish(wish: Wish) {
+        requireAuthorization {
+            openEditWishScreen(wish)
+        }
+    }
+
+    fun onClickDeleteWish(wish: Wish) {
+        requireAuthorization {
+            openDeleteWishScreen(wish)
+        }
+    }
+
+    fun onClickConfirmDeleteWish(wish: Wish) {
+        requireAuthorization { credentials ->
+            modifyWish(credentials, wish, null)
+        }
+        openUsersScreen()
     }
 
     fun onClickUser(user: User) {
@@ -192,6 +219,105 @@ class MainViewModel : ViewModel() {
                 WishlistScreen(wishlist)
             )
         }
+    }
+
+    private fun openLoginScreen() {
+        _currentScreenState.value = LoginScreen
+    }
+
+    private fun openUsersScreen() {
+        viewModelScope.launch(ioDispatcher) {
+            val userList = getCurrentData()
+                ?.data
+                ?.map { it.user }
+                ?: emptyList()
+            _currentScreenState.emit(UsersScreen(userList))
+        }
+    }
+
+    private fun openWishScreen(wish: Wish) {
+        _currentScreenState.value = WishScreen(wish)
+    }
+
+    private fun openNewWishScreen() {
+        _currentScreenState.value = NewWishScreen
+    }
+
+    private fun openEditWishScreen(wish: Wish) {
+        _currentScreenState.value = EditWishScreen(wish)
+    }
+
+    private fun openDeleteWishScreen(wish: Wish) {
+        _currentScreenState.value = DeleteWishScreen(wish = wish)
+    }
+
+    private fun modifyWish(
+        credentials: Credentials,
+        oldWish: Wish?,
+        newWish: Wish?
+    ) {
+        val dto = getCurrentData() ?: return
+        val userDataList = dto.data
+        var currentUserDataMutable: UserData? = null
+        var currentUserDataIndexMutable: Int? = null
+        userDataList.forEachIndexed { index, userData ->
+            if (userData.user.login == credentials.login) {
+                currentUserDataMutable = userData
+                currentUserDataIndexMutable = index
+                return@forEachIndexed
+            }
+        }
+        val currentUserData = currentUserDataMutable ?: return
+        val currentUserDataIndex = currentUserDataIndexMutable ?: return
+
+        var oldWishIndexMutable: Int? = null
+        val oldWishList = currentUserData.wishList
+        oldWishList.forEachIndexed { index, wish ->
+            if (wish == oldWish) {
+                oldWishIndexMutable = index
+                return@forEachIndexed
+            }
+        }
+        val oldWishIndex = oldWishIndexMutable
+
+        val newWishList: List<Wish> = when {
+            newWish == null && oldWishIndex != null -> {
+                oldWishList.toMutableList().apply {
+                    removeAt(oldWishIndex)
+                }
+            }
+
+            newWish != null && oldWishIndex != null -> {
+                oldWishList.toMutableList().apply {
+                    removeAt(oldWishIndex)
+                    add(oldWishIndex, newWish)
+                }
+            }
+
+            newWish != null && oldWishIndex == null -> {
+                oldWishList + newWish
+            }
+
+            else -> oldWishList
+        }
+
+        val newUserData = UserData(
+            user = currentUserData.user,
+            wishList = newWishList,
+            promises = currentUserData.promises,
+            date = currentUserData.date,
+            checkSum = currentUserData.checkSum
+        )
+
+        val newUserDataList: List<UserData> = userDataList.toMutableList().apply {
+            removeAt(currentUserDataIndex)
+            add(
+                currentUserDataIndex,
+                newUserData
+            )
+        }
+        val newDto = Dto(newUserDataList, dto.sender)
+        modifiedData = newDto
     }
 
     private fun getCurrentData(): Dto? =

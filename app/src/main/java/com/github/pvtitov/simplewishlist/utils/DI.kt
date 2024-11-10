@@ -14,5 +14,5 @@ object DI {
         return ManualRepository(activity)
     }
 
-    val jsonParser: JsonParser<Dto> by lazy { JsonParser() }
+    val jsonParser: JsonParser by lazy { JsonParser() }
 }

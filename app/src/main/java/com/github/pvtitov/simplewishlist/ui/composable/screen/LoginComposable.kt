@@ -54,7 +54,7 @@ fun LoginComposable(
 
             Button(
                 onClick = {
-                    viewModel.onLogin(
+                    viewModel.onClickSubmitLogin(
                         Credentials(login.value, password.value)
                     )
                     login.value = ""

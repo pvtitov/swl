@@ -41,12 +41,12 @@ fun UserItemComposable(
             modifier = Modifier.padding(paddingM)
         ) {
             ImageComposable(
+                modifier = Modifier
+                    .width(imageSize)
+                    .height(imageSize),
                 imageUrl = user.imageUrl,
                 loadingPlaceholderId = R.drawable.ic_placeholder_24,
                 failurePlaceholderId = R.drawable.ic_placeholder_24,
-                modifier = Modifier
-                    .width(imageSize)
-                    .height(imageSize)
             )
             Column(
                 modifier = Modifier

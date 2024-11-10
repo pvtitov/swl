@@ -84,7 +84,7 @@ class ManualRepository(activity: ComponentActivity) : Repository {
                         }
                     }
                 }
-                jsonParser.fromJson(stringBuilder.toString(), Dto::class.java)
+                jsonParser.fromJson<Dto>(stringBuilder.toString())
             }.getOrNull()
         }
     }

@@ -1,20 +1,23 @@
 package com.github.pvtitov.simplewishlist.utils
 
-import com.google.gson.Gson
-import com.google.gson.JsonSyntaxException
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
-class JsonParser<T> {
-    private val gson = Gson()
+class JsonParser {
 
-    fun fromJson(json: String, type: Class<T>): T? {
+    inline fun <reified T> fromJson(json: String): T? {
         return try {
-            gson.fromJson(json, type)
-        } catch (e: JsonSyntaxException) {
+            Json.decodeFromString<T>(json)
+        } catch (e: Exception) {
             null
         }
     }
 
-    fun toJson(instance: T): String? {
-        return gson.toJson(instance)
+    inline fun <reified T> toJson(instance: T): String? {
+        return try {
+            Json.encodeToString(instance)
+        } catch (e: Exception) {
+            null
+        }
     }
 }

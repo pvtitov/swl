@@ -1,5 +1,6 @@
 package com.github.pvtitov.simplewishlist.ui.composable.item
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,6 +27,7 @@ fun WishItemComposable(
     wish: Wish = PREVEIW_WISH,
     viewModel: MainViewModel = MainViewModel()
 ) {
+    val paddingXS = dimensionResource(id = R.dimen.padding_xs)
     val paddingS = dimensionResource(id = R.dimen.padding_s)
     val paddingM = dimensionResource(id = R.dimen.padding_m)
     val imageSize = dimensionResource(id = R.dimen.wish_item_image_size)
@@ -33,18 +35,21 @@ fun WishItemComposable(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = dimensionResource(id = R.dimen.padding_xs))
+            .padding(bottom = paddingXS)
+            .clickable {
+                viewModel.onClickWish(wish)
+            }
     ) {
         Row(
             modifier = Modifier.padding(paddingM)
         ) {
             ImageComposable(
+                modifier = Modifier
+                    .width(imageSize)
+                    .height(imageSize),
                 imageUrl = wish.wishUrl,
                 loadingPlaceholderId = R.drawable.ic_placeholder_24,
                 failurePlaceholderId = R.drawable.ic_placeholder_24,
-                modifier = Modifier
-                    .width(imageSize)
-                    .height(imageSize)
             )
             Column(
                 modifier = Modifier
@@ -68,7 +73,7 @@ fun WishItemComposable(
                             .padding(top = paddingS),
                         text = AnnotatedString(url)
                     ) {
-
+                        // TODO open URL
                     }
                 }
             }

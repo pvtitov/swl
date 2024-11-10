@@ -36,7 +36,7 @@ class MainViewModelTest {
 
     @Test
     fun `right after successful login show empty users screen`() = runTest {
-        viewModel.onLogin(Credentials("", ""))
+        viewModel.onClickSubmitLogin(Credentials("", ""))
         advanceUntilIdle()
 
         assertEquals(UsersScreen(emptyList()), viewModel.currentScreenState.value)
@@ -44,7 +44,7 @@ class MainViewModelTest {
 
     @Test
     fun `when users button clicked and there is no data then show empty users screen`() = runTest {
-        viewModel.onLogin(Credentials("", ""))
+        viewModel.onClickSubmitLogin(Credentials("", ""))
         advanceUntilIdle()
 
         viewModel.onClickUsers()
@@ -54,7 +54,7 @@ class MainViewModelTest {
 
     @Test
     fun `when data successfully downloaded then show users screen with users on it`() = runTest {
-        viewModel.onLogin(Credentials("", ""))
+        viewModel.onClickSubmitLogin(Credentials("", ""))
         advanceUntilIdle()
 
         val repository = TestRepository()
