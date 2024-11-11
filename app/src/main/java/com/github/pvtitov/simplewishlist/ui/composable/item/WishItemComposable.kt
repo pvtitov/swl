@@ -7,13 +7,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import com.github.pvtitov.simplewishlist.R
@@ -68,13 +70,19 @@ fun WishItemComposable(
                     text = wish.description ?: ""
                 )
                 wish.wishUrl?.let { url ->
-                    ClickableText(
+                    Text(
                         modifier = Modifier
                             .padding(top = paddingS),
-                        text = AnnotatedString(url)
-                    ) {
-                        // TODO open URL
-                    }
+                        text = buildAnnotatedString {
+                            pushStyle(
+                                SpanStyle(color = Color.Blue)
+                            )
+                            pushLink(
+                                LinkAnnotation.Url(url)
+                            )
+                            append(url)
+                        }
+                    )
                 }
             }
         }
