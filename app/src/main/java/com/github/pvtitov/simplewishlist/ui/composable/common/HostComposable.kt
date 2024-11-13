@@ -135,45 +135,39 @@ fun HostComposable(
                 }
             }
         }
-        Column(
+        AnimatedVisibility(
+            visible = isControlsVisible,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = padding, bottom = padding)
         ) {
-            AnimatedVisibility(
-                visible = isControlsVisible,
+            Column(
                 modifier = Modifier
-                    .align(Alignment.End)
-                    .padding(bottom = padding)
+                    .align(Alignment.BottomEnd)
             ) {
                 FloatingActionButton(
                     onClick = viewModel::onClickNewWish,
+                    modifier = Modifier.padding(bottom = padding, end = padding)
                 ) {
                     Text(
                         modifier = Modifier.padding(padding),
                         text = stringResource(id = R.string.host_button_new_wish)
                     )
                 }
-            }
-            Row {
-                AnimatedVisibility(
-                    visible = isControlsVisible,
-                    modifier = Modifier.padding(end = padding)
+                Row(
+                    modifier = Modifier.align(Alignment.End)
                 ) {
                     FloatingActionButton(
                         onClick = viewModel::onClickUsers,
+                        modifier = Modifier.padding(bottom = padding, end = padding)
                     ) {
                         Text(
                             modifier = Modifier.padding(padding),
                             text = stringResource(id = R.string.host_button_friends)
                         )
                     }
-                }
-                AnimatedVisibility(
-                    visible = isControlsVisible
-                ) {
                     FloatingActionButton(
                         onClick = viewModel::onClickAddUser,
+                        modifier = Modifier.padding(bottom = padding, end = padding)
                     ) {
                         Text(
                             modifier = Modifier.padding(padding),
