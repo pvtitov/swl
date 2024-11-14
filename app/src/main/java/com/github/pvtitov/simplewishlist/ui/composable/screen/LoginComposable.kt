@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,7 +41,10 @@ fun LoginComposable(
                 value = login.value,
                 onValueChange = { value -> login.value = value },
                 label = {
-                    Text(text = stringResource(id = R.string.login_field_login))
+                    Text(
+                        text = stringResource(id = R.string.login_field_login),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                 }
             )
 
@@ -48,7 +52,10 @@ fun LoginComposable(
                 value = password.value,
                 onValueChange = { value -> password.value = value },
                 label = {
-                    Text(text = stringResource(id = R.string.login_field_password))
+                    Text(
+                        text = stringResource(id = R.string.login_field_password),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                 }
             )
 
@@ -64,7 +71,10 @@ fun LoginComposable(
                     .align(Alignment.CenterHorizontally)
                     .padding(top = dimensionResource(id = R.dimen.padding_l)),
             ) {
-                Text(text = stringResource(id = R.string.login_button_login))
+                Text(
+                    text = stringResource(id = R.string.login_button_login),
+                    style = MaterialTheme.typography.titleMedium
+                )
             }
         }
     }

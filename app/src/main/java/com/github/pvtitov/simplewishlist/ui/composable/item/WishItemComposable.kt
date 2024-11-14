@@ -7,10 +7,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.LinkAnnotation
@@ -27,17 +30,20 @@ import com.github.pvtitov.simplewishlist.ui.viewmodel.MainViewModel
 @Composable
 fun WishItemComposable(
     wish: Wish = PREVEIW_WISH,
-    viewModel: MainViewModel = MainViewModel()
+    viewModel: MainViewModel = MainViewModel(),
+    isFirst: Boolean = false
 ) {
-    val paddingXS = dimensionResource(id = R.dimen.padding_xs)
     val paddingS = dimensionResource(id = R.dimen.padding_s)
     val paddingM = dimensionResource(id = R.dimen.padding_m)
+    val paddingL = dimensionResource(id = R.dimen.padding_l)
     val imageSize = dimensionResource(id = R.dimen.wish_item_image_size)
+
+    val topPadding = if (isFirst) paddingL else paddingM
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = paddingXS)
+            .padding(start = paddingM, top = topPadding, end = paddingM)
             .clickable {
                 viewModel.onClickWish(wish)
             }
@@ -48,7 +54,8 @@ fun WishItemComposable(
             ImageComposable(
                 modifier = Modifier
                     .width(imageSize)
-                    .height(imageSize),
+                    .height(imageSize)
+                    .clip(CircleShape),
                 imageUrl = wish.wishUrl,
                 loadingPlaceholderId = R.drawable.ic_placeholder_24,
                 failurePlaceholderId = R.drawable.ic_placeholder_24,
@@ -61,18 +68,21 @@ fun WishItemComposable(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     text = wish.title,
+                    style = MaterialTheme.typography.titleMedium
                 )
                 Text(
                     modifier = Modifier
                         .padding(top = paddingS),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
-                    text = wish.description ?: ""
+                    text = wish.description ?: "",
+                    style = MaterialTheme.typography.bodySmall
                 )
                 wish.wishUrl?.let { url ->
                     Text(
                         modifier = Modifier
                             .padding(top = paddingS),
+                        style = MaterialTheme.typography.labelSmall,
                         text = buildAnnotatedString {
                             pushStyle(
                                 SpanStyle(color = Color.Blue)

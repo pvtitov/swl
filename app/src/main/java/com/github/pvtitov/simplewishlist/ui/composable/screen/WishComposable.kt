@@ -6,12 +6,15 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
@@ -45,7 +48,8 @@ fun WishComposable(
                 modifier = Modifier
                     .padding(bottom = paddingL)
                     .aspectRatio(1f)
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .clip(CircleShape),
                 imageUrl = wish.wishUrl,
                 loadingPlaceholderId = R.drawable.ic_placeholder_24,
                 failurePlaceholderId = R.drawable.ic_placeholder_24,
@@ -55,12 +59,13 @@ fun WishComposable(
                     .padding(bottom = paddingS),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                text = wish.title
+                text = wish.title,
+                style = MaterialTheme.typography.displayLarge
             )
             Row(
                 modifier = Modifier
                     .align(Alignment.End)
-                    .padding(bottom = paddingS)
+                    .padding(bottom = paddingL)
             ) {
                 Button(
                     modifier = Modifier
@@ -69,20 +74,27 @@ fun WishComposable(
                         viewModel.onClickEditWish(wish)
                     }
                 ) {
-                    Text(text = stringResource(id = R.string.wish_button_edit))
+                    Text(
+                        text = stringResource(id = R.string.wish_button_edit),
+                        style = MaterialTheme.typography.titleMedium
+                    )
                 }
                 Button(
                     onClick = {
                         viewModel.onClickDeleteWish(wish)
                     }
                 ) {
-                    Text(text = stringResource(id = R.string.wish_button_delete))
+                    Text(
+                        text = stringResource(id = R.string.wish_button_delete),
+                        style = MaterialTheme.typography.titleMedium
+                    )
                 }
             }
             Text(
                 modifier = Modifier
                     .padding(bottom = paddingS),
-                text = wish.description ?: ""
+                text = wish.description ?: "",
+                style = MaterialTheme.typography.bodyLarge
             )
             wish.wishUrl?.let { url ->
                 Text(
@@ -94,7 +106,8 @@ fun WishComposable(
                             LinkAnnotation.Url(url)
                         )
                         append(url)
-                    }
+                    },
+                    style = MaterialTheme.typography.labelLarge
                 )
             }
         }

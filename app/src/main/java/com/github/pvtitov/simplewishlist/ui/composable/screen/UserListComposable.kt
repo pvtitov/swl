@@ -1,8 +1,12 @@
 package com.github.pvtitov.simplewishlist.ui.composable.screen
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.github.pvtitov.simplewishlist.R
 import com.github.pvtitov.simplewishlist.domain.model.User
 import com.github.pvtitov.simplewishlist.ui.composable.item.UserItemComposable
 import com.github.pvtitov.simplewishlist.ui.viewmodel.MainViewModel
@@ -14,9 +18,9 @@ fun UserListComposable(
     viewModel: MainViewModel = MainViewModel()
 ) {
     LazyColumn {
-        users.forEach { user ->
+        users.forEachIndexed { index, user ->
             item {
-                UserItemComposable(user, viewModel)
+                UserItemComposable(user, viewModel, index == 0)
             }
         }
     }

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -21,7 +22,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,7 +38,8 @@ fun HostComposable(
     viewModel: MainViewModel = MainViewModel(),
     contentComposable: @Composable () -> Unit = PREVIEW_CONTENT_COMPOSABLE,
 ) {
-    val padding = dimensionResource(id = R.dimen.padding_l)
+    val paddingS = dimensionResource(id = R.dimen.padding_s)
+    val paddingL = dimensionResource(id = R.dimen.padding_l)
 
     var isControlsVisible by remember {
         mutableStateOf(true)
@@ -69,21 +70,27 @@ fun HostComposable(
         Row {
             AnimatedVisibility(
                 visible = isControlsVisible,
-                modifier = Modifier.padding(start = padding, top = padding)
+                modifier = Modifier
+                    .padding(start = paddingL, top = paddingL)
+                    .align(Alignment.CenterVertically)
             ) {
                 IndicatorComposable(isIgnited = isDataUpdated)
             }
             AnimatedVisibility(
                 visible = isControlsVisible,
-                modifier = Modifier.padding(start = padding, top = padding)
+                modifier = Modifier
+                    .padding(start = paddingL, top = paddingL)
+                    .align(Alignment.CenterVertically)
             ) {
                 Text(
                     text = currentLogin ?: "",
+                    style = MaterialTheme.typography.labelLarge,
                     modifier = Modifier
                         .background(
-                            colorResource(id = R.color.white),
+                            color = MaterialTheme.colorScheme.secondaryContainer,
                             shape = RoundedCornerShape(dimensionResource(id = R.dimen.corner_radius))
                         )
+                        .padding(paddingS)
                 )
             }
         }
@@ -91,13 +98,13 @@ fun HostComposable(
             visible = isControlsVisible,
             modifier = Modifier
                 .align(Alignment.TopEnd)
-                .padding(top = padding, end = padding)
+                .padding(top = paddingL, end = paddingL)
         ) {
             FloatingActionButton(
                 onClick = viewModel::onClickLogin,
             ) {
                 Text(
-                    modifier = Modifier.padding(padding),
+                    modifier = Modifier.padding(paddingL),
                     text = stringResource(id = R.string.host_button_login)
                 )
             }
@@ -109,13 +116,13 @@ fun HostComposable(
             AnimatedVisibility(
                 visible = isControlsVisible,
                 modifier = Modifier
-                    .padding(start = padding, bottom = padding)
+                    .padding(start = paddingL, bottom = paddingL)
             ) {
                 FloatingActionButton(
                     onClick = viewModel::onClickDownload,
                 ) {
                     Text(
-                        modifier = Modifier.padding(padding),
+                        modifier = Modifier.padding(paddingL),
                         text = stringResource(id = R.string.host_button_import)
                     )
                 }
@@ -123,13 +130,13 @@ fun HostComposable(
             AnimatedVisibility(
                 visible = isControlsVisible,
                 modifier = Modifier
-                    .padding(start = padding, bottom = padding)
+                    .padding(start = paddingL, bottom = paddingL)
             ) {
                 FloatingActionButton(
                     onClick = viewModel::onClickUpload,
                 ) {
                     Text(
-                        modifier = Modifier.padding(padding),
+                        modifier = Modifier.padding(paddingL),
                         text = stringResource(id = R.string.host_button_export)
                     )
                 }
@@ -146,10 +153,12 @@ fun HostComposable(
             ) {
                 FloatingActionButton(
                     onClick = viewModel::onClickNewWish,
-                    modifier = Modifier.padding(bottom = padding, end = padding)
+                    modifier = Modifier
+                        .padding(bottom = paddingL, end = paddingL)
+                        .align(Alignment.End)
                 ) {
                     Text(
-                        modifier = Modifier.padding(padding),
+                        modifier = Modifier.padding(paddingL),
                         text = stringResource(id = R.string.host_button_new_wish)
                     )
                 }
@@ -158,19 +167,19 @@ fun HostComposable(
                 ) {
                     FloatingActionButton(
                         onClick = viewModel::onClickUsers,
-                        modifier = Modifier.padding(bottom = padding, end = padding)
+                        modifier = Modifier.padding(bottom = paddingL, end = paddingL)
                     ) {
                         Text(
-                            modifier = Modifier.padding(padding),
+                            modifier = Modifier.padding(paddingL),
                             text = stringResource(id = R.string.host_button_friends)
                         )
                     }
                     FloatingActionButton(
                         onClick = viewModel::onClickAddUser,
-                        modifier = Modifier.padding(bottom = padding, end = padding)
+                        modifier = Modifier.padding(bottom = paddingL, end = paddingL)
                     ) {
                         Text(
-                            modifier = Modifier.padding(padding),
+                            modifier = Modifier.padding(paddingL),
                             text = stringResource(id = R.string.host_button_add_friend)
                         )
                     }

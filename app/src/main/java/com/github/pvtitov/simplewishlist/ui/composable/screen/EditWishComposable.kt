@@ -1,15 +1,17 @@
 package com.github.pvtitov.simplewishlist.ui.composable.screen
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
@@ -40,11 +42,13 @@ fun EditWishComposable(
         mutableStateOf(wish?.wishUrl ?: "")
     }
 
-    Card {
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
         Column(
             modifier = Modifier
                 .padding(paddingL)
-                .fillMaxSize(),
+                .align(Alignment.Center),
         ) {
             OutlinedTextField(
                 modifier = Modifier
@@ -52,7 +56,10 @@ fun EditWishComposable(
                 value = wishTitle.value,
                 onValueChange = { value -> wishTitle.value = value },
                 label = {
-                    Text(text = stringResource(id = R.string.wish_field_title))
+                    Text(
+                        text = stringResource(id = R.string.wish_field_title),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                 }
             )
 
@@ -62,8 +69,12 @@ fun EditWishComposable(
                 value = wishDescription.value,
                 onValueChange = { value -> wishDescription.value = value },
                 label = {
-                    Text(text = stringResource(id = R.string.wish_field_description))
-                }
+                    Text(
+                        text = stringResource(id = R.string.wish_field_description),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                },
+                minLines = 5
             )
 
             OutlinedTextField(
@@ -72,7 +83,10 @@ fun EditWishComposable(
                 value = wishImageUrl.value,
                 onValueChange = { value -> wishImageUrl.value = value },
                 label = {
-                    Text(text = stringResource(id = R.string.wish_field_image_url))
+                    Text(
+                        text = stringResource(id = R.string.wish_field_image_url),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                 }
             )
 
@@ -82,7 +96,10 @@ fun EditWishComposable(
                 value = wishUrl.value,
                 onValueChange = { value -> wishUrl.value = value },
                 label = {
-                    Text(text = stringResource(id = R.string.wish_field_url))
+                    Text(
+                        text = stringResource(id = R.string.wish_field_url),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                 }
             )
             Button(
@@ -96,9 +113,15 @@ fun EditWishComposable(
                             wishUrl = wishUrl.value
                         )
                     )
-                }
+                },
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(top = paddingL)
             ) {
-                Text(text = stringResource(id = R.string.wish_button_save))
+                Text(
+                    text = stringResource(id = R.string.wish_button_save),
+                    style = MaterialTheme.typography.titleMedium
+                )
             }
         }
     }
