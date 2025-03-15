@@ -18,7 +18,7 @@ import com.github.pvtitov.simplewishlist.ui.model.LoginScreen
 import com.github.pvtitov.simplewishlist.ui.model.NewWishScreen
 import com.github.pvtitov.simplewishlist.ui.model.UsersScreen
 import com.github.pvtitov.simplewishlist.ui.model.WishScreen
-import com.github.pvtitov.simplewishlist.ui.model.WishlistScreen
+import com.github.pvtitov.simplewishlist.ui.model.WishListScreen
 import com.github.pvtitov.simplewishlist.ui.theme.SimpleWishListTheme
 import com.github.pvtitov.simplewishlist.ui.viewmodel.MainViewModel
 
@@ -45,9 +45,9 @@ fun NavigationComposable(
                         is UsersScreen ->
                             UserListComposable(screen.users, viewModel)
 
-                        is WishlistScreen -> {
+                        is WishListScreen -> {
                             WishListComposable(
-                                screen.userData?.wishList
+                                screen.wishList?.wishes
                                     ?: emptyList(),
                                 viewModel
                             )

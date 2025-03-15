@@ -1,13 +1,8 @@
 package com.github.pvtitov.simplewishlist.ui.composable.screen
 
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.tooling.preview.Preview
-import com.github.pvtitov.simplewishlist.R
 import com.github.pvtitov.simplewishlist.domain.model.Wish
 import com.github.pvtitov.simplewishlist.ui.composable.item.WishItemComposable
 import com.github.pvtitov.simplewishlist.ui.viewmodel.MainViewModel

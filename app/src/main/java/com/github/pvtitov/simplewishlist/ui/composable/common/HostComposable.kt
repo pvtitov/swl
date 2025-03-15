@@ -46,7 +46,7 @@ fun HostComposable(
     }
 
     val currentLogin by viewModel.currentLoginFlow.collectAsStateWithLifecycle("")
-    val isDataUpdated by viewModel.isDataUpdatedState.collectAsStateWithLifecycle(false)
+    val isDataUpdated by viewModel.isWishListUpdatedState.collectAsStateWithLifecycle(false)
 
     Box {
         Box(
@@ -162,27 +162,32 @@ fun HostComposable(
                         text = stringResource(id = R.string.host_button_new_wish)
                     )
                 }
+                FloatingActionButton(
+                    onClick = viewModel::onClickUsers,
+                    modifier = Modifier
+                        .padding(bottom = paddingL, end = paddingL)
+                        .align(Alignment.End)
+                ) {
+                    Text(
+                        modifier = Modifier.padding(paddingL),
+                        text = stringResource(id = R.string.host_button_friends)
+                    )
+                }
+                FloatingActionButton(
+                    onClick = viewModel::onClickWishList,
+                    modifier = Modifier
+                        .padding(bottom = paddingL, end = paddingL)
+                        .align(Alignment.End)
+                ) {
+                    Text(
+                        modifier = Modifier.padding(paddingL),
+                        text = stringResource(id = R.string.host_button_wish_list)
+                    )
+                }
                 Row(
                     modifier = Modifier.align(Alignment.End)
                 ) {
-                    FloatingActionButton(
-                        onClick = viewModel::onClickUsers,
-                        modifier = Modifier.padding(bottom = paddingL, end = paddingL)
-                    ) {
-                        Text(
-                            modifier = Modifier.padding(paddingL),
-                            text = stringResource(id = R.string.host_button_friends)
-                        )
-                    }
-                    FloatingActionButton(
-                        onClick = viewModel::onClickAddUser,
-                        modifier = Modifier.padding(bottom = paddingL, end = paddingL)
-                    ) {
-                        Text(
-                            modifier = Modifier.padding(paddingL),
-                            text = stringResource(id = R.string.host_button_add_friend)
-                        )
-                    }
+
                 }
             }
         }

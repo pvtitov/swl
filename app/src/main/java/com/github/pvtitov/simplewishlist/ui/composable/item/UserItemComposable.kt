@@ -62,7 +62,7 @@ fun UserItemComposable(
                 Text(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    text = user.name,
+                    text = user.name ?: user.login,
                     style = MaterialTheme.typography.titleMedium
                 )
                 Text(

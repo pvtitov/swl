@@ -2,12 +2,11 @@ package com.github.pvtitov.simplewishlist.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.pvtitov.simplewishlist.domain.data.Dto
 import com.github.pvtitov.simplewishlist.domain.data.Repository
 import com.github.pvtitov.simplewishlist.domain.model.Credentials
 import com.github.pvtitov.simplewishlist.domain.model.User
-import com.github.pvtitov.simplewishlist.domain.model.UserData
 import com.github.pvtitov.simplewishlist.domain.model.Wish
+import com.github.pvtitov.simplewishlist.domain.model.WishList
 import com.github.pvtitov.simplewishlist.ui.model.DeleteWishScreen
 import com.github.pvtitov.simplewishlist.ui.model.EditWishScreen
 import com.github.pvtitov.simplewishlist.ui.model.Error
@@ -15,8 +14,8 @@ import com.github.pvtitov.simplewishlist.ui.model.LoginScreen
 import com.github.pvtitov.simplewishlist.ui.model.NewWishScreen
 import com.github.pvtitov.simplewishlist.ui.model.Screen
 import com.github.pvtitov.simplewishlist.ui.model.UsersScreen
+import com.github.pvtitov.simplewishlist.ui.model.WishListScreen
 import com.github.pvtitov.simplewishlist.ui.model.WishScreen
-import com.github.pvtitov.simplewishlist.ui.model.WishlistScreen
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -28,20 +27,14 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.jetbrains.annotations.TestOnly
 
 class MainViewModel : ViewModel() {
 
     private var ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 
-    @TestOnly
-    fun setIoDispatcher(dispatcher: CoroutineDispatcher) {
-        ioDispatcher = dispatcher
-    }
+    private lateinit var _manualRepository: Repository<WishList>
 
-    private lateinit var _manualRepository: Repository
-
-    fun setManualAccountDataSource(repository: Repository) {
+    fun setManualAccountDataSource(repository: Repository<WishList>) {
         this._manualRepository = repository
     }
 
@@ -50,68 +43,49 @@ class MainViewModel : ViewModel() {
         .map { it?.login }
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
-    private suspend fun Credentials.isVerified(): Boolean {
+    private fun Credentials.isVerified(): Boolean {
         return login.isNotEmpty()
     }
 
     private val _errorState = MutableStateFlow<Error?>(null)
     val errorState: StateFlow<Error?> = _errorState.asStateFlow()
 
-    private var downloadedData: Dto? = null
+    private var downloadedWishList: WishList? = null
         set(value) {
             field = value
+            modifiedWishList = value
         }
-    private var modifiedData: Dto? = null
+    private var modifiedWishList: WishList? = null
         set(value) {
             field = value
-            _isDataUpdatedState.value = value != null && value != downloadedData
+            _isWishListUpdatedState.value = value != null && value != downloadedWishList
         }
 
-    private val _isDataUpdatedState = MutableStateFlow(false)
-    val isDataUpdatedState: Flow<Boolean> = _isDataUpdatedState.asStateFlow()
+    private val _isWishListUpdatedState = MutableStateFlow(false)
+    val isWishListUpdatedState: Flow<Boolean> = _isWishListUpdatedState.asStateFlow()
 
     private fun upload() {
-        val data = modifiedData ?: return
+        val data = modifiedWishList ?: return
         viewModelScope.launch(ioDispatcher) {
             val isUploaded = withContext(Dispatchers.Main) {
-                _manualRepository.export(data)
+                _manualRepository.upload(data)
             }
-            if (!isUploaded) {
+            if (isUploaded) {
+                downloadedWishList = modifiedWishList
+            } else {
                 _errorState.emit(Error("Failed to upload user data"))
             }
         }
     }
 
-    private suspend fun download(): Dto? {
+    private suspend fun download(): WishList? {
         val data = withContext(Dispatchers.Main) {
-            _manualRepository.import()
+            _manualRepository.download()
         }
         if (data != null) {
-            downloadedData = data
-            modifiedData = data
+            downloadedWishList = data
         }
         return data
-    }
-
-    private suspend fun downloadFriend(): Dto? {
-        val newData = withContext(Dispatchers.Main) {
-            _manualRepository.import()
-        }
-        val oldData = getCurrentData()
-        return when {
-            oldData == null -> null
-            newData == null -> oldData
-            else -> {
-                val oldDataList = oldData.data
-                val resultData = Dto(
-                    oldDataList + newData.data.filterNot { oldDataList.contains(it) },
-                    oldData.sender
-                )
-                modifiedData = resultData
-
-                resultData
-            }
-        }
     }
 
     private val _currentScreenState: MutableStateFlow<Screen> =
@@ -131,7 +105,7 @@ class MainViewModel : ViewModel() {
             cleanUp()
             if (credentials?.isVerified() == true) {
                 _credentialsState.emit(credentials)
-                openUsersScreen()
+                openWishListScreen()
             }
         }
     }
@@ -142,11 +116,10 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun onClickAddUser() {
+    fun onClickWishList() {
         requireAuthorization {
             viewModelScope.launch(ioDispatcher) {
-                downloadFriend()
-                openUsersScreen()
+                openWishListScreen()
             }
         }
     }
@@ -161,7 +134,7 @@ class MainViewModel : ViewModel() {
         requireAuthorization {
             viewModelScope.launch(ioDispatcher) {
                 download()
-                openUsersScreen()
+                openWishListScreen()
             }
         }
     }
@@ -179,10 +152,10 @@ class MainViewModel : ViewModel() {
     }
 
     fun onClickSaveNewWish(oldWish: Wish?, newWish: Wish) {
-        requireAuthorization { credentials ->
-            modifyWish(credentials, oldWish, newWish)
+        requireAuthorization {
+            modifyWish(oldWish, newWish)
         }
-        openUsersScreen()
+        openWishListScreen()
     }
 
     fun onClickWish(wish: Wish) {
@@ -204,20 +177,16 @@ class MainViewModel : ViewModel() {
     }
 
     fun onClickConfirmDeleteWish(wish: Wish) {
-        requireAuthorization { credentials ->
-            modifyWish(credentials, wish, null)
+        requireAuthorization {
+            modifyWish(wish, null)
         }
-        openUsersScreen()
+        openWishListScreen()
     }
 
     fun onClickUser(user: User) {
         viewModelScope.launch(ioDispatcher) {
-            val wishlist = getCurrentData()
-                ?.data
-                ?.find { it.user == user }
-            _currentScreenState.emit(
-                WishlistScreen(wishlist)
-            )
+            val wishlist = TODO("load user $user wishlist")
+            _currentScreenState.emit(WishListScreen(wishlist))
         }
     }
 
@@ -225,11 +194,16 @@ class MainViewModel : ViewModel() {
         _currentScreenState.value = LoginScreen
     }
 
+    private fun openWishListScreen() {
+        viewModelScope.launch(ioDispatcher) {
+            _currentScreenState.emit(WishListScreen(modifiedWishList))
+        }
+    }
+
     private fun openUsersScreen() {
         viewModelScope.launch(ioDispatcher) {
-            val userList = getCurrentData()
-                ?.data
-                ?.map { it.user }
+            val userList = modifiedWishList
+                ?.friends
                 ?: emptyList()
             _currentScreenState.emit(UsersScreen(userList))
         }
@@ -252,81 +226,47 @@ class MainViewModel : ViewModel() {
     }
 
     private fun modifyWish(
-        credentials: Credentials,
         oldWish: Wish?,
         newWish: Wish?
     ) {
-        val dto = getCurrentData() ?: return
-        val userDataList = dto.data
-        var currentUserDataMutable: UserData? = null
-        var currentUserDataIndexMutable: Int? = null
-        userDataList.forEachIndexed { index, userData ->
-            if (userData.user.login == credentials.login) {
-                currentUserDataMutable = userData
-                currentUserDataIndexMutable = index
-                return@forEachIndexed
-            }
-        }
-        val currentUserData = currentUserDataMutable ?: return
-        val currentUserDataIndex = currentUserDataIndexMutable ?: return
-
-        var oldWishIndexMutable: Int? = null
-        val oldWishList = currentUserData.wishList
-        oldWishList.forEachIndexed { index, wish ->
-            if (wish == oldWish) {
-                oldWishIndexMutable = index
-                return@forEachIndexed
-            }
-        }
-        val oldWishIndex = oldWishIndexMutable
+        val oldWishList = modifiedWishList?.wishes ?: emptyList()
+        val oldWishIndex = oldWishList.indexOf(oldWish)
 
         val newWishList: List<Wish> = when {
-            newWish == null && oldWishIndex != null -> {
+            newWish == null && oldWishIndex != INDEX_NOT_FOUND -> {
                 oldWishList.toMutableList().apply {
                     removeAt(oldWishIndex)
                 }
             }
 
-            newWish != null && oldWishIndex != null -> {
+            newWish != null && oldWishIndex != INDEX_NOT_FOUND -> {
                 oldWishList.toMutableList().apply {
                     removeAt(oldWishIndex)
                     add(oldWishIndex, newWish)
                 }
             }
 
-            newWish != null && oldWishIndex == null -> {
+            newWish != null && oldWishIndex == INDEX_NOT_FOUND -> {
                 oldWishList + newWish
             }
 
             else -> oldWishList
         }
 
-        val newUserData = UserData(
-            user = currentUserData.user,
-            wishList = newWishList,
-            promises = currentUserData.promises,
-            date = currentUserData.date,
-            checkSum = currentUserData.checkSum
+        modifiedWishList = WishList(
+            friends = modifiedWishList?.friends ?: emptyList(),
+            wishes = newWishList,
+            promises = modifiedWishList?.promises ?: emptyMap()
         )
-
-        val newUserDataList: List<UserData> = userDataList.toMutableList().apply {
-            removeAt(currentUserDataIndex)
-            add(
-                currentUserDataIndex,
-                newUserData
-            )
-        }
-        val newDto = Dto(newUserDataList, dto.sender)
-        modifiedData = newDto
     }
 
-    private fun getCurrentData(): Dto? =
-        modifiedData ?: downloadedData
-
     private suspend fun cleanUp() {
-        modifiedData = null
-        downloadedData = null
+        downloadedWishList = null
         _credentialsState.emit(null)
         _errorState.emit(null)
+    }
+
+    companion object {
+        private const val INDEX_NOT_FOUND = -1
     }
 }

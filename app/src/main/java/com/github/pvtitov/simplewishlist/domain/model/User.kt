@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class User(
     val login: String,
-    val name: String,
-    val imageUrl: String? = null
+    val name: String? = null,
+    val imageUrl: String? = null,
+    val wishList: WishList? = null
 )

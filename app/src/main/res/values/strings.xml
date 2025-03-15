@@ -3,14 +3,14 @@
 
     <string name="login_field_login">Логин</string>
     <string name="login_field_password">Пароль</string>
-    <string name="login_button_login">Логин</string>
+    <string name="login_button_login">Войти</string>
 
-    <string name="host_button_login">Логин</string>
+    <string name="host_button_login">Сменить пользователя</string>
     <string name="host_button_friends">Друзья</string>
-    <string name="host_button_add_friend">+</string>
-    <string name="host_button_import">Загрузить</string>
-    <string name="host_button_export">Сохранить</string>
-    <string name="host_button_new_wish">Создать</string>
+    <string name="host_button_wish_list">Мой вишлист</string>
+    <string name="host_button_import">Импорт файла</string>
+    <string name="host_button_export">Сохранить изменения</string>
+    <string name="host_button_new_wish">Новое желание</string>
 
     <string name="wish_button_edit">Редактировать</string>
     <string name="wish_button_delete">Удалить</string>

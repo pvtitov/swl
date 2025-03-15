@@ -1,7 +1,8 @@
 package com.github.pvtitov.simplewishlist.domain.data
 
-interface Repository {
-    suspend fun import(): Dto?
+interface Repository<T> {
 
-    suspend fun export(data: Dto): Boolean
+    suspend fun download(): T?
+
+    suspend fun upload(data: T): Boolean
 }
