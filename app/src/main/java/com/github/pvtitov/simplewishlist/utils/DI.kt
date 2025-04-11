@@ -2,25 +2,22 @@ package com.github.pvtitov.simplewishlist.utils
 
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.Lifecycle
-import com.github.pvtitov.simplewishlist.data.WishListManualRepository
-import com.github.pvtitov.simplewishlist.domain.data.Repository
-import com.github.pvtitov.simplewishlist.domain.model.WishList
+import com.github.pvtitov.simplewishlist.data.GoogleDiskRepository
+import com.github.pvtitov.simplewishlist.data.ManualRepository
 
 object DI {
-    // Call before activity is created.
-    // That is so because of using manual data source and activity result api requirements.
-    fun getWishListRepository(activity: ComponentActivity): Repository<WishList> {
-        check(activity.lifecycle.currentState == Lifecycle.State.INITIALIZED)
-        return WishListManualRepository(activity)
-    }
 
-    private lateinit var activity: ComponentActivity
+    lateinit var manualRepository: ManualRepository
+        private set
 
-    fun prepareManualRepository(activity: ComponentActivity) {
-
-    }
+    val googleDiskRepository: GoogleDiskRepository by lazy { GoogleDiskRepository() }
 
     val jsonParser: JsonParser by lazy { JsonParser() }
 
-//    val wishListRepository
+    // Call before activity is created.
+    // That is so because of using manual data source and activity result api requirements.
+    fun init(activity: ComponentActivity) {
+        check(activity.lifecycle.currentState == Lifecycle.State.INITIALIZED)
+        manualRepository = ManualRepository(activity)
+    }
 }

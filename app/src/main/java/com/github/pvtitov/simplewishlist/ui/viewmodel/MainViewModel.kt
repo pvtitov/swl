@@ -1,8 +1,8 @@
 package com.github.pvtitov.simplewishlist.ui.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.pvtitov.simplewishlist.domain.data.Repository
 import com.github.pvtitov.simplewishlist.domain.model.Credentials
 import com.github.pvtitov.simplewishlist.domain.model.User
 import com.github.pvtitov.simplewishlist.domain.model.Wish
@@ -16,6 +16,7 @@ import com.github.pvtitov.simplewishlist.ui.model.Screen
 import com.github.pvtitov.simplewishlist.ui.model.UsersScreen
 import com.github.pvtitov.simplewishlist.ui.model.WishListScreen
 import com.github.pvtitov.simplewishlist.ui.model.WishScreen
+import com.github.pvtitov.simplewishlist.utils.DI
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -32,11 +33,8 @@ class MainViewModel : ViewModel() {
 
     private var ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 
-    private lateinit var _manualRepository: Repository<WishList>
-
-    fun setManualAccountDataSource(repository: Repository<WishList>) {
-        this._manualRepository = repository
-    }
+    private val _manualRepository by lazy { DI.manualRepository }
+    private val _googleDiskRepository by lazy { DI.googleDiskRepository }
 
     private val _credentialsState: MutableStateFlow<Credentials?> = MutableStateFlow(null)
     val currentLoginFlow: StateFlow<String?> = _credentialsState
@@ -64,11 +62,12 @@ class MainViewModel : ViewModel() {
     private val _isWishListUpdatedState = MutableStateFlow(false)
     val isWishListUpdatedState: Flow<Boolean> = _isWishListUpdatedState.asStateFlow()
 
-    private fun upload() {
+    private fun upload(context: Context) {
         val data = modifiedWishList ?: return
         viewModelScope.launch(ioDispatcher) {
             val isUploaded = withContext(Dispatchers.Main) {
-                _manualRepository.upload(data)
+                //_manualRepository.upload(data)
+                _googleDiskRepository.upload(context, data)
             }
             if (isUploaded) {
                 downloadedWishList = modifiedWishList
@@ -139,9 +138,9 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun onClickUpload() {
+    fun onClickUpload(context: Context) {
         requireAuthorization {
-            upload()
+            upload(context)
         }
     }
 

@@ -5,7 +5,8 @@ import android.net.Uri
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
-import com.github.pvtitov.simplewishlist.domain.data.Repository
+import com.github.pvtitov.simplewishlist.domain.model.WishList
+import com.github.pvtitov.simplewishlist.utils.DI
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -17,9 +18,11 @@ import java.io.FileOutputStream
 import java.io.InputStreamReader
 import kotlin.coroutines.resume
 
-abstract class BaseManualRepository<T>(activity: ComponentActivity) : Repository<T> {
+class ManualRepository(activity: ComponentActivity) {
+
+    private val jsonParser = DI.jsonParser
     private val coroutineScope = activity.lifecycleScope
-    private var downloadContinuation: CancellableContinuation<T?>? = null
+    private var downloadContinuation: CancellableContinuation<WishList?>? = null
     private val downloadLauncher = activity.registerForActivityResult(
         ActivityResultContracts.OpenDocument()
     ) { uri ->
@@ -31,7 +34,7 @@ abstract class BaseManualRepository<T>(activity: ComponentActivity) : Repository
         }
     }
 
-    private var dataToUpload: T? = null
+    private var dataToUpload: WishList? = null
     private var uploadContinuation: CancellableContinuation<Boolean>? = null
     private val uploadLauncher = activity.registerForActivityResult(
         ActivityResultContracts.CreateDocument(JSON_MIME_TYPE)
@@ -46,7 +49,7 @@ abstract class BaseManualRepository<T>(activity: ComponentActivity) : Repository
         }
     }
 
-    override suspend fun download(): T? =
+    suspend fun download(): WishList? =
         suspendCancellableCoroutine { continuation ->
             downloadContinuation = continuation
             downloadLauncher.launch(arrayOf(JSON_MIME_TYPE))
@@ -56,8 +59,8 @@ abstract class BaseManualRepository<T>(activity: ComponentActivity) : Repository
             }
         }
 
-    override suspend fun upload(data: T): Boolean {
-        dataToUpload = data
+    suspend fun upload(wishlist: WishList): Boolean {
+        dataToUpload = wishlist
         return suspendCancellableCoroutine { continuation ->
             uploadContinuation = continuation
             uploadLauncher.launch("")
@@ -71,7 +74,7 @@ abstract class BaseManualRepository<T>(activity: ComponentActivity) : Repository
     private suspend fun readFromFile(
         uri: Uri,
         contentResolver: ContentResolver
-    ): T? {
+    ): WishList? {
         return withContext(Dispatchers.IO) {
             runCatching {
                 val stringBuilder = StringBuilder()
@@ -89,11 +92,13 @@ abstract class BaseManualRepository<T>(activity: ComponentActivity) : Repository
         }
     }
 
-    abstract fun deserialize(json: String): T?
+    private fun deserialize(json: String): WishList? {
+        return jsonParser.fromJson(json)
+    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private suspend fun writeToFile(
-        data: T,
+        data: WishList,
         uri: Uri,
         contentResolver: ContentResolver
     ): Boolean {
@@ -111,7 +116,9 @@ abstract class BaseManualRepository<T>(activity: ComponentActivity) : Repository
         }
     }
 
-    abstract fun serialize(data: T): String?
+    private fun serialize(data: WishList): String? {
+        return jsonParser.toJson(data)
+    }
 }
 
 private const val JSON_MIME_TYPE = "application/json"
