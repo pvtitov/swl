@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,6 +32,8 @@ import com.github.pvtitov.simplewishlist.R
 import com.github.pvtitov.simplewishlist.ui.composable.element.IndicatorComposable
 import com.github.pvtitov.simplewishlist.ui.composable.screen.WishListComposable
 import com.github.pvtitov.simplewishlist.ui.viewmodel.MainViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 @Preview
@@ -50,6 +53,8 @@ fun HostComposable(
     val isDataUpdated by viewModel.isWishListUpdatedState.collectAsStateWithLifecycle(false)
 
     val context = LocalContext.current
+
+    val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
 
     Box {
         Box(
@@ -122,7 +127,11 @@ fun HostComposable(
                     .padding(start = paddingL, bottom = paddingL)
             ) {
                 FloatingActionButton(
-                    onClick = viewModel::onClickDownload,
+                    onClick = {
+                        coroutineScope.launch {
+                            viewModel.onClickDownload()
+                        }
+                    },
                 ) {
                     Text(
                         modifier = Modifier.padding(paddingL),
@@ -137,7 +146,9 @@ fun HostComposable(
             ) {
                 FloatingActionButton(
                     onClick = {
-                        viewModel.onClickUpload(context)
+                        coroutineScope.launch {
+                            viewModel.onClickUpload(context)
+                        }
                     },
                 ) {
                     Text(
@@ -157,7 +168,11 @@ fun HostComposable(
                     .align(Alignment.BottomEnd)
             ) {
                 FloatingActionButton(
-                    onClick = viewModel::onClickNewWish,
+                    onClick = {
+                        coroutineScope.launch {
+                            viewModel.onClickNewWish()
+                        }
+                    },
                     modifier = Modifier
                         .padding(bottom = paddingL, end = paddingL)
                         .align(Alignment.End)
@@ -168,7 +183,11 @@ fun HostComposable(
                     )
                 }
                 FloatingActionButton(
-                    onClick = viewModel::onClickUsers,
+                    onClick = {
+                        coroutineScope.launch {
+                            viewModel.onClickUsers()
+                        }
+                    },
                     modifier = Modifier
                         .padding(bottom = paddingL, end = paddingL)
                         .align(Alignment.End)
@@ -179,7 +198,11 @@ fun HostComposable(
                     )
                 }
                 FloatingActionButton(
-                    onClick = viewModel::onClickWishList,
+                    onClick = {
+                        coroutineScope.launch {
+                            viewModel.onClickWishList()
+                        }
+                    },
                     modifier = Modifier
                         .padding(bottom = paddingL, end = paddingL)
                         .align(Alignment.End)

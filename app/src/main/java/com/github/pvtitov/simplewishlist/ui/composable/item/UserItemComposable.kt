@@ -21,13 +21,15 @@ import com.github.pvtitov.simplewishlist.R
 import com.github.pvtitov.simplewishlist.domain.model.User
 import com.github.pvtitov.simplewishlist.ui.composable.element.ImageComposable
 import com.github.pvtitov.simplewishlist.ui.viewmodel.MainViewModel
+import kotlinx.coroutines.CoroutineScope
 
 @Preview
 @Composable
 fun UserItemComposable(
     user: User = PREVEIW_USER,
     viewModel: MainViewModel = MainViewModel(),
-    isFirst: Boolean = false
+    isFirst: Boolean = false,
+    coroutineScope: CoroutineScope
 ) {
     val paddingS = dimensionResource(id = R.dimen.padding_s)
     val paddingM = dimensionResource(id = R.dimen.padding_m)

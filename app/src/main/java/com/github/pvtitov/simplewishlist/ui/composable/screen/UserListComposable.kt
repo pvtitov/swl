@@ -10,12 +10,14 @@ import com.github.pvtitov.simplewishlist.R
 import com.github.pvtitov.simplewishlist.domain.model.User
 import com.github.pvtitov.simplewishlist.ui.composable.item.UserItemComposable
 import com.github.pvtitov.simplewishlist.ui.viewmodel.MainViewModel
+import kotlinx.coroutines.CoroutineScope
 
 @Preview
 @Composable
 fun UserListComposable(
     users: List<User> = PREVIEW_USER_LIST,
-    viewModel: MainViewModel = MainViewModel()
+    viewModel: MainViewModel = MainViewModel(),
+    coroutineScope: CoroutineScope
 ) {
     LazyColumn {
         users.forEachIndexed { index, user ->

@@ -19,19 +19,17 @@ import com.github.pvtitov.simplewishlist.ui.model.WishScreen
 import com.github.pvtitov.simplewishlist.utils.DI
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class MainViewModel : ViewModel() {
 
-    private var ioDispatcher: CoroutineDispatcher = Dispatchers.IO
+    internal var ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 
     private val _manualRepository by lazy { DI.manualRepository }
     private val _googleDiskRepository by lazy { DI.googleDiskRepository }
@@ -60,20 +58,19 @@ class MainViewModel : ViewModel() {
         }
 
     private val _isWishListUpdatedState = MutableStateFlow(false)
-    val isWishListUpdatedState: Flow<Boolean> = _isWishListUpdatedState.asStateFlow()
+    val isWishListUpdatedState: StateFlow<Boolean> = _isWishListUpdatedState.asStateFlow()
 
-    private fun upload(context: Context) {
+    private suspend fun upload(context: Context) {
         val data = modifiedWishList ?: return
-        viewModelScope.launch(ioDispatcher) {
-            val isUploaded = withContext(Dispatchers.Main) {
-                //_manualRepository.upload(data)
-                _googleDiskRepository.upload(context, data)
-            }
-            if (isUploaded) {
-                downloadedWishList = modifiedWishList
-            } else {
-                _errorState.emit(Error("Failed to upload user data"))
-            }
+
+        val isUploaded = withContext(Dispatchers.Main) {
+            //_manualRepository.upload(data)
+            _googleDiskRepository.upload(context, data)
+        }
+        if (isUploaded) {
+            downloadedWishList = modifiedWishList
+        } else {
+            _errorState.emit(Error("Failed to upload user data"))
         }
     }
 
@@ -92,100 +89,93 @@ class MainViewModel : ViewModel() {
     val currentScreenState: StateFlow<Screen> = _currentScreenState
         .stateIn(viewModelScope, SharingStarted.Eagerly, LoginScreen)
 
-    private fun requireAuthorization(action: (Credentials) -> Unit) {
+    private suspend fun requireAuthorization(action: suspend (Credentials) -> Unit) {
         val credentials = _credentialsState.value
         if (credentials != null) {
             action(credentials)
+        } else {
+            error("Authorization required")
         }
     }
 
-    fun onClickSubmitLogin(credentials: Credentials?) {
-        viewModelScope.launch(ioDispatcher) {
-            cleanUp()
-            if (credentials?.isVerified() == true) {
-                _credentialsState.emit(credentials)
-                openWishListScreen()
-            }
+    suspend fun onClickSubmitLogin(credentials: Credentials?) {
+        cleanUp()
+        if (credentials?.isVerified() == true) {
+            _credentialsState.emit(credentials)
+            openWishListScreen()
         }
     }
 
-    fun onClickUsers() {
+    suspend fun onClickUsers() {
         requireAuthorization {
             openUsersScreen()
         }
     }
 
-    fun onClickWishList() {
+    suspend fun onClickWishList() {
         requireAuthorization {
-            viewModelScope.launch(ioDispatcher) {
-                openWishListScreen()
-            }
+            openWishListScreen()
         }
     }
 
     fun onClickLogin() {
+        openLoginScreen()
+    }
+
+    suspend fun onClickDownload() {
         requireAuthorization {
-            openLoginScreen()
+            download()
+            openWishListScreen()
         }
     }
 
-    fun onClickDownload() {
-        requireAuthorization {
-            viewModelScope.launch(ioDispatcher) {
-                download()
-                openWishListScreen()
-            }
-        }
-    }
-
-    fun onClickUpload(context: Context) {
+    suspend fun onClickUpload(context: Context) {
         requireAuthorization {
             upload(context)
         }
     }
 
-    fun onClickNewWish() {
+    suspend fun onClickNewWish() {
         requireAuthorization {
             openNewWishScreen()
         }
     }
 
-    fun onClickSaveNewWish(oldWish: Wish?, newWish: Wish) {
+    suspend fun onClickSaveNewWish(oldWish: Wish?, newWish: Wish) {
         requireAuthorization {
             modifyWish(oldWish, newWish)
         }
         openWishListScreen()
     }
 
-    fun onClickWish(wish: Wish) {
+    suspend fun onClickWish(wish: Wish) {
         requireAuthorization {
             openWishScreen(wish)
         }
     }
 
-    fun onClickEditWish(wish: Wish) {
+    suspend fun onClickEditWish(wish: Wish) {
         requireAuthorization {
             openEditWishScreen(wish)
         }
     }
 
-    fun onClickDeleteWish(wish: Wish) {
+    suspend fun onClickDeleteWish(wish: Wish) {
         requireAuthorization {
             openDeleteWishScreen(wish)
         }
     }
 
-    fun onClickConfirmDeleteWish(wish: Wish) {
+    suspend fun onClickConfirmDeleteWish(wish: Wish) {
         requireAuthorization {
             modifyWish(wish, null)
         }
         openWishListScreen()
     }
 
-    fun onClickUser(user: User) {
-        viewModelScope.launch(ioDispatcher) {
-            val wishlist = TODO("load user $user wishlist")
-            _currentScreenState.emit(WishListScreen(wishlist))
+    suspend fun onClickUser(user: User) {
+        requireAuthorization {
+            openUserWishListScreen(user)
         }
     }
 
@@ -193,19 +183,15 @@ class MainViewModel : ViewModel() {
         _currentScreenState.value = LoginScreen
     }
 
-    private fun openWishListScreen() {
-        viewModelScope.launch(ioDispatcher) {
-            _currentScreenState.emit(WishListScreen(modifiedWishList))
-        }
+    private suspend fun openWishListScreen() {
+        _currentScreenState.emit(WishListScreen(modifiedWishList))
     }
 
-    private fun openUsersScreen() {
-        viewModelScope.launch(ioDispatcher) {
-            val userList = modifiedWishList
-                ?.friends
-                ?: emptyList()
-            _currentScreenState.emit(UsersScreen(userList))
-        }
+    private suspend fun openUsersScreen() {
+        val userList = modifiedWishList
+            ?.friends
+            ?: emptyList()
+        _currentScreenState.emit(UsersScreen(userList))
     }
 
     private fun openWishScreen(wish: Wish) {
@@ -222,6 +208,11 @@ class MainViewModel : ViewModel() {
 
     private fun openDeleteWishScreen(wish: Wish) {
         _currentScreenState.value = DeleteWishScreen(wish = wish)
+    }
+
+    private suspend fun openUserWishListScreen(user: User) {
+        val wishlist = TODO("load user $user wishlist")
+        _currentScreenState.emit(WishListScreen(wishlist))
     }
 
     private fun modifyWish(
