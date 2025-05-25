@@ -22,7 +22,7 @@ fun UserListComposable(
     LazyColumn {
         users.forEachIndexed { index, user ->
             item {
-                UserItemComposable(user, viewModel, index == 0)
+                UserItemComposable(user, viewModel, index == 0, coroutineScope)
             }
         }
     }

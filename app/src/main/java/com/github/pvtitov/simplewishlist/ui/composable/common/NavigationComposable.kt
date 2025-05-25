@@ -21,11 +21,13 @@ import com.github.pvtitov.simplewishlist.ui.model.WishScreen
 import com.github.pvtitov.simplewishlist.ui.model.WishListScreen
 import com.github.pvtitov.simplewishlist.ui.theme.SimpleWishListTheme
 import com.github.pvtitov.simplewishlist.ui.viewmodel.MainViewModel
+import kotlinx.coroutines.CoroutineScope
 
 @Composable
 fun NavigationComposable(
     viewModel: MainViewModel,
-    modifier: Modifier
+    modifier: Modifier,
+    coroutineScope: CoroutineScope
 ) {
     SimpleWishListTheme {
         Surface(
@@ -35,7 +37,8 @@ fun NavigationComposable(
 
             if (screenModel == LoginScreen) {
                 LoginComposable(
-                    viewModel = viewModel
+                    viewModel = viewModel,
+                    coroutineScope = coroutineScope
                 )
             } else {
                 HostComposable(
@@ -43,30 +46,31 @@ fun NavigationComposable(
                 ) {
                     when (val screen = screenModel) {
                         is UsersScreen ->
-                            UserListComposable(screen.users, viewModel)
+                            UserListComposable(screen.users, viewModel, coroutineScope)
 
                         is WishListScreen -> {
                             WishListComposable(
                                 screen.wishList?.wishes
                                     ?: emptyList(),
-                                viewModel
+                                viewModel,
+                                coroutineScope = coroutineScope
                             )
                         }
 
                         is WishScreen -> {
-                            WishComposable(screen.wish, viewModel)
+                            WishComposable(screen.wish, viewModel, coroutineScope)
                         }
 
                         is EditWishScreen -> {
-                            EditWishComposable(screen.wish, viewModel)
+                            EditWishComposable(screen.wish, viewModel, coroutineScope)
                         }
 
                         is DeleteWishScreen -> {
-                            DeleteWishComposable(screen.wish, viewModel)
+                            DeleteWishComposable(screen.wish, viewModel, coroutineScope)
                         }
 
                         is NewWishScreen -> {
-                            NewWishComposable(viewModel)
+                            NewWishComposable(viewModel, coroutineScope)
                         }
 
                         else -> Unit

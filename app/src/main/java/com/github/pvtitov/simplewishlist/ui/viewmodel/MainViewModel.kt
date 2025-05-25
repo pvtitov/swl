@@ -1,8 +1,10 @@
 package com.github.pvtitov.simplewishlist.ui.viewmodel
 
 import android.content.Context
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.github.pvtitov.noserver.NoServer
 import com.github.pvtitov.simplewishlist.domain.model.Credentials
 import com.github.pvtitov.simplewishlist.domain.model.User
 import com.github.pvtitov.simplewishlist.domain.model.Wish
@@ -131,7 +133,10 @@ class MainViewModel : ViewModel() {
 
     suspend fun onClickUpload(context: Context) {
         requireAuthorization {
-            upload(context)
+//            upload(context)
+            NoServer.upload(context, "test data") { result ->
+                Toast.makeText(context, "result is $result", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 

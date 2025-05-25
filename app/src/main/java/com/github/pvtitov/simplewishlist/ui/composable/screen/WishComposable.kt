@@ -28,12 +28,15 @@ import com.github.pvtitov.simplewishlist.R
 import com.github.pvtitov.simplewishlist.domain.model.Wish
 import com.github.pvtitov.simplewishlist.ui.composable.element.ImageComposable
 import com.github.pvtitov.simplewishlist.ui.viewmodel.MainViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @Preview
 @Composable
 fun WishComposable(
     wish: Wish = PREVIEW_WISH,
     viewModel: MainViewModel = MainViewModel(),
+    coroutineScope: CoroutineScope
 ) {
     val paddingS = dimensionResource(id = R.dimen.padding_s)
     val paddingL = dimensionResource(id = R.dimen.padding_l)
@@ -71,7 +74,9 @@ fun WishComposable(
                     modifier = Modifier
                         .padding(end = paddingS),
                     onClick = {
-                        viewModel.onClickEditWish(wish)
+                        coroutineScope.launch {
+                            viewModel.onClickEditWish(wish)
+                        }
                     }
                 ) {
                     Text(
@@ -81,7 +86,9 @@ fun WishComposable(
                 }
                 Button(
                     onClick = {
-                        viewModel.onClickDeleteWish(wish)
+                        coroutineScope.launch {
+                            viewModel.onClickDeleteWish(wish)
+                        }
                     }
                 ) {
                     Text(

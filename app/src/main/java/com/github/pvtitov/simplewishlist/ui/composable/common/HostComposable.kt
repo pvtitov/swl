@@ -223,5 +223,5 @@ fun HostComposable(
 }
 
 val PREVIEW_CONTENT_COMPOSABLE: @Composable () -> Unit = {
-    WishListComposable()
+//    WishListComposable()
 }

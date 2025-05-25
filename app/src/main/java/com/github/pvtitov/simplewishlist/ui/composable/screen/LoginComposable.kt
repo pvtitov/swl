@@ -18,11 +18,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.github.pvtitov.simplewishlist.R
 import com.github.pvtitov.simplewishlist.domain.model.Credentials
 import com.github.pvtitov.simplewishlist.ui.viewmodel.MainViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @Preview
 @Composable
 fun LoginComposable(
-    viewModel: MainViewModel = MainViewModel()
+    viewModel: MainViewModel = MainViewModel(),
+    coroutineScope: CoroutineScope
 ) {
     val login = rememberSaveable {
         mutableStateOf("")
@@ -61,11 +64,14 @@ fun LoginComposable(
 
             Button(
                 onClick = {
-                    viewModel.onClickSubmitLogin(
-                        Credentials(login.value, password.value)
-                    )
-                    login.value = ""
-                    password.value = ""
+                    coroutineScope.launch {
+                        viewModel.onClickSubmitLogin(
+                            Credentials(login.value, password.value)
+                        )
+                        login.value = ""
+                        password.value = ""
+                    }
+
                 },
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)

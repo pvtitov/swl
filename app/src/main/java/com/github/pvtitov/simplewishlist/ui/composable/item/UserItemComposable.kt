@@ -22,6 +22,7 @@ import com.github.pvtitov.simplewishlist.domain.model.User
 import com.github.pvtitov.simplewishlist.ui.composable.element.ImageComposable
 import com.github.pvtitov.simplewishlist.ui.viewmodel.MainViewModel
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @Preview
 @Composable
@@ -42,7 +43,9 @@ fun UserItemComposable(
             .fillMaxWidth()
             .padding(start = paddingM, top = topPadding, end = paddingM)
             .clickable {
-                viewModel.onClickUser(user)
+                coroutineScope.launch {
+                    viewModel.onClickUser(user)
+                }
             }
     ) {
         Row(
