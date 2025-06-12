@@ -13,6 +13,7 @@ object NoServer {
 
     private val jsonParser = JsonParser()
 
+    private var dataToUpload: JsonString? = null
     private var onUploadCallback: ((Boolean) -> Unit)? = null
 
     /**
@@ -71,12 +72,21 @@ object NoServer {
          */
     }
 
+    fun save(data: JsonString) {
+        dataToUpload = data
+    }
+
     fun upload(
         context: Context,
-        data: JsonString,
         callback: (Boolean) -> Unit
     ) {
         onUploadCallback = callback
+
+        val data = dataToUpload
+        if (data == null) {
+            callback.invoke(false)
+            return
+        }
 
         val intent = Intent(context, NoServerActivity::class.java)
             .putExtra(EXTRA_INPUT_DATA, data.value)
