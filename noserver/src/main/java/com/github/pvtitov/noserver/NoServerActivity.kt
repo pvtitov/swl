@@ -23,12 +23,8 @@ class NoServerActivity : Activity() {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == REQUEST_CODE) {
-            val result = if (resultCode == RESULT_OK) {
-                "OK"
-            } else {
-                null
-            }
-            NoServer.onUpload(result)
+            val isSuccess = resultCode == RESULT_OK
+            NoServer.onUpload(isSuccess)
             finish()
         }
     }

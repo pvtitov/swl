@@ -133,10 +133,10 @@ class MainViewModel : ViewModel() {
 
     suspend fun onClickUpload(context: Context) {
         requireAuthorization {
-//            upload(context)
-            NoServer.upload(context, "test data") { result ->
-                Toast.makeText(context, "result is $result", Toast.LENGTH_SHORT).show()
-            }
+            upload(context)
+//            NoServer.upload(context, "test data") { result ->
+//                Toast.makeText(context, "result is $result", Toast.LENGTH_SHORT).show()
+//            }
         }
     }
 
