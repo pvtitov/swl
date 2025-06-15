@@ -3,6 +3,8 @@ package com.github.pvtitov.noserver
 import android.content.Context
 import android.content.Intent
 import com.github.pvtitov.noserver.NoServerActivity.Companion.EXTRA_INPUT_DATA
+import okhttp3.OkHttpClient
+import okhttp3.Request
 
 object NoServer {
     private const val JSON_MIME_TYPE = "text/json"
@@ -11,7 +13,8 @@ object NoServer {
     private lateinit var myUserName: String
     private val userData = mutableMapOf<String, UserData>()
 
-    private val jsonParser = JsonParser()
+    private val jsonParser by lazy { JsonParser() }
+    private val okHttpClient by lazy { OkHttpClient() }
 
     private var dataToUpload: JsonString? = null
     private var onUploadCallback: ((Boolean) -> Unit)? = null
@@ -65,11 +68,11 @@ object NoServer {
         share(context, jsonString)
     }
 
-    inline fun <reified T> download(userName: String): T {
-        TODO("Not implemented")
-        /*
-         *  1.
-         */
+    fun download(userName: String): JsonString? {
+        val userData = userData[userName] ?: return null
+
+        val fileUrl = getFileUrl(userData.folderUrl, userData.fileName)
+
     }
 
     fun save(data: JsonString) {
@@ -107,6 +110,31 @@ object NoServer {
 
         val shareIntent = Intent.createChooser(sendIntent, title)
         context.startActivity(shareIntent)
+    }
+
+    private fun getFileUrl(folderUrl: String, fileName: String): String? {
+        val request = Request.Builder()
+            .url(folderUrl)
+            .build()
+
+        val response = try {
+            okHttpClient.newCall(request).execute()
+        } catch (e: Throwable) {
+            return null
+        }
+
+        val rawTextResponse = response.use { r ->
+            r.body?.string()
+        } ?: return null
+
+        return parseForFileName(rawTextResponse, fileName)
+    }
+
+    private fun parseForFileName(rawTestResponse: String, fileName: String): String {
+        // "FILE_ID",["FOLDER_ID"],"FILE_NAME"
+            Regex("\"[^\"]*\",\\[\"[^\"]*\"],\"$fileName\"")
+            .find(rawTestResponse)
+                .groupValues
     }
 
     data class UserData(
