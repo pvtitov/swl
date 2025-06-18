@@ -8,6 +8,7 @@ import okhttp3.Request
 
 object NoServer {
     private const val JSON_MIME_TYPE = "text/json"
+    private const val FILE_URL_TEMPLATE = "https://drive.google.com/file/d/%s"
 
     // TODO data storage
     private lateinit var myUserName: String
@@ -71,8 +72,10 @@ object NoServer {
     fun download(userName: String): JsonString? {
         val userData = userData[userName] ?: return null
 
-        val fileUrl = getFileUrl(userData.folderUrl, userData.fileName)
+        val fileUrl = getFileUrl(userData.folderUrl, userData.fileName) ?: return null
+        val rawTextResponse = downloadRawText(fileUrl) ?: return null
 
+        return JsonString(rawTextResponse)
     }
 
     fun save(data: JsonString) {
@@ -113,8 +116,22 @@ object NoServer {
     }
 
     private fun getFileUrl(folderUrl: String, fileName: String): String? {
+        val rawTextResponse = downloadRawText(folderUrl) ?: return null
+
+        val fileId = parseForFileId(rawTextResponse, fileName)
+        return String.format(FILE_URL_TEMPLATE, fileId)
+    }
+
+    private fun parseForFileId(rawTestResponse: String, fileName: String): String? {
+        val (fileId, _) = Regex("\"[^\"]*\",\\[\"[^\"]*\"],\"$fileName\"")
+            .find(rawTestResponse)
+            ?.destructured ?: return null
+        return fileId
+    }
+
+    private fun downloadRawText(url: String): String? {
         val request = Request.Builder()
-            .url(folderUrl)
+            .url(url)
             .build()
 
         val response = try {
@@ -123,18 +140,9 @@ object NoServer {
             return null
         }
 
-        val rawTextResponse = response.use { r ->
+        return response.use { r ->
             r.body?.string()
-        } ?: return null
-
-        return parseForFileName(rawTextResponse, fileName)
-    }
-
-    private fun parseForFileName(rawTestResponse: String, fileName: String): String {
-        // "FILE_ID",["FOLDER_ID"],"FILE_NAME"
-            Regex("\"[^\"]*\",\\[\"[^\"]*\"],\"$fileName\"")
-            .find(rawTestResponse)
-                .groupValues
+        }
     }
 
     data class UserData(
