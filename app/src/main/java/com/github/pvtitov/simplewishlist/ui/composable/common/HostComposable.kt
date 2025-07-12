@@ -109,7 +109,11 @@ fun HostComposable(
                 .padding(top = paddingL, end = paddingL)
         ) {
             FloatingActionButton(
-                onClick = viewModel::onClickLogin,
+                onClick = {
+                    coroutineScope.launch {
+                        viewModel.onClickLogin(context)
+                    }
+                },
             ) {
                 Text(
                     modifier = Modifier.padding(paddingL),

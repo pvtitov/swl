@@ -3,7 +3,7 @@ package com.github.pvtitov.noserver
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-class JsonParser {
+object JsonUtils {
 
     inline fun <reified T> fromJson(json: String): T? {
         return try {

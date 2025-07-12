@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Simple Wish List</string>
+    <string name="app_name">Another Wish List</string>
 
     <string name="login_field_login">Логин</string>
     <string name="login_field_password">Пароль</string>

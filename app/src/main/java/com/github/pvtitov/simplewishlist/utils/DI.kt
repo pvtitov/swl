@@ -2,7 +2,7 @@ package com.github.pvtitov.simplewishlist.utils
 
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.Lifecycle
-import com.github.pvtitov.simplewishlist.data.GoogleDiskRepository
+import com.github.pvtitov.simplewishlist.data.CompositeRepository
 import com.github.pvtitov.simplewishlist.data.ManualRepository
 
 object DI {
@@ -10,7 +10,7 @@ object DI {
     lateinit var manualRepository: ManualRepository
         private set
 
-    val googleDiskRepository: GoogleDiskRepository by lazy { GoogleDiskRepository() }
+    val compositeRepository: CompositeRepository by lazy { CompositeRepository() }
 
     val jsonParser: JsonParser by lazy { JsonParser() }
 

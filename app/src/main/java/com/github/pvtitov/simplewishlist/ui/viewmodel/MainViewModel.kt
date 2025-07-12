@@ -1,10 +1,9 @@
 package com.github.pvtitov.simplewishlist.ui.viewmodel
 
 import android.content.Context
-import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.pvtitov.noserver.NoServer
+import com.github.pvtitov.noserver.AuthenticationManager
 import com.github.pvtitov.simplewishlist.domain.model.Credentials
 import com.github.pvtitov.simplewishlist.domain.model.User
 import com.github.pvtitov.simplewishlist.domain.model.Wish
@@ -19,22 +18,20 @@ import com.github.pvtitov.simplewishlist.ui.model.UsersScreen
 import com.github.pvtitov.simplewishlist.ui.model.WishListScreen
 import com.github.pvtitov.simplewishlist.ui.model.WishScreen
 import com.github.pvtitov.simplewishlist.utils.DI
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.withContext
 
 class MainViewModel : ViewModel() {
 
     internal var ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 
     private val _manualRepository by lazy { DI.manualRepository }
-    private val _googleDiskRepository by lazy { DI.googleDiskRepository }
+    private val _compositeRepository by lazy { DI.compositeRepository }
 
     private val _credentialsState: MutableStateFlow<Credentials?> = MutableStateFlow(null)
     val currentLoginFlow: StateFlow<String?> = _credentialsState
@@ -67,7 +64,8 @@ class MainViewModel : ViewModel() {
 
         val isUploaded = withContext(Dispatchers.Main) {
             //_manualRepository.upload(data)
-            _googleDiskRepository.upload(context, data)
+            _compositeRepository.upload(context, data)
+            true
         }
         if (isUploaded) {
             downloadedWishList = modifiedWishList
@@ -77,8 +75,9 @@ class MainViewModel : ViewModel() {
     }
 
     private suspend fun download(): WishList? {
-        val data = withContext(Dispatchers.Main) {
-            _manualRepository.download()
+        val data = withContext(Dispatchers.IO) {
+            //_manualRepository.download()
+            _compositeRepository.download(_credentialsState.value?.login ?: return@withContext null)
         }
         if (data != null) {
             downloadedWishList = data
@@ -120,8 +119,11 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun onClickLogin() {
+    fun onClickLogin(context: Context) {
         openLoginScreen()
+        viewModelScope.launch {
+            AuthenticationManager.authenticate(context, false)
+        }
     }
 
     suspend fun onClickDownload() {
@@ -134,9 +136,6 @@ class MainViewModel : ViewModel() {
     suspend fun onClickUpload(context: Context) {
         requireAuthorization {
             upload(context)
-//            NoServer.upload(context, "test data") { result ->
-//                Toast.makeText(context, "result is $result", Toast.LENGTH_SHORT).show()
-//            }
         }
     }
 
