@@ -122,7 +122,7 @@ class MainViewModel : ViewModel() {
     fun onClickLogin(context: Context) {
         openLoginScreen()
         viewModelScope.launch {
-            AuthenticationManager.authenticate(context, false)
+            AuthenticationManager.authenticate(context)
         }
     }
 
