@@ -2,10 +2,14 @@ package com.github.pvtitov.noserver
 
 import android.accounts.Account
 import android.app.Activity
+import android.app.Activity.RESULT_OK
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import androidx.credentials.*
+import androidx.credentials.Credential
+import androidx.credentials.CredentialManager
+import androidx.credentials.CustomCredential
+import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialException
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
@@ -16,15 +20,24 @@ import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecovera
 import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.supervisorScope
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
-class AuthenticationManager {
+object AuthenticationManager {
 
-    private var drive: Drive? = null
+    var drive: Drive? = null
+        private set
+    private var authorizationConsentCoroutineScope: CoroutineScope? = null
+    private var authorizationConsentContinuation: Continuation<Boolean>? = null
 
-    suspend fun authenticate(context: Context): Result<Drive> {
+    suspend fun authenticate(activity: Activity): Result<Drive> {
         val driveImmutable = drive?.let { return Result.success(it) }
-            ?: authenticateInternal(context, true)
-            ?: authenticateInternal(context, false)
+            ?: authenticateInternal(activity, true)
+            ?: authenticateInternal(activity, false)
 
         return if (driveImmutable != null) {
             drive = driveImmutable
@@ -34,8 +47,20 @@ class AuthenticationManager {
         }
     }
 
+    fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        when (requestCode) {
+            AUTHORIZATION_CONSENT_REQUEST_CODE -> {
+                if (resultCode == RESULT_OK) {
+                    authorizationConsentContinuation?.resume(true)
+                } else {
+                    authorizationConsentContinuation?.resume(false)
+                }
+            }
+        }
+    }
+
     private suspend fun authenticateInternal(
-        context: Context,
+        activity: Activity,
         isAutoSelect: Boolean,
     ): Drive? {
         val googleIdOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
@@ -48,36 +73,43 @@ class AuthenticationManager {
             .addCredentialOption(googleIdOption)
             .build()
 
-        return handleSignIn(context, getCredentialRequest)
+        return handleSignIn(activity, getCredentialRequest)
     }
 
-    private suspend fun handleSignIn(context: Context, getCredentialRequest: GetCredentialRequest): Drive? {
+    private suspend fun handleSignIn(activity: Activity, getCredentialRequest: GetCredentialRequest): Drive? {
         try {
-            val credentialManager = CredentialManager.create(context)
+            val credentialManager = CredentialManager.create(activity)
 
             val getCredentialResponse = credentialManager.getCredential(
-                context = context,
+                context = activity,
                 request = getCredentialRequest,
             )
 
-            return getCredentialResponse.credential.signIn(context)
+            return getCredentialResponse.credential.signIn(activity)
         } catch (e: GetCredentialException) {
             Log.e(TAG, "Get credentials exception", e)
             return null
         } catch (e: Throwable) {
             Log.e(TAG, "Get credentials another exception", e)
             return if (e is UserRecoverableAuthIOException) {
-                suspendForAuthorizationConsent(context, e.intent)
-                handleSignIn(context, getCredentialRequest)
+                getAuthorizationConsent(activity, e.intent)
+                handleSignIn(activity, getCredentialRequest)
             } else {
                 null
             }
         }
     }
 
-    private suspend fun suspendForAuthorizationConsent(context: Context, intent: Intent) {
-        // suspend coroutine to get consent
-        (context as? Activity)?.startActivityForResult(intent, 55)
+    private suspend fun getAuthorizationConsent(activity: Activity, intent: Intent): Boolean {
+        supervisorScope { authorizationConsentCoroutineScope = this }
+
+        activity.startActivityForResult(intent, AUTHORIZATION_CONSENT_REQUEST_CODE)
+        val hasConsent = suspendCoroutine { continuation ->
+            authorizationConsentContinuation = continuation
+        }
+        authorizationConsentCoroutineScope?.cancel()
+        authorizationConsentCoroutineScope = null
+        return hasConsent
     }
 
     private fun Credential.signIn(context: Context): Drive? {
@@ -121,3 +153,4 @@ class AuthenticationManager {
 }
 
 private const val TAG = "AuthenticationManager"
+private const val AUTHORIZATION_CONSENT_REQUEST_CODE = 12

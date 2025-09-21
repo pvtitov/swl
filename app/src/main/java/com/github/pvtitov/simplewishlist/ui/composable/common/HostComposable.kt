@@ -1,5 +1,6 @@
 package com.github.pvtitov.simplewishlist.ui.composable.common
 
+import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.awaitEachGesture
@@ -53,6 +54,7 @@ fun HostComposable(
     val isDataUpdated by viewModel.isWishListUpdatedState.collectAsStateWithLifecycle(false)
 
     val context = LocalContext.current
+    val activity = LocalActivity.current
 
     val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
 
@@ -110,8 +112,10 @@ fun HostComposable(
         ) {
             FloatingActionButton(
                 onClick = {
-                    coroutineScope.launch {
-                        viewModel.onClickLogin(context)
+                    if (activity != null) {
+                        coroutineScope.launch {
+                            viewModel.onClickLogin(activity)
+                        }
                     }
                 },
             ) {

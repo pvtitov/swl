@@ -3,6 +3,7 @@ package com.github.pvtitov.noserver
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import kotlinx.coroutines.*
 
 
@@ -15,7 +16,7 @@ class NoServerActivity : Activity() {
 
         coroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
         coroutineScope.launch(Dispatchers.IO) {
-            AuthenticationManager.authenticate(this@NoServerActivity, false)
+            AuthenticationManager.authenticate(this@NoServerActivity)
         }
     }
 
@@ -23,14 +24,7 @@ class NoServerActivity : Activity() {
         super.onActivityResult(requestCode, resultCode, data)
 
         AuthorizationManager.onActivityResult(requestCode, resultCode, data)
-
-        when (requestCode) {
-            55 -> {
-                coroutineScope.launch(Dispatchers.IO) {
-                    AuthenticationManager.authenticate(this@NoServerActivity, true)
-                }
-            }
-        }
+        AuthenticationManager.onActivityResult(requestCode, resultCode, data)
     }
 
     override fun onDestroy() {
@@ -40,3 +34,5 @@ class NoServerActivity : Activity() {
         super.onDestroy()
     }
 }
+
+private const val TAG = "NoServerActivity"

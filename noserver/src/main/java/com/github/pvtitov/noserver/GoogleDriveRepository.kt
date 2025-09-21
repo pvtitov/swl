@@ -29,8 +29,7 @@ class GoogleDriveRepository(
     }
 
     fun download(userName: String): JsonString? {
-        val fileNames =
-            AuthenticationManager.drive?.files()?.list()?.setSpaces("drive")?.execute()?.files?.map { it.name }
+        val fileNames = AuthenticationManager.drive?.files()?.list()?.setSpaces("appDataFolder")?.execute()?.files?.map { it.name }
         Log.d(TAG, "for $userName: $fileNames")
         return null
     }
@@ -44,10 +43,6 @@ class GoogleDriveRepository(
         callback: (Boolean) -> Unit
     ) {
         // TODO
-    }
-
-    private fun checkAuthorization() {
-
     }
 
     data class UserData(

@@ -1,5 +1,6 @@
 package com.github.pvtitov.simplewishlist.ui.viewmodel
 
+import android.app.Activity
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -119,10 +120,10 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun onClickLogin(context: Context) {
+    fun onClickLogin(activity: Activity) {
         openLoginScreen()
         viewModelScope.launch {
-            AuthenticationManager.authenticate(context)
+            AuthenticationManager.authenticate(activity)
         }
     }
 
