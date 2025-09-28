@@ -32,7 +32,7 @@ object AuthorizationManager {
         onFailureCallback = onFailure
 
         val scopes = listOf(
-            Scope(DriveScopes.DRIVE) // just DriveScopes.DRIVE in sample code https://developer.android.com/identity/authorization
+            Scope(DriveScopes.DRIVE)
         )
 
         val authorizationRequest = AuthorizationRequest.builder()

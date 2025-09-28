@@ -76,14 +76,12 @@ class MainViewModel : ViewModel() {
     }
 
     private suspend fun download(): WishList? {
-        val data = withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.IO) {
             //_manualRepository.download()
-            _compositeRepository.download(_credentialsState.value?.login ?: return@withContext null)
+            _compositeRepository.download(_credentialsState.value?.login ?: return@withContext null)?.also {
+                downloadedWishList = it
+            }
         }
-        if (data != null) {
-            downloadedWishList = data
-        }
-        return data
     }
 
     private val _currentScreenState: MutableStateFlow<Screen> =
@@ -120,17 +118,17 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun onClickLogin(activity: Activity) {
+    fun onClickLogin() {
         openLoginScreen()
-        viewModelScope.launch {
-            AuthenticationManager.authenticate(activity)
-        }
     }
 
     suspend fun onClickDownload() {
-        requireAuthorization {
+//        requireAuthorization {
+//            download()
+//            openWishListScreen()
+//        }
+        viewModelScope.launch {
             download()
-            openWishListScreen()
         }
     }
 

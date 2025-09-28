@@ -29,8 +29,7 @@ import kotlin.coroutines.suspendCoroutine
 
 object AuthenticationManager {
 
-    var drive: Drive? = null
-        private set
+    private var drive: Drive? = null
     private var authorizationConsentCoroutineScope: CoroutineScope? = null
     private var authorizationConsentContinuation: Continuation<Boolean>? = null
 

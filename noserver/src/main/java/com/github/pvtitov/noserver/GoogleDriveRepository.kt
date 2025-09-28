@@ -1,6 +1,8 @@
 package com.github.pvtitov.noserver
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import com.google.api.services.drive.Drive
 
@@ -15,8 +17,6 @@ class GoogleDriveRepository(
 
     private var dataToUpload: JsonString? = null
 
-    private var drive: Drive? = null
-
     init {
         val oldData = userData[userName]?.dataJsonString
 
@@ -29,8 +29,14 @@ class GoogleDriveRepository(
     }
 
     fun download(userName: String): JsonString? {
-        val fileNames = AuthenticationManager.drive?.files()?.list()?.setSpaces("appDataFolder")?.execute()?.files?.map { it.name }
-        Log.d(TAG, "for $userName: $fileNames")
+        NoServerApplication.applicationContext?.let { context ->
+            context.startActivity(
+                Intent(context, NoServerActivity::class.java).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    putExtra(NoServerActivity.AUTHENTICATION_EXTRA_KEY, true)
+                }
+            )
+        }
         return null
     }
 
