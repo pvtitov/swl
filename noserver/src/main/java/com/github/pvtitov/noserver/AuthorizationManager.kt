@@ -14,61 +14,72 @@ import com.google.android.gms.common.api.Scope
 import com.google.api.services.drive.DriveScopes
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
 
 object AuthorizationManager {
     private const val REQUEST_CODE = 11
     private const val TAG = "AuthorizationManager"
 
     private var authorizationClient: AuthorizationClient? = null
-    private var cancellableContinuation: CancellableContinuation<Unit>? = null
+    private lateinit var cancellableContinuation: CancellableContinuation<Boolean>
 
     suspend fun authorize(
         activity: Activity,
         authorizeRequestCode: Int
-    ): Result<Unit> {
-        val result = suspendCancellableCoroutine { cancellableContinuation ->
+    ): Boolean {
+        return suspendCancellableCoroutine { cancellableContinuation ->
             this.cancellableContinuation = cancellableContinuation
-
-            Identity.getAuthorizationClient(activity)
-                .also { authorizationClient = it }
-                .authorize(buildAuthorizationRequest())
-                .addOnSuccessListener { authorizationResult ->
-                    if (authorizationResult.hasResolution()) {
-                        // Access needs to be granted by the user
-                        val pendingIntent: PendingIntent = authorizationResult.pendingIntent
-                            ?: run {
-                                Log.e(TAG, "Couldn't start Authorization UI")
-                                onResult(isSuccess = false)
-                                return@addOnSuccessListener
-                            }
-                        try {
-                            startIntentSenderForResult(
-                                activity,
-                                pendingIntent.intentSender,
-                                authorizeRequestCode,
-                                null,
-                                0,
-                                0,
-                                0,
-                                null
-                            )
-                        } catch (e: SendIntentException) {
-                            Log.e(TAG, "Couldn't start Authorization UI: " + e.localizedMessage)
-                            onResult(isSuccess = false)
-                        }
-                    } else {
-                        // Access already granted, continue with user action
-                        // Example: saveToDriveAppFolder(authorizationResult)
-                        onResult(isSuccess = true)
-                    }
-                }
-                .addOnFailureListener { e ->
-                    Log.e(TAG, "Failed to authorize", e)
-                    onResult(isSuccess = false)
-                }
+            authorizeInternal(activity, authorizeRequestCode)
+        }.also {
+            cleanUp()
         }
+    }
+
+    private fun authorizeInternal(
+        activity: Activity,
+        authorizeRequestCode: Int
+    ) {
+        Identity.getAuthorizationClient(activity)
+            .also { authorizationClient = it }
+            .authorize(buildAuthorizationRequest())
+            .addOnSuccessListener { authorizationResult ->
+                if (authorizationResult.hasResolution()) {
+                    // Access needs to be granted by the user
+                    val pendingIntent: PendingIntent = authorizationResult.pendingIntent
+                        ?: run {
+                            Log.e(TAG, "Couldn't start Authorization UI")
+                            cancellableContinuation.resume(false)
+                            return@addOnSuccessListener
+                        }
+                    try {
+                        startIntentSenderForResult(
+                            activity,
+                            pendingIntent.intentSender,
+                            authorizeRequestCode,
+                            null,
+                            0,
+                            0,
+                            0,
+                            null
+                        )
+                    } catch (e: SendIntentException) {
+                        Log.e(TAG, "Couldn't start Authorization UI: " + e.localizedMessage)
+                        cancellableContinuation.resume(false)
+                    }
+                } else {
+                    // Access already granted, continue with user action
+                    // Example: saveToDriveAppFolder(authorizationResult)
+                    cancellableContinuation.resume(true)
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "Failed to authorize", e)
+                cancellableContinuation.resume(false)
+            }
+    }
+
+    private fun cleanUp() {
         authorizationClient = null
-        return result
     }
 
     private fun buildAuthorizationRequest(): AuthorizationRequest {
@@ -95,4 +106,6 @@ object AuthorizationManager {
             }
         }
     }
+
+    private class AuthorizationFailedException(message: String, cause: Throwable) : RuntimeException(message, cause)
 }
