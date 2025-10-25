@@ -1,10 +1,7 @@
 package com.github.pvtitov.noserver
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.util.Log
-import com.google.api.services.drive.Drive
 
 
 class GoogleDriveRepository(
@@ -63,6 +60,6 @@ class GoogleDriveRepository(
     data class JsonString(val value: String)
 
     companion object {
-        private const val TAG = "AuthenticationManager"
+        private const val TAG = "GoogleDriveRepository"
     }
 }

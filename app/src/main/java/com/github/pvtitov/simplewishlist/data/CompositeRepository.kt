@@ -28,7 +28,11 @@ class CompositeRepository {
         val json = GoogleDriveRepository.JsonString(jsonParser.toJson(data) ?: return)
         googleDriveRepository.save(json)
         googleDriveRepository.upload(context) { isUploaded ->
-            Log.d("happy", "Upload ${if (isUploaded) "succeeded" else "failed"}")
+            Log.d(TAG, "Upload ${if (isUploaded) "succeeded" else "failed"}")
         }
+    }
+
+    private companion object {
+        private const val TAG = "CompositeRepository"
     }
 }

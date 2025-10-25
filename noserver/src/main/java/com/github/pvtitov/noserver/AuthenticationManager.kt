@@ -88,14 +88,13 @@ object AuthenticationManager {
         } catch (e: GetCredentialException) {
             Log.e(TAG, "Get credentials exception", e)
             return null
+        } catch (e: UserRecoverableAuthIOException) {
+            Log.d(TAG, "Get credentials recoverable exception", e)
+            getAuthorizationConsent(activity, e.intent)
+            return handleSignIn(activity, getCredentialRequest)
         } catch (e: Throwable) {
             Log.e(TAG, "Get credentials another exception", e)
-            return if (e is UserRecoverableAuthIOException) {
-                getAuthorizationConsent(activity, e.intent)
-                handleSignIn(activity, getCredentialRequest)
-            } else {
-                null
-            }
+            return null
         }
     }
 

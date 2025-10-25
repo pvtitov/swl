@@ -17,27 +17,23 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
 object AuthorizationManager {
-    private const val REQUEST_CODE = 11
+    private const val AUTHORIZATION_REQUEST_CODE = 11
     private const val TAG = "AuthorizationManager"
 
     private var authorizationClient: AuthorizationClient? = null
     private lateinit var cancellableContinuation: CancellableContinuation<Boolean>
 
-    suspend fun authorize(
-        activity: Activity,
-        authorizeRequestCode: Int
-    ): Boolean {
+    suspend fun authorize(activity: Activity): Boolean {
         return suspendCancellableCoroutine { cancellableContinuation ->
             this.cancellableContinuation = cancellableContinuation
-            authorizeInternal(activity, authorizeRequestCode)
+            authorizeInternal(activity)
         }.also {
             cleanUp()
         }
     }
 
     private fun authorizeInternal(
-        activity: Activity,
-        authorizeRequestCode: Int
+        activity: Activity
     ) {
         Identity.getAuthorizationClient(activity)
             .also { authorizationClient = it }
@@ -55,7 +51,7 @@ object AuthorizationManager {
                         startIntentSenderForResult(
                             activity,
                             pendingIntent.intentSender,
-                            authorizeRequestCode,
+                            AUTHORIZATION_REQUEST_CODE,
                             null,
                             0,
                             0,
@@ -94,18 +90,16 @@ object AuthorizationManager {
 
     fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (requestCode) {
-            REQUEST_CODE -> {
+            AUTHORIZATION_REQUEST_CODE -> {
                 val authorizationResult = authorizationClient
                     ?.getAuthorizationResultFromIntent(data)
 
                 if (resultCode == RESULT_OK && authorizationResult?.hasResolution() == true) {
-                    onResult(isSuccess = true)
+                    cancellableContinuation.resume(true)
                 } else {
-                    onResult(isSuccess = false)
+                    cancellableContinuation.resume(false)
                 }
             }
         }
     }
-
-    private class AuthorizationFailedException(message: String, cause: Throwable) : RuntimeException(message, cause)
 }
