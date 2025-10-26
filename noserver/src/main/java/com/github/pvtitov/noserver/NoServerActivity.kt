@@ -4,15 +4,15 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import com.google.android.gms.auth.api.identity.Identity
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import kotlinx.coroutines.*
-import kotlin.coroutines.resume
 
 
 class NoServerActivity : Activity() {
 
     private lateinit var coroutineScope: CoroutineScope
+
+    private var testAction: (() -> Unit)? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,7 +41,10 @@ class NoServerActivity : Activity() {
                     }
                     // TODO replace testing use of Drive with actual implementation
                     try {
-                        Log.d(TAG, drive.files().list().setSpaces("drive").execute().files.map { it.name }.toString())
+                        testAction = {
+                            Log.d(TAG, drive.files().list().setSpaces("drive").execute().files.map { it.name }.toString())
+                        }
+                        testAction?.invoke()
                     } catch (e: UserRecoverableAuthIOException) {
                         Log.d(TAG, "Failed to get drive file list: $e: ${e.message}, ${e.cause}", e)
                         e.intent?.let {
@@ -65,15 +68,13 @@ class NoServerActivity : Activity() {
 
         when (requestCode) {
             AUTHORIZATION_REQUEST_CODE -> {
-                Log.d(TAG, """
-                    On authorization result:
-                    Intent = $data
-                    extras = ${data?.extras}
-                    flags = ${data?.flags}
-                    data = ${data?.data}
-                """.trimIndent())
                 coroutineScope.launch(Dispatchers.IO) {
-                    AuthorizationManager.authorize(this@NoServerActivity)
+                    if (AuthorizationManager.authorize(this@NoServerActivity)) {
+                        testAction?.invoke()
+                        testAction = null
+                    } else {
+                        Log.d(TAG, "Failed to authorize")
+                    }
                 }
             }
         }
