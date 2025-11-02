@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
+import com.google.api.services.drive.Drive
 import kotlinx.coroutines.*
 
 
@@ -39,10 +40,10 @@ class NoServerActivity : Activity() {
                         Log.d(TAG, "Drive is null")
                         return@launch
                     }
-                    // TODO replace testing use of Drive with actual implementation
                     try {
                         testAction = {
-                            Log.d(TAG, drive.files().list().setSpaces("drive").execute().files.map { it.name }.toString())
+                            Log.d(TAG, "Successful authentication and authorization. Running an action $action")
+                            action?.invoke(drive)
                         }
                         testAction?.invoke()
                     } catch (e: UserRecoverableAuthIOException) {
@@ -84,14 +85,40 @@ class NoServerActivity : Activity() {
         if (coroutineScope.isActive) {
             coroutineScope.cancel()
         }
+        isInProcess = false
         super.onDestroy()
     }
 
     companion object {
-        const val AUTHENTICATION_EXTRA_KEY = "AUTHENTICATION_EXTRA_KEY"
-        const val AUTHORIZATION_EXTRA_KEY = "AUTHORIZATION_EXTRA_KEY"
-        const val AUTHORIZATION_REQUEST_CODE = 14
 
+        // TODO: implement action queue
+        private var action: ((Drive) -> Unit)? = null
+
+        private var isInProcess: Boolean = false
+
+        fun runWithAuthorisation(action: (Drive) -> Unit) {
+            isInProcess = true
+            this.action = action
+
+            /**
+             * Use of Google Drive starts with Authentication and Authorization checks. That API uses
+             * Activity.onActivityResult(). For that I start stand-alone special Activity to contain (encapsulate) that
+             * interaction. An alternative way to handle it would be to provide my main Activity but in that case it should
+             * implement neccessery
+             */
+            NoServerApplication.applicationContext?.let { context ->
+                context.startActivity(
+                    Intent(context, NoServerActivity::class.java).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        putExtra(AUTHENTICATION_EXTRA_KEY, true)
+                    }
+                )
+            }
+        }
+
+        private const val AUTHENTICATION_EXTRA_KEY = "AUTHENTICATION_EXTRA_KEY"
+        private const val AUTHORIZATION_EXTRA_KEY = "AUTHORIZATION_EXTRA_KEY"
+        private const val AUTHORIZATION_REQUEST_CODE = 14
         private const val TAG = "NoServerActivity"
     }
 }

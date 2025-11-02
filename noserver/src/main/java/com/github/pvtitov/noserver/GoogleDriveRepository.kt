@@ -2,6 +2,8 @@ package com.github.pvtitov.noserver
 
 import android.content.Context
 import android.content.Intent
+import android.util.Log
+import com.google.api.services.drive.Drive
 
 
 class GoogleDriveRepository(
@@ -26,13 +28,8 @@ class GoogleDriveRepository(
     }
 
     fun download(userName: String): JsonString? {
-        NoServerApplication.applicationContext?.let { context ->
-            context.startActivity(
-                Intent(context, NoServerActivity::class.java).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    putExtra(NoServerActivity.AUTHENTICATION_EXTRA_KEY, true)
-                }
-            )
+        NoServerActivity.runWithAuthorisation { drive: Drive ->
+            Log.d(TAG, drive.files().list().setSpaces("drive").execute().files.map { it.name }.toString())
         }
         return null
     }
