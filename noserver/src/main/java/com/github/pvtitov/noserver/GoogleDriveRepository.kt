@@ -1,40 +1,39 @@
 package com.github.pvtitov.noserver
 
 import android.content.Context
-import android.content.Intent
 import android.util.Log
 import com.google.api.services.drive.Drive
 
 
-class GoogleDriveRepository(
+class GoogleDriveRepository<T>(
     userName: String,
     fileName: String,
     folderUrl: String
 ) {
     // TODO data storage
-    private val userData = mutableMapOf<String, UserData>()
+    private val userData = mutableMapOf<String, UserData<T>>()
 
-    private var dataToUpload: JsonString? = null
+    private var dataToUpload: T? = null
 
     init {
-        val oldData = userData[userName]?.dataJsonString
+        val oldData = userData[userName]?.data
 
         userData[userName] = UserData(
             userName = userName,
             fileName = fileName,
             folderUrl = folderUrl,
-            dataJsonString = oldData
+            data = oldData
         )
     }
 
-    fun download(userName: String): JsonString? {
+    fun download(userName: String): T? {
         NoServerActivity.runWithAuthorisation { drive: Drive ->
             Log.d(TAG, drive.files().list().setSpaces("drive").execute().files.map { it.name }.toString())
         }
         return null
     }
 
-    fun save(data: JsonString) {
+    fun save(data: T) {
         dataToUpload = data
     }
 
@@ -47,14 +46,12 @@ class GoogleDriveRepository(
 
 
 
-    data class UserData(
+    data class UserData<T>(
         val userName: String,
         val fileName: String,
         val folderUrl: String,
-        val dataJsonString: JsonString?
+        val data: T?
     )
-
-    data class JsonString(val value: String)
 
     companion object {
         private const val TAG = "GoogleDriveRepository"
