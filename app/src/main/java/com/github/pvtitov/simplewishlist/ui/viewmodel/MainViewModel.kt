@@ -1,10 +1,8 @@
 package com.github.pvtitov.simplewishlist.ui.viewmodel
 
-import android.app.Activity
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.pvtitov.noserver.AuthenticationManager
 import com.github.pvtitov.simplewishlist.domain.model.Credentials
 import com.github.pvtitov.simplewishlist.domain.model.User
 import com.github.pvtitov.simplewishlist.domain.model.Wish

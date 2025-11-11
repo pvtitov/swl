@@ -3,57 +3,75 @@ package com.github.pvtitov.noserver
 import android.content.Context
 import android.util.Log
 import com.google.api.services.drive.Drive
+import java.io.ByteArrayOutputStream
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 
 class GoogleDriveRepository<T>(
-    userName: String,
-    fileName: String,
-    folderUrl: String
+    val fileName: String
 ) {
-    // TODO data storage
-    private val userData = mutableMapOf<String, UserData<T>>()
 
-    private var dataToUpload: T? = null
+    val authManager by lazy { GoogleDriveAuthorizationManager() }
 
-    init {
-        val oldData = userData[userName]?.data
+    /**
+     * Call without parameter to load currently authenticated user data or provider user's e-mail as [login]
+     */
+    suspend inline fun <reified T> download(login: String = AUTHENTICATED_USER): T? {
+        return suspendCoroutine { continuation ->
+            authManager.runWithAuthorisation { drive: Drive ->
+                val searchQuery = if (login == AUTHENTICATED_USER) {
+                    "'$fileName' in name and 'me' in owners"
+                } else {
+                    "'$fileName' in name and '$login' in owners"
+                }
+                val file = drive.files().list()
+                    .setQ(searchQuery)
+                    .setSpaces("drive")
+                    .setFields("files(id, name)")
+                    .execute()
+                    .files
+                    .firstOrNull()
 
-        userData[userName] = UserData(
-            userName = userName,
-            fileName = fileName,
-            folderUrl = folderUrl,
-            data = oldData
-        )
-    }
+                val data = if (file != null) {
+                    val outputStream = ByteArrayOutputStream()
 
-    fun download(userName: String): T? {
-        NoServerActivity.runWithAuthorisation { drive: Drive ->
-            Log.d(TAG, drive.files().list().setSpaces("drive").execute().files.map { it.name }.toString())
+                    drive.files().get(file.id).executeMediaAndDownloadTo(outputStream)
+
+                    val rawJsonString = outputStream.toString()
+                    Log.d(TAG, "File content: $rawJsonString")
+
+                    JsonUtils.fromJson<T>(rawJsonString)
+                } else {
+                    null
+                }
+                continuation.resume(data)
+            }
         }
-        return null
     }
 
-    fun save(data: T) {
-        dataToUpload = data
-    }
-
-    fun upload(
+    suspend fun upload(
+        data: T,
         context: Context,
         callback: (Boolean) -> Unit
     ) {
-        // TODO
+        // TODO: by this point file should exist, upload data to file
     }
 
+    /**
+     * Check if file exists and create one otherwise
+     */
+    suspend fun prepare() {
+        // TODO check file exists
+        // TODO create one if needed
+    }
 
-
-    data class UserData<T>(
-        val userName: String,
-        val fileName: String,
-        val folderUrl: String,
-        val data: T?
-    )
+    suspend fun addFriend(login: String) {
+        // give your friend a permission to read your file
+    }
 
     companion object {
-        private const val TAG = "GoogleDriveRepository"
+        const val TAG = "GoogleDriveRepository"
+        const val AUTHENTICATED_USER = ""
     }
 }

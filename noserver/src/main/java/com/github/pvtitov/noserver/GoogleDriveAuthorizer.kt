@@ -16,14 +16,14 @@ import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
-object AuthorizationManager {
+internal object GoogleDriveAuthorizer {
     private const val AUTHORIZATION_REQUEST_CODE = 11
     private const val TAG = "AuthorizationManager"
 
     private var authorizationClient: AuthorizationClient? = null
     private lateinit var cancellableContinuation: CancellableContinuation<Boolean>
 
-    suspend fun authorize(activity: Activity): Boolean {
+    internal suspend fun authorize(activity: Activity): Boolean {
         return suspendCancellableCoroutine { cancellableContinuation ->
             this.cancellableContinuation = cancellableContinuation
             authorizeInternal(activity)
@@ -88,7 +88,7 @@ object AuthorizationManager {
             .build()
     }
 
-    fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    internal fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (requestCode) {
             AUTHORIZATION_REQUEST_CODE -> {
                 val authorizationResult = authorizationClient

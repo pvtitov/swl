@@ -27,13 +27,13 @@ import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-object AuthenticationManager {
+internal object GoogleDriveAuthenticator {
 
     private var drive: Drive? = null
     private var authorizationConsentCoroutineScope: CoroutineScope? = null
     private var authorizationConsentContinuation: Continuation<Boolean>? = null
 
-    suspend fun authenticate(activity: Activity): Result<Drive> {
+    internal suspend fun authenticate(activity: Activity): Result<Drive> {
         val driveImmutable = drive?.let { return Result.success(it) }
             ?: authenticateInternal(activity, true)
             ?: authenticateInternal(activity, false)
@@ -46,7 +46,7 @@ object AuthenticationManager {
         }
     }
 
-    fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    internal fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (requestCode) {
             AUTHORIZATION_CONSENT_REQUEST_CODE -> {
                 if (resultCode == RESULT_OK) {

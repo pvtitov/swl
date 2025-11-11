@@ -9,25 +9,21 @@ import com.github.pvtitov.simplewishlist.domain.model.WishList
 class CompositeRepository {
 
     private val googleDriveRepository by lazy {
-        GoogleDriveRepository<WishList>(
-            "user_test",
-            "file_test",
-            ""
-        )
+        GoogleDriveRepository<WishList>(FILE_NAME)
     }
 
-    fun download(userName: String): WishList? {
+    suspend fun download(userName: String): WishList? {
         return googleDriveRepository.download(userName)
     }
 
-    fun upload(context: Context, data: WishList) {
-        googleDriveRepository.save(data)
-        googleDriveRepository.upload(context) { isUploaded ->
+    suspend fun upload(context: Context, data: WishList) {
+        googleDriveRepository.upload(data, context) { isUploaded ->
             Log.d(TAG, "Upload ${if (isUploaded) "succeeded" else "failed"}")
         }
     }
 
     private companion object {
         private const val TAG = "CompositeRepository"
+        private const val FILE_NAME = "wishlist.awl"
     }
 }
