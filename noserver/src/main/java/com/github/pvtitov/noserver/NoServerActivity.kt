@@ -17,15 +17,15 @@ internal class NoServerActivity : Activity() {
                 }
     )
 
-    private var testAction: (() -> Unit)? = null
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d(TAG, "onCreate()")
         launchAuthorization()
     }
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
+        Log.d(TAG, "onNewIntent()")
         launchAuthorization()
     }
 
@@ -35,6 +35,7 @@ internal class NoServerActivity : Activity() {
                 finish()
                 return@launch
             }
+            Log.d(TAG, "launchAuthorization(): intent = $intent, extras = ${extras.keySet()}")
             if (extras.containsKey(AUTHORIZATION_EXTRA_KEY)) {
                 val userRecoverableExceptionIntent = extras.getParcelable<Intent>(AUTHORIZATION_EXTRA_KEY)
                     ?: run {
@@ -63,17 +64,8 @@ internal class NoServerActivity : Activity() {
         GoogleDriveAuthorizer.onActivityResult(requestCode, resultCode, data)
         GoogleDriveAuthenticator.onActivityResult(requestCode, resultCode, data)
 
-        when (requestCode) {
-            AUTHORIZATION_REQUEST_CODE -> {
-                coroutineScope.launch(Dispatchers.IO) {
-                    if (GoogleDriveAuthorizer.authorize(this@NoServerActivity)) {
-                        testAction?.invoke()
-                        testAction = null
-                    } else {
-                        Log.d(TAG, "Failed to authorize")
-                    }
-                }
-            }
+        if (resultCode == AUTHORIZATION_REQUEST_CODE) {
+            GoogleDriveAuthorizationManager.authorize()
         }
     }
 

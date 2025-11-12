@@ -22,29 +22,31 @@ object GoogleDriveAuthorizationManager {
 
         val driveImmutable = drive
         if (driveImmutable != null) {
+            Log.d(TAG, "runWithAuthorisation(): run action (handle user recoverable exception)")
             handleUserRecoverableAuthException {
                 action.invoke(driveImmutable)
             }
-        }
-
-        /**
-         * Use of Google Drive starts with Authentication and Authorization checks. That API uses
-         * Activity.onActivityResult(). For that I start stand-alone special Activity to contain (encapsulate) that
-         * interaction. An alternative way to handle it would be to provide my main Activity but in that case it should
-         * implement necessary
-         */
-        NoServerApplication.applicationContext?.let { context ->
-            context.startActivity(
-                Intent(context, NoServerActivity::class.java).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    putExtra(AUTHENTICATION_EXTRA_KEY, true)
-                }
-            )
+        } else {
+            /**
+             * Use of Google Drive starts with Authentication and Authorization checks. That API uses
+             * Activity.onActivityResult(). For that I start stand-alone special Activity to contain (encapsulate) that
+             * interaction. An alternative way to handle it would be to provide my main Activity but in that case it should
+             * implement necessary
+             */
+            Log.d(TAG, "runWithAuthorisation(): launch NoServerActivity for authentication")
+            NoServerApplication.applicationContext?.let { context ->
+                context.startActivity(
+                    Intent(context, NoServerActivity::class.java).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        putExtra(AUTHENTICATION_EXTRA_KEY, true)
+                    }
+                )
+            }
         }
     }
     
     internal suspend fun authenticate(activity: Activity) {
-        Log.d(TAG, "Launch authentication")
+        Log.d(TAG, "authenticate(Activity) called")
         val authenticationResult = GoogleDriveAuthenticator.authenticate(activity)
         if (authenticationResult.isSuccess) {
             Log.d(TAG, "On authentication result")
@@ -62,6 +64,17 @@ object GoogleDriveAuthorizationManager {
         }
     }
 
+    internal fun authorize() {
+        Log.d(TAG, "authorize() called")
+        val actionImmutable = action
+        val driveImmutable = drive
+        if (actionImmutable != null && driveImmutable != null) {
+            handleUserRecoverableAuthException {
+                actionImmutable.invoke(driveImmutable)
+            }
+        }
+    }
+
     private fun handleUserRecoverableAuthException(action: () -> Unit) {
         try {
             action.invoke()
@@ -74,6 +87,7 @@ object GoogleDriveAuthorizationManager {
             if (context != null && intent != null) {
                 context.startActivity(
                     Intent(context, NoServerActivity::class.java).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         putExtra(AUTHORIZATION_EXTRA_KEY, intent)
                     }
                 )

@@ -10,7 +10,6 @@
                 android:label="NoServer"
                 android:exported="true"
                 android:theme="@style/Theme.Transparent"
-                android:launchMode="singleTop"
         />
     </application>
 </manifest>
