@@ -13,7 +13,8 @@ class CompositeRepository {
     }
 
     suspend fun download(userName: String): WishList? {
-        return googleDriveRepository.download(userName)
+        Log.d(TAG, "download($userName)")
+        return googleDriveRepository.download()
     }
 
     suspend fun upload(context: Context, data: WishList) {

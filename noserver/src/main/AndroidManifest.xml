@@ -4,11 +4,13 @@
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
-    android:name=".NoServerApplication">
+            android:name=".NoServerApplication">
         <activity
                 android:name=".NoServerActivity"
                 android:label="NoServer"
                 android:exported="true"
-                android:theme="@style/Theme.Transparent"/>
+                android:theme="@style/Theme.Transparent"
+                android:launchMode="singleTop"
+        />
     </application>
 </manifest>

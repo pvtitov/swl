@@ -11,15 +11,19 @@ import kotlin.coroutines.suspendCoroutine
 class GoogleDriveRepository<T>(
     val fileName: String
 ) {
-
-    val authManager by lazy { GoogleDriveAuthorizationManager() }
-
     /**
      * Call without parameter to load currently authenticated user data or provider user's e-mail as [login]
      */
     suspend inline fun <reified T> download(login: String = AUTHENTICATED_USER): T? {
         return suspendCoroutine { continuation ->
-            authManager.runWithAuthorisation { drive: Drive ->
+            GoogleDriveAuthorizationManager.runWithAuthorisation { drive: Drive ->
+
+                // todo remove
+                // for testing
+                drive.files().list().setSpaces("drive").setFields("files(name, owners)").execute().files.forEach {
+                    Log.d(TAG, "${it.name} - ${it.owners}")
+                }
+
                 val searchQuery = if (login == AUTHENTICATED_USER) {
                     "'$fileName' in name and 'me' in owners"
                 } else {
@@ -45,6 +49,7 @@ class GoogleDriveRepository<T>(
                 } else {
                     null
                 }
+
                 continuation.resume(data)
             }
         }

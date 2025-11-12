@@ -4,56 +4,53 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import kotlinx.coroutines.*
 
 
-class NoServerActivity : Activity() {
+internal class NoServerActivity : Activity() {
 
-    private lateinit var coroutineScope: CoroutineScope
+    private val coroutineScope: CoroutineScope = CoroutineScope(
+        Dispatchers.Default +
+                SupervisorJob() +
+                CoroutineExceptionHandler { _, e ->
+                    Log.e(TAG, "Coroutine exception: $e, ${e.message}, ${e.cause}", e)
+                }
+    )
 
     private var testAction: (() -> Unit)? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        launchAuthorization()
+    }
 
-        coroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        launchAuthorization()
+    }
+
+    private fun launchAuthorization() {
         coroutineScope.launch(Dispatchers.IO) {
-            val extras = intent.extras ?: return@launch
+            val extras = intent.extras ?: run {
+                finish()
+                return@launch
+            }
             if (extras.containsKey(AUTHORIZATION_EXTRA_KEY)) {
-                Log.d(TAG, "Launch authorization")
-                val isAuthorized = GoogleDriveAuthorizer.authorize(
-                    activity = this@NoServerActivity,
-                )
-                if (isAuthorized) {
-                    Log.d(TAG, "Success authorization")
-                } else {
-                    Log.d(TAG, "Failed authorization")
-                }
-            } else if (extras.containsKey(AUTHENTICATION_EXTRA_KEY)) {
-                Log.d(TAG, "Launch authentication")
-                val authenticationResult = GoogleDriveAuthenticator.authenticate(this@NoServerActivity)
-                if (authenticationResult.isSuccess) {
-                    Log.d(TAG, "On authentication result")
-                    val drive = authenticationResult.getOrNull() ?: run {
-                        Log.d(TAG, "Drive is null")
+                val userRecoverableExceptionIntent = extras.getParcelable<Intent>(AUTHORIZATION_EXTRA_KEY)
+                    ?: run {
+                        finish()
                         return@launch
                     }
-                    try {
-                        testAction = {
-                            Log.d(TAG, "Successful authentication and authorization. Running an action $action")
-                            action?.invoke(drive)
-                        }
-                        testAction?.invoke()
-                    } catch (e: UserRecoverableAuthIOException) {
-                        Log.d(TAG, "Failed to get drive file list: $e: ${e.message}, ${e.cause}", e)
-                        e.intent?.let {
-                            startActivityForResult(it, AUTHORIZATION_REQUEST_CODE)
-                        }
-                    } catch (e: Throwable) {
-                        Log.e(TAG, "Failed to get drive file list: $e: ${e.message}, ${e.cause}", e)
-                    }
-                }
+
+                Log.d(
+                    TAG, "User recoverable exception intent: $userRecoverableExceptionIntent, " +
+                            "calling activity = ${callingActivity}, calling package = ${callingPackage}, " +
+                            "intent package = ${userRecoverableExceptionIntent.getPackage()}"
+                )
+
+                startActivityForResult(userRecoverableExceptionIntent, AUTHORIZATION_REQUEST_CODE)
+            } else if (extras.containsKey(AUTHENTICATION_EXTRA_KEY)) {
+                GoogleDriveAuthorizationManager.authenticate(this@NoServerActivity)
             } else {
                 finish()
             }
