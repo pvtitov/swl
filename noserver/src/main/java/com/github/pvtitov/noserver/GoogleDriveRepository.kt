@@ -5,19 +5,22 @@ import android.util.Log
 import com.google.api.client.http.ByteArrayContent
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.model.File
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 
 class GoogleDriveRepository<T>(
-    val fileName: String
+    val fileName: String,
+    val initialData: T
 ) {
     /**
      * Call without parameter to load currently authenticated user data or provider user's e-mail as [login]
      */
     suspend inline fun <reified T> download(login: String = AUTHENTICATED_USER): T? {
-        prepare()
+        prepare<T>()
         return suspendCoroutine { continuation ->
             GoogleDriveAuthorizationManager.runWithAuthorisation { drive: Drive ->
 
@@ -29,34 +32,27 @@ class GoogleDriveRepository<T>(
                 val file = drive.files().list()
                     .setQ(searchQuery)
                     .setSpaces("drive")
-                    .setFields("files(id, name)")
+                    .setFields("files(id, name, owners, ownedByMe)")
                     .execute()
                     .files
                     .firstOrNull()
 
-//                val file = drive.files().list()
-//                    .setSpaces("drive")
-//                    .execute()
-//                    .files
-//                    .find { fileName == it.name }
-
                 Log.d(TAG, "download(): file = $file, name = ${file?.name}, id = ${file?.id}, owners = ${file?.owners}, owned by me = ${file?.ownedByMe}")
 
-//                val data = if (file != null) {
-//                    val outputStream = ByteArrayOutputStream()
-//
-//                    drive.files().get(file.id).executeMediaAndDownloadTo(outputStream)
-//
-//                    val rawJsonString = outputStream.toString()
-//                    Log.d(TAG, "File content: $rawJsonString")
-//
-//                    JsonUtils.fromJson<T>(rawJsonString)
-//                } else {
-//                    null
-//                }
-//
-//                continuation.resume(data)
-                continuation.resume(null)
+                val data = if (file != null) {
+                    val outputStream = ByteArrayOutputStream()
+
+                    drive.files().get(file.id).executeMediaAndDownloadTo(outputStream)
+
+                    val rawJsonString = outputStream.toString()
+                    Log.d(TAG, "File content: $rawJsonString")
+
+                    JsonUtils.fromJson<T>(rawJsonString)
+                } else {
+                    null
+                }
+
+                continuation.resume(data)
             }
         }
     }
@@ -72,9 +68,14 @@ class GoogleDriveRepository<T>(
     /**
      * Check if file exists and create one otherwise
      */
-    suspend fun prepare() {
-        if (!isFileExists()) {
-            createFile()
+    suspend inline fun <reified T> prepare() {
+        if (initialData !is T) return
+
+        withContext(Dispatchers.IO) {
+            if (!isFileExists()) {
+                createFile()
+                uploadContent<T>(initialData)
+            }
         }
     }
 
@@ -82,7 +83,7 @@ class GoogleDriveRepository<T>(
         // give your friend a permission to read your file
     }
 
-    private suspend fun isFileExists(): Boolean {
+    suspend fun isFileExists(): Boolean {
         Log.d(TAG, "isFileExists() called")
         return suspendCoroutine { continuation ->
             GoogleDriveAuthorizationManager.runWithAuthorisation { drive: Drive ->
@@ -104,7 +105,7 @@ class GoogleDriveRepository<T>(
         }
     }
 
-    private suspend fun createFile() {
+    suspend fun createFile() {
         Log.d(TAG, "createFile() called")
         return suspendCoroutine { continuation ->
             GoogleDriveAuthorizationManager.runWithAuthorisation { drive: Drive ->
@@ -125,7 +126,7 @@ class GoogleDriveRepository<T>(
         }
     }
 
-    private suspend inline fun <reified T> uploadContent(data: T): Boolean {
+    suspend inline fun <reified T> uploadContent(data: T): Boolean {
         Log.d(TAG, "uploadContent() called: data = $data")
         return suspendCoroutine { continuation ->
             GoogleDriveAuthorizationManager.runWithAuthorisation { drive: Drive ->

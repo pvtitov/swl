@@ -9,7 +9,7 @@ import com.github.pvtitov.simplewishlist.domain.model.WishList
 class CompositeRepository {
 
     private val googleDriveRepository by lazy {
-        GoogleDriveRepository<WishList>(FILE_NAME)
+        GoogleDriveRepository(FILE_NAME, WishList(emptyList(), emptyList(), emptyMap()))
     }
 
     suspend fun download(userName: String): WishList? {
