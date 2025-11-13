@@ -1,13 +1,14 @@
 package com.github.pvtitov.noserver
 
-import android.content.Context
 import android.util.Log
 import com.google.api.client.http.ByteArrayContent
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.model.File
+import com.google.api.services.drive.model.Permission
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
+import java.io.IOException
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -17,10 +18,24 @@ class GoogleDriveRepository<T>(
     val initialData: T
 ) {
     /**
+     * Check if file exists and create one otherwise. Call before any other action requiring an existing file like
+     * [download], [upload], [addFriend].
+     */
+    suspend inline fun <reified T> initialize() {
+        if (initialData !is T) return
+
+        withContext(Dispatchers.IO) {
+            if (!isFileExists()) {
+                createFile()
+                upload<T>(initialData)
+            }
+        }
+    }
+
+    /**
      * Call without parameter to load currently authenticated user data or provider user's e-mail as [login]
      */
     suspend inline fun <reified T> download(login: String = AUTHENTICATED_USER): T? {
-        prepare<T>()
         return suspendCoroutine { continuation ->
             GoogleDriveAuthorizationManager.runWithAuthorisation { drive: Drive ->
 
@@ -37,7 +52,7 @@ class GoogleDriveRepository<T>(
                     .files
                     .firstOrNull()
 
-                Log.d(TAG, "download(): file = $file, name = ${file?.name}, id = ${file?.id}, owners = ${file?.owners}, owned by me = ${file?.ownedByMe}")
+                Log.d(TAG, "download(): file = $file")
 
                 val data = if (file != null) {
                     val outputStream = ByteArrayOutputStream()
@@ -57,54 +72,86 @@ class GoogleDriveRepository<T>(
         }
     }
 
-    suspend fun upload(
-        data: T,
-        context: Context,
-        callback: (Boolean) -> Unit
-    ) {
-        // TODO: by this point file should exist, upload data to file
-    }
+    suspend inline fun <reified T> upload(
+        data: T
+    ): Boolean {
+        Log.d(TAG, "upload() called: data = $data")
+        return suspendCoroutine { continuation ->
+            GoogleDriveAuthorizationManager.runWithAuthorisation { drive: Drive ->
+                val file = getMyFile(drive)
 
-    /**
-     * Check if file exists and create one otherwise
-     */
-    suspend inline fun <reified T> prepare() {
-        if (initialData !is T) return
-
-        withContext(Dispatchers.IO) {
-            if (!isFileExists()) {
-                createFile()
-                uploadContent<T>(initialData)
+                if (file != null) {
+                    val jsonString = JsonUtils.toJson<T>(data)
+                    val mediaContent = ByteArrayContent.fromString("application/json", jsonString)
+                    drive.files().update(file.id, null, mediaContent).execute()
+                    continuation.resume(true)
+                } else {
+                    Log.e(TAG, "File '$fileName' not found for upload.")
+                    continuation.resume(false)
+                }
             }
         }
     }
 
-    suspend fun addFriend(login: String) {
-        // give your friend a permission to read your file
+    suspend fun addFriend(login: String): Boolean {
+        Log.d(TAG, "addFriend() called for $login")
+        return suspendCoroutine { continuation ->
+            GoogleDriveAuthorizationManager.runWithAuthorisation { drive: Drive ->
+                try {
+                    val permission = Permission().apply {
+                        type = "user"
+                        role = "reader"
+                        emailAddress = login
+                    }
+
+                    val file = getMyFile(drive) ?: run {
+                        continuation.resume(false)
+                        return@runWithAuthorisation
+                    }
+
+                    drive.permissions().create(file.id, permission).execute()
+
+                    Log.d(TAG, "Successfully added friend $login as a reader to your $fileName")
+                    continuation.resume(true)
+                } catch (e: IOException) {
+                    Log.e(TAG, "Failed to add friend $login", e)
+                    continuation.resume(false)
+                }
+            }
+        }
     }
 
+    @Deprecated(
+        "Don't use directly from outside this class. " +
+                "It is only public to let reified parameter for this or dependent functions"
+    )
     suspend fun isFileExists(): Boolean {
         Log.d(TAG, "isFileExists() called")
         return suspendCoroutine { continuation ->
             GoogleDriveAuthorizationManager.runWithAuthorisation { drive: Drive ->
-                val file = drive.files().list()
-                    .setQ("name='$fileName'")
-                    .setSpaces("drive")
-                    .setFields("files(id, name)")
-                    .execute()
-                    .files
-                    .firstOrNull()
+                val file = getMyFile(drive)
                 Log.d(TAG, "isFileExists() = ${file != null}")
-//                val file = drive.files().list()
-//                    .setSpaces("drive")
-//                    .execute()
-//                    .files
-//                    .find { fileName == it.name }
                 continuation.resume(file != null)
             }
         }
     }
 
+    @Deprecated(
+        "Don't use directly from outside this class. " +
+                "It is only public to let reified parameter for this or dependent functions"
+    )
+    fun getMyFile(drive: Drive) = drive.files().list()
+        .setQ("name='$fileName' and 'me' in owners")
+        .setSpaces("drive")
+        .setFields("files(id, name)")
+        .execute()
+        .files
+        .firstOrNull()
+
+    @Deprecated(
+        "Don't use directly from outside this class. " +
+                "It is only public to let reified parameter for this or dependent functions"
+    )
     suspend fun createFile() {
         Log.d(TAG, "createFile() called")
         return suspendCoroutine { continuation ->
@@ -122,31 +169,6 @@ class GoogleDriveRepository<T>(
                     .setFields("id")
                     .execute()
                 continuation.resume(Unit)
-            }
-        }
-    }
-
-    suspend inline fun <reified T> uploadContent(data: T): Boolean {
-        Log.d(TAG, "uploadContent() called: data = $data")
-        return suspendCoroutine { continuation ->
-            GoogleDriveAuthorizationManager.runWithAuthorisation { drive: Drive ->
-                val file = drive.files().list()
-                    .setQ("name='$fileName' and 'me' in owners")
-                    .setSpaces("drive")
-                    .setFields("files(id, name)")
-                    .execute()
-                    .files
-                    .firstOrNull()
-
-                if (file != null) {
-                    val jsonString = JsonUtils.toJson<T>(data)
-                    val mediaContent = ByteArrayContent.fromString("application/json", jsonString)
-                    drive.files().update(file.id, null, mediaContent).execute()
-                    continuation.resume(true)
-                } else {
-                    Log.e(TAG, "File '$fileName' not found for upload.")
-                    continuation.resume(false)
-                }
             }
         }
     }

@@ -14,7 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -41,8 +40,6 @@ fun HostComposable(
 
     val currentLogin by viewModel.currentLoginFlow.collectAsStateWithLifecycle("")
     val isDataUpdated by viewModel.isWishListUpdatedState.collectAsStateWithLifecycle(false)
-
-    val context = LocalContext.current
 
     val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
 
@@ -141,7 +138,7 @@ fun HostComposable(
                 FloatingActionButton(
                     onClick = {
                         coroutineScope.launch {
-                            viewModel.onClickUpload(context)
+                            viewModel.onClickUpload()
                         }
                     },
                 ) {

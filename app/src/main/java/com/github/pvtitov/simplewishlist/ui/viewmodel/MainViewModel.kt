@@ -1,29 +1,18 @@
 package com.github.pvtitov.simplewishlist.ui.viewmodel
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.pvtitov.simplewishlist.domain.model.Credentials
 import com.github.pvtitov.simplewishlist.domain.model.User
 import com.github.pvtitov.simplewishlist.domain.model.Wish
 import com.github.pvtitov.simplewishlist.domain.model.WishList
-import com.github.pvtitov.simplewishlist.ui.model.DeleteWishScreen
-import com.github.pvtitov.simplewishlist.ui.model.EditWishScreen
-import com.github.pvtitov.simplewishlist.ui.model.Error
-import com.github.pvtitov.simplewishlist.ui.model.LoginScreen
-import com.github.pvtitov.simplewishlist.ui.model.NewWishScreen
-import com.github.pvtitov.simplewishlist.ui.model.Screen
-import com.github.pvtitov.simplewishlist.ui.model.UsersScreen
-import com.github.pvtitov.simplewishlist.ui.model.WishListScreen
-import com.github.pvtitov.simplewishlist.ui.model.WishScreen
+import com.github.pvtitov.simplewishlist.ui.model.*
 import com.github.pvtitov.simplewishlist.utils.DI
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainViewModel : ViewModel() {
 
@@ -58,12 +47,12 @@ class MainViewModel : ViewModel() {
     private val _isWishListUpdatedState = MutableStateFlow(false)
     val isWishListUpdatedState: StateFlow<Boolean> = _isWishListUpdatedState.asStateFlow()
 
-    private suspend fun upload(context: Context) {
+    private suspend fun upload() {
         val data = modifiedWishList ?: return
 
         val isUploaded = withContext(Dispatchers.Main) {
             //_manualRepository.upload(data)
-            _compositeRepository.upload(context, data)
+            _compositeRepository.upload(data)
             true
         }
         if (isUploaded) {
@@ -130,9 +119,9 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    suspend fun onClickUpload(context: Context) {
+    suspend fun onClickUpload() {
         requireAuthorization {
-            upload(context)
+            upload()
         }
     }
 
