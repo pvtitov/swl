@@ -52,6 +52,8 @@ internal class NoServerActivity : Activity() {
                 startActivityForResult(userRecoverableExceptionIntent, AUTHORIZATION_REQUEST_CODE)
             } else if (extras.containsKey(AUTHENTICATION_EXTRA_KEY)) {
                 GoogleDriveAuthorizationManager.authenticate(this@NoServerActivity)
+            } else if (extras.containsKey(LOGOUT_EXTRA_KEY)) {
+                GoogleDriveAuthorizationManager.logout(this@NoServerActivity)
             } else {
                 finish()
             }
@@ -79,6 +81,7 @@ internal class NoServerActivity : Activity() {
     companion object {
         internal const val AUTHENTICATION_EXTRA_KEY = "AUTHENTICATION_EXTRA_KEY"
         internal const val AUTHORIZATION_EXTRA_KEY = "AUTHORIZATION_EXTRA_KEY"
+        internal const val LOGOUT_EXTRA_KEY = "LOGOUT_EXTRA_KEY"
         private const val AUTHORIZATION_REQUEST_CODE = 14
         private const val TAG = "NoServerActivity"
     }

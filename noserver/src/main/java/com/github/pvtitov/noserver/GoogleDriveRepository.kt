@@ -121,6 +121,10 @@ class GoogleDriveRepository<T>(
         }
     }
 
+    suspend fun logout() {
+        GoogleDriveAuthorizationManager.logout()
+    }
+
     @Deprecated(
         "Don't use directly from outside this class. " +
                 "It is only public to let reified parameter for this or dependent functions"

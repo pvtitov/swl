@@ -6,10 +6,8 @@ import android.app.Activity.RESULT_OK
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import androidx.credentials.Credential
-import androidx.credentials.CredentialManager
-import androidx.credentials.CustomCredential
-import androidx.credentials.GetCredentialRequest
+import androidx.credentials.*
+import androidx.credentials.exceptions.ClearCredentialException
 import androidx.credentials.exceptions.GetCredentialException
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
@@ -29,7 +27,8 @@ import kotlin.coroutines.suspendCoroutine
 
 internal object GoogleDriveAuthenticator {
 
-    private var drive: Drive? = null
+    internal var drive: Drive? = null
+        private set
     private var authorizationConsentCoroutineScope: CoroutineScope? = null
     private var authorizationConsentContinuation: Continuation<Boolean>? = null
 
@@ -45,6 +44,18 @@ internal object GoogleDriveAuthenticator {
             Result.failure(AuthenticationFailedException())
         }
     }
+
+    internal suspend fun logout(context: Context) {
+        try {
+            val credentialManager = CredentialManager.create(context)
+            credentialManager.clearCredentialState(ClearCredentialStateRequest())
+            Log.d(TAG, "User logged out and credential state cleared successfully.")
+        } catch (e: ClearCredentialException) {
+            Log.e(TAG, "Error clearing credential state during logout", e)
+        }
+        drive = null
+    }
+
 
     internal fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (requestCode) {

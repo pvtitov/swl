@@ -96,11 +96,15 @@ fun HostComposable(
                 .padding(top = paddingL, end = paddingL)
         ) {
             FloatingActionButton(
-                onClick = {},
+                onClick = {
+                    coroutineScope.launch {
+                        viewModel.onClickLogout()
+                    }
+                },
             ) {
                 Text(
                     modifier = Modifier.padding(paddingL),
-                    text = stringResource(id = R.string.host_button_login)
+                    text = stringResource(id = R.string.host_button_logout)
                 )
             }
         }
@@ -114,27 +118,15 @@ fun HostComposable(
                     .padding(start = paddingL, bottom = paddingL)
             ) {
                 FloatingActionButton(
-                    onClick = {},
-                ) {
-                    Text(
-                        modifier = Modifier.padding(paddingL),
-                        text = stringResource(id = R.string.host_button_import)
-                    )
-                }
-            }
-            AnimatedVisibility(
-                visible = isControlsVisible,
-                modifier = Modifier
-                    .padding(start = paddingL, bottom = paddingL)
-            ) {
-                FloatingActionButton(
                     onClick = {
-                        coroutineScope.launch {}
+                        coroutineScope.launch {
+                            viewModel.onClickUsers()
+                        }
                     },
                 ) {
                     Text(
                         modifier = Modifier.padding(paddingL),
-                        text = stringResource(id = R.string.host_button_export)
+                        text = stringResource(id = R.string.host_button_friends)
                     )
                 }
             }
@@ -166,21 +158,6 @@ fun HostComposable(
                 FloatingActionButton(
                     onClick = {
                         coroutineScope.launch {
-                            viewModel.onClickUsers()
-                        }
-                    },
-                    modifier = Modifier
-                        .padding(bottom = paddingL, end = paddingL)
-                        .align(Alignment.End)
-                ) {
-                    Text(
-                        modifier = Modifier.padding(paddingL),
-                        text = stringResource(id = R.string.host_button_friends)
-                    )
-                }
-                FloatingActionButton(
-                    onClick = {
-                        coroutineScope.launch {
                             viewModel.onClickWishList()
                         }
                     },
@@ -203,6 +180,4 @@ fun HostComposable(
     }
 }
 
-val PREVIEW_CONTENT_COMPOSABLE: @Composable () -> Unit = {
-//    WishListComposable()
-}
+val PREVIEW_CONTENT_COMPOSABLE: @Composable () -> Unit = {}

@@ -1,10 +1,12 @@
 package com.github.pvtitov.noserver
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.util.Log
 import com.github.pvtitov.noserver.NoServerActivity.Companion.AUTHENTICATION_EXTRA_KEY
 import com.github.pvtitov.noserver.NoServerActivity.Companion.AUTHORIZATION_EXTRA_KEY
+import com.github.pvtitov.noserver.NoServerActivity.Companion.LOGOUT_EXTRA_KEY
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import com.google.api.services.drive.Drive
 
@@ -12,15 +14,13 @@ object GoogleDriveAuthorizationManager {
 
     private const val TAG = "GoogleDriveAuthorizationManager"
 
-    private var drive: Drive? = null
-
     // TODO: implement action queue
     private var action: ((Drive) -> Unit)? = null
 
     fun runWithAuthorisation(action: (Drive) -> Unit) {
         this.action = action
 
-        val driveImmutable = drive
+        val driveImmutable = GoogleDriveAuthenticator.drive
         if (driveImmutable != null) {
             Log.d(TAG, "runWithAuthorisation(): run action (handle user recoverable exception)")
             handleUserRecoverableAuthException {
@@ -44,19 +44,33 @@ object GoogleDriveAuthorizationManager {
             }
         }
     }
-    
+
+    fun logout() {
+        NoServerApplication.applicationContext?.let { context ->
+            context.startActivity(
+                Intent(context, NoServerActivity::class.java).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    putExtra(LOGOUT_EXTRA_KEY, true)
+                }
+            )
+        }
+    }
+
+    internal suspend fun logout(context: Context) {
+        GoogleDriveAuthenticator.logout(context)
+    }
+
     internal suspend fun authenticate(activity: Activity) {
         Log.d(TAG, "authenticate(Activity) called")
         val authenticationResult = GoogleDriveAuthenticator.authenticate(activity)
         if (authenticationResult.isSuccess) {
             Log.d(TAG, "On authentication result")
-            drive = authenticationResult.getOrNull() ?: run {
+            val driveImmutable = authenticationResult.getOrNull() ?: run {
                 Log.d(TAG, "Drive is null")
                 return
             }
             val actionImmutable = action
-            val driveImmutable = drive
-            if (actionImmutable != null && driveImmutable != null) {
+            if (actionImmutable != null) {
                 handleUserRecoverableAuthException {
                     actionImmutable.invoke(driveImmutable)
                 }
@@ -67,7 +81,7 @@ object GoogleDriveAuthorizationManager {
     internal fun authorize() {
         Log.d(TAG, "authorize() called")
         val actionImmutable = action
-        val driveImmutable = drive
+        val driveImmutable = GoogleDriveAuthenticator.drive
         if (actionImmutable != null && driveImmutable != null) {
             handleUserRecoverableAuthException {
                 actionImmutable.invoke(driveImmutable)
@@ -81,7 +95,11 @@ object GoogleDriveAuthorizationManager {
             this.action = null
             Log.d(TAG, "handleUserRecoverableAuthException(): action succeeded")
         } catch (e: UserRecoverableAuthIOException) {
-            Log.d(TAG, "handleUserRecoverableAuthException(): action failed with recoverable exception: $e, ${e.message}, ${e.cause}", e)
+            Log.d(
+                TAG,
+                "handleUserRecoverableAuthException(): action failed with recoverable exception: $e, ${e.message}, ${e.cause}",
+                e
+            )
             val intent = e.intent
             val context = NoServerApplication.applicationContext
             if (context != null && intent != null) {

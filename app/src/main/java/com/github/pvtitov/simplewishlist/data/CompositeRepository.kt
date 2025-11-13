@@ -41,6 +41,11 @@ class CompositeRepository {
         return googleDriveRepository.addFriend(login)
     }
 
+    suspend fun logout() {
+        Log.d(TAG, "logout()")
+        googleDriveRepository.logout()
+    }
+
     private companion object {
         private const val TAG = "CompositeRepository"
         private const val FILE_NAME = "wishlist.awl"

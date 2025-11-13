@@ -110,6 +110,10 @@ class MainViewModel : ViewModel() {
         openUserWishListScreen(user)
     }
 
+    suspend fun onClickLogout() {
+        _compositeRepository.logout()
+    }
+
     private suspend fun openWishListScreen() {
         _currentScreenState.emit(WishListScreen(modifiedWishList))
         downloadMine()
