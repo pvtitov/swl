@@ -96,11 +96,7 @@ fun HostComposable(
                 .padding(top = paddingL, end = paddingL)
         ) {
             FloatingActionButton(
-                onClick = {
-                    coroutineScope.launch {
-                        viewModel.onClickLogin()
-                    }
-                },
+                onClick = {},
             ) {
                 Text(
                     modifier = Modifier.padding(paddingL),
@@ -118,11 +114,7 @@ fun HostComposable(
                     .padding(start = paddingL, bottom = paddingL)
             ) {
                 FloatingActionButton(
-                    onClick = {
-                        coroutineScope.launch {
-                            viewModel.onClickDownload()
-                        }
-                    },
+                    onClick = {},
                 ) {
                     Text(
                         modifier = Modifier.padding(paddingL),
@@ -137,9 +129,7 @@ fun HostComposable(
             ) {
                 FloatingActionButton(
                     onClick = {
-                        coroutineScope.launch {
-                            viewModel.onClickUpload()
-                        }
+                        coroutineScope.launch {}
                     },
                 ) {
                     Text(

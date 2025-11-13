@@ -2,33 +2,23 @@ package com.github.pvtitov.simplewishlist.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.pvtitov.simplewishlist.domain.model.Credentials
 import com.github.pvtitov.simplewishlist.domain.model.User
 import com.github.pvtitov.simplewishlist.domain.model.Wish
 import com.github.pvtitov.simplewishlist.domain.model.WishList
 import com.github.pvtitov.simplewishlist.ui.model.*
 import com.github.pvtitov.simplewishlist.utils.DI
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class MainViewModel : ViewModel() {
 
-    internal var ioDispatcher: CoroutineDispatcher = Dispatchers.IO
-
-    private val _manualRepository by lazy { DI.manualRepository }
     private val _compositeRepository by lazy { DI.compositeRepository }
 
-    private val _credentialsState: MutableStateFlow<Credentials?> = MutableStateFlow(null)
-    val currentLoginFlow: StateFlow<String?> = _credentialsState
-        .map { it?.login }
+    private val _currentUserState: MutableStateFlow<User?> = MutableStateFlow(null)
+    val currentLoginFlow: StateFlow<String?> = _currentUserState
+        .map { it?.name }
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
-
-    private fun Credentials.isVerified(): Boolean {
-        return login.isNotEmpty()
-    }
 
     private val _errorState = MutableStateFlow<Error?>(null)
     val errorState: StateFlow<Error?> = _errorState.asStateFlow()
@@ -51,7 +41,6 @@ class MainViewModel : ViewModel() {
         val data = modifiedWishList ?: return
 
         val isUploaded = withContext(Dispatchers.Main) {
-            //_manualRepository.upload(data)
             _compositeRepository.upload(data)
             true
         }
@@ -62,119 +51,68 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    private suspend fun download(): WishList? {
+    private suspend fun downloadMine(): WishList? {
         return withContext(Dispatchers.IO) {
-            //_manualRepository.download()
-            _compositeRepository.download(_credentialsState.value?.login ?: return@withContext null)?.also {
+            _compositeRepository.downloadMine()?.also {
+                downloadedWishList = it
+            }
+        }
+    }
+
+    private suspend fun download(login: String): WishList? {
+        return withContext(Dispatchers.IO) {
+            _compositeRepository.download(login)?.also {
                 downloadedWishList = it
             }
         }
     }
 
     private val _currentScreenState: MutableStateFlow<Screen> =
-        MutableStateFlow(LoginScreen)
+        MutableStateFlow(WishListScreen(null))
     val currentScreenState: StateFlow<Screen> = _currentScreenState
-        .stateIn(viewModelScope, SharingStarted.Eagerly, LoginScreen)
-
-    private suspend fun requireAuthorization(action: suspend (Credentials) -> Unit) {
-        val credentials = _credentialsState.value
-        if (credentials != null) {
-            action(credentials)
-        } else {
-            error("Authorization required")
-        }
-    }
-
-    suspend fun onClickSubmitLogin(credentials: Credentials?) {
-        cleanUp()
-        if (credentials?.isVerified() == true) {
-            _credentialsState.emit(credentials)
-            openWishListScreen()
-        }
-    }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, WishListScreen(null))
 
     suspend fun onClickUsers() {
-        requireAuthorization {
-            openUsersScreen()
-        }
+        openUsersScreen()
     }
 
     suspend fun onClickWishList() {
-        requireAuthorization {
-            openWishListScreen()
-        }
-    }
-
-    fun onClickLogin() {
-        openLoginScreen()
-    }
-
-    suspend fun onClickDownload() {
-//        requireAuthorization {
-//            download()
-//            openWishListScreen()
-//        }
-        viewModelScope.launch {
-            download()
-        }
-    }
-
-    suspend fun onClickUpload() {
-        requireAuthorization {
-            upload()
-        }
+        openWishListScreen()
     }
 
     suspend fun onClickNewWish() {
-        requireAuthorization {
-            openNewWishScreen()
-        }
+        openNewWishScreen()
     }
 
     suspend fun onClickSaveNewWish(oldWish: Wish?, newWish: Wish) {
-        requireAuthorization {
-            modifyWish(oldWish, newWish)
-        }
+        modifyWish(oldWish, newWish)
         openWishListScreen()
     }
 
     suspend fun onClickWish(wish: Wish) {
-        requireAuthorization {
-            openWishScreen(wish)
-        }
+        openWishScreen(wish)
     }
 
     suspend fun onClickEditWish(wish: Wish) {
-        requireAuthorization {
-            openEditWishScreen(wish)
-        }
+        openEditWishScreen(wish)
     }
 
     suspend fun onClickDeleteWish(wish: Wish) {
-        requireAuthorization {
-            openDeleteWishScreen(wish)
-        }
+        openDeleteWishScreen(wish)
     }
 
     suspend fun onClickConfirmDeleteWish(wish: Wish) {
-        requireAuthorization {
-            modifyWish(wish, null)
-        }
+        modifyWish(wish, null)
         openWishListScreen()
     }
 
     suspend fun onClickUser(user: User) {
-        requireAuthorization {
-            openUserWishListScreen(user)
-        }
-    }
-
-    private fun openLoginScreen() {
-        _currentScreenState.value = LoginScreen
+        openUserWishListScreen(user)
     }
 
     private suspend fun openWishListScreen() {
         _currentScreenState.emit(WishListScreen(modifiedWishList))
+        downloadMine()
     }
 
     private suspend fun openUsersScreen() {
@@ -242,7 +180,7 @@ class MainViewModel : ViewModel() {
 
     private suspend fun cleanUp() {
         downloadedWishList = null
-        _credentialsState.emit(null)
+        _currentUserState.emit(null)
         _errorState.emit(null)
     }
 

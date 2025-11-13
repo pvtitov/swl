@@ -5,20 +5,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.github.pvtitov.simplewishlist.ui.composable.screen.DeleteWishComposable
-import com.github.pvtitov.simplewishlist.ui.composable.screen.EditWishComposable
-import com.github.pvtitov.simplewishlist.ui.composable.screen.LoginComposable
-import com.github.pvtitov.simplewishlist.ui.composable.screen.NewWishComposable
-import com.github.pvtitov.simplewishlist.ui.composable.screen.UserListComposable
-import com.github.pvtitov.simplewishlist.ui.composable.screen.WishComposable
-import com.github.pvtitov.simplewishlist.ui.composable.screen.WishListComposable
-import com.github.pvtitov.simplewishlist.ui.model.DeleteWishScreen
-import com.github.pvtitov.simplewishlist.ui.model.EditWishScreen
-import com.github.pvtitov.simplewishlist.ui.model.LoginScreen
-import com.github.pvtitov.simplewishlist.ui.model.NewWishScreen
-import com.github.pvtitov.simplewishlist.ui.model.UsersScreen
-import com.github.pvtitov.simplewishlist.ui.model.WishScreen
-import com.github.pvtitov.simplewishlist.ui.model.WishListScreen
+import com.github.pvtitov.simplewishlist.ui.composable.screen.*
+import com.github.pvtitov.simplewishlist.ui.model.*
 import com.github.pvtitov.simplewishlist.ui.theme.SimpleWishListTheme
 import com.github.pvtitov.simplewishlist.ui.viewmodel.MainViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -35,46 +23,39 @@ fun NavigationComposable(
         ) {
             val screenModel by viewModel.currentScreenState.collectAsStateWithLifecycle()
 
-            if (screenModel == LoginScreen) {
-                LoginComposable(
-                    viewModel = viewModel,
-                    coroutineScope = coroutineScope
-                )
-            } else {
-                HostComposable(
-                    viewModel = viewModel
-                ) {
-                    when (val screen = screenModel) {
-                        is UsersScreen ->
-                            UserListComposable(screen.users, viewModel, coroutineScope)
+            HostComposable(
+                viewModel = viewModel
+            ) {
+                when (val screen = screenModel) {
+                    is UsersScreen ->
+                        UserListComposable(screen.users, viewModel, coroutineScope)
 
-                        is WishListScreen -> {
-                            WishListComposable(
-                                screen.wishList?.wishes
-                                    ?: emptyList(),
-                                viewModel,
-                                coroutineScope = coroutineScope
-                            )
-                        }
-
-                        is WishScreen -> {
-                            WishComposable(screen.wish, viewModel, coroutineScope)
-                        }
-
-                        is EditWishScreen -> {
-                            EditWishComposable(screen.wish, viewModel, coroutineScope)
-                        }
-
-                        is DeleteWishScreen -> {
-                            DeleteWishComposable(screen.wish, viewModel, coroutineScope)
-                        }
-
-                        is NewWishScreen -> {
-                            NewWishComposable(viewModel, coroutineScope)
-                        }
-
-                        else -> Unit
+                    is WishListScreen -> {
+                        WishListComposable(
+                            screen.wishList?.wishes
+                                ?: emptyList(),
+                            viewModel,
+                            coroutineScope = coroutineScope
+                        )
                     }
+
+                    is WishScreen -> {
+                        WishComposable(screen.wish, viewModel, coroutineScope)
+                    }
+
+                    is EditWishScreen -> {
+                        EditWishComposable(screen.wish, viewModel, coroutineScope)
+                    }
+
+                    is DeleteWishScreen -> {
+                        DeleteWishComposable(screen.wish, viewModel, coroutineScope)
+                    }
+
+                    is NewWishScreen -> {
+                        NewWishComposable(viewModel, coroutineScope)
+                    }
+
+                    else -> Unit
                 }
             }
         }
