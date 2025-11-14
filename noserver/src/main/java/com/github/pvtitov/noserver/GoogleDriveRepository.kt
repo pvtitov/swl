@@ -24,28 +24,28 @@ class GoogleDriveRepository<T>(
     suspend inline fun <reified T> initialize() {
         if (initialData !is T) return
 
-        withContext(Dispatchers.IO) {
-            if (!isFileExists()) {
-                createFile()
-                upload<T>(initialData)
-            }
+        if (!isFileExists()) {
+            createFile()
+            upload<T>(initialData)
         }
     }
 
     suspend fun getMyLogin(): String? {
         Log.d(TAG, "getMyLogin() called")
-        return suspendCoroutine { continuation ->
-            GoogleDriveAuthorizationManager.runWithAuthorisation { drive: Drive ->
-                val login = try {
-                    drive.about().get()
-                        .setFields("user(emailAddress, me)")
-                        .execute()
-                        .user.emailAddress
-                } catch (e: IOException) {
-                    Log.e(TAG, "Failed to get current user login", e)
-                    null
+        return withContext(Dispatchers.IO) {
+            suspendCoroutine { continuation ->
+                GoogleDriveAuthorizationManager.runWithAuthorisation { drive: Drive ->
+                    val login = try {
+                        drive.about().get()
+                            .setFields("user(emailAddress, me)")
+                            .execute()
+                            .user.emailAddress
+                    } catch (e: IOException) {
+                        Log.e(TAG, "Failed to get current user login", e)
+                        null
+                    }
+                    continuation.resume(login)
                 }
-                continuation.resume(login)
             }
         }
     }
@@ -54,38 +54,45 @@ class GoogleDriveRepository<T>(
      * Call without parameter to load currently authenticated user data or provider user's e-mail as [login]
      */
     suspend inline fun <reified T> download(login: String = AUTHENTICATED_USER): T? {
-        return suspendCoroutine { continuation ->
-            GoogleDriveAuthorizationManager.runWithAuthorisation { drive: Drive ->
+        return withContext(Dispatchers.IO) {
+            suspendCoroutine { continuation ->
+                GoogleDriveAuthorizationManager.runWithAuthorisation { drive: Drive ->
 
-                val searchQuery = if (login == AUTHENTICATED_USER) {
-                    "name='$fileName' and 'me' in owners"
-                } else {
-                    "name='$fileName' and '$login' in owners"
+                    val searchQuery = if (login == AUTHENTICATED_USER) {
+                        "name='$fileName' and 'me' in owners"
+                    } else {
+                        "name='$fileName' and '$login' in owners"
+                    }
+                    val file = try {
+                        drive.files().list()
+                            .setQ(searchQuery)
+                            .setSpaces("drive")
+                            .setFields("files(id, name, owners, ownedByMe, permissions)")
+                            .execute()
+                            .files
+                            .firstOrNull()
+                    } catch (e: IOException) {
+                        Log.e(TAG, "Failed to download data for login $login", e)
+                        null
+                    }
+
+                    Log.d(TAG, "download(): file = $file")
+
+                    val data = if (file != null) {
+                        val outputStream = ByteArrayOutputStream()
+
+                        drive.files().get(file.id).executeMediaAndDownloadTo(outputStream)
+
+                        val rawJsonString = outputStream.toString()
+                        Log.d(TAG, "File content: $rawJsonString")
+
+                        JsonUtils.fromJson<T>(rawJsonString)
+                    } else {
+                        null
+                    }
+
+                    continuation.resume(data)
                 }
-                val file = drive.files().list()
-                    .setQ(searchQuery)
-                    .setSpaces("drive")
-                    .setFields("files(id, name, owners, ownedByMe, permissions)")
-                    .execute()
-                    .files
-                    .firstOrNull()
-
-                Log.d(TAG, "download(): file = $file, permissions = ${file?.permissions}")
-
-                val data = if (file != null) {
-                    val outputStream = ByteArrayOutputStream()
-
-                    drive.files().get(file.id).executeMediaAndDownloadTo(outputStream)
-
-                    val rawJsonString = outputStream.toString()
-                    Log.d(TAG, "File content: $rawJsonString")
-
-                    JsonUtils.fromJson<T>(rawJsonString)
-                } else {
-                    null
-                }
-
-                continuation.resume(data)
             }
         }
     }
@@ -94,18 +101,26 @@ class GoogleDriveRepository<T>(
         data: T
     ): Boolean {
         Log.d(TAG, "upload() called: data = $data")
-        return suspendCoroutine { continuation ->
-            GoogleDriveAuthorizationManager.runWithAuthorisation { drive: Drive ->
-                val file = getMyFile(drive)
+        return withContext(Dispatchers.IO) {
+            suspendCoroutine { continuation ->
+                GoogleDriveAuthorizationManager.runWithAuthorisation { drive: Drive ->
+                    val file = getMyFile(drive)
 
-                if (file != null) {
-                    val jsonString = JsonUtils.toJson<T>(data)
-                    val mediaContent = ByteArrayContent.fromString("application/json", jsonString)
-                    drive.files().update(file.id, null, mediaContent).execute()
-                    continuation.resume(true)
-                } else {
-                    Log.e(TAG, "File '$fileName' not found for upload.")
-                    continuation.resume(false)
+                    if (file != null) {
+                        val jsonString = JsonUtils.toJson<T>(data)
+                        val mediaContent = ByteArrayContent.fromString("application/json", jsonString)
+                        val result = try {
+                            drive.files().update(file.id, null, mediaContent).execute()
+                            true
+                        } catch (e: IOException) {
+                            Log.e(TAG, "Failed to get current user login", e)
+                            false
+                        }
+                        continuation.resume(result)
+                    } else {
+                        Log.e(TAG, "File '$fileName' not found for upload.")
+                        continuation.resume(false)
+                    }
                 }
             }
         }
@@ -113,34 +128,38 @@ class GoogleDriveRepository<T>(
 
     suspend fun addFriend(login: String): Boolean {
         Log.d(TAG, "addFriend() called for $login")
-        return suspendCoroutine { continuation ->
-            GoogleDriveAuthorizationManager.runWithAuthorisation { drive: Drive ->
-                try {
-                    val permission = Permission().apply {
-                        type = "user"
-                        role = "reader"
-                        emailAddress = login
-                    }
+        return withContext(Dispatchers.IO) {
+            suspendCoroutine { continuation ->
+                GoogleDriveAuthorizationManager.runWithAuthorisation { drive: Drive ->
+                    try {
+                        val permission = Permission().apply {
+                            type = "user"
+                            role = "reader"
+                            emailAddress = login
+                        }
 
-                    val file = getMyFile(drive) ?: run {
+                        val file = getMyFile(drive) ?: run {
+                            continuation.resume(false)
+                            return@runWithAuthorisation
+                        }
+
+                        drive.permissions().create(file.id, permission).execute()
+
+                        Log.d(TAG, "Successfully added friend $login as a reader to your $fileName")
+                        continuation.resume(true)
+                    } catch (e: IOException) {
+                        Log.e(TAG, "Failed to add friend $login", e)
                         continuation.resume(false)
-                        return@runWithAuthorisation
                     }
-
-                    drive.permissions().create(file.id, permission).execute()
-
-                    Log.d(TAG, "Successfully added friend $login as a reader to your $fileName")
-                    continuation.resume(true)
-                } catch (e: IOException) {
-                    Log.e(TAG, "Failed to add friend $login", e)
-                    continuation.resume(false)
                 }
             }
         }
     }
 
     suspend fun logout() {
-        GoogleDriveAuthorizationManager.logout()
+        withContext(Dispatchers.IO) {
+            GoogleDriveAuthorizationManager.logout()
+        }
     }
 
     @Deprecated(
@@ -149,11 +168,13 @@ class GoogleDriveRepository<T>(
     )
     suspend fun isFileExists(): Boolean {
         Log.d(TAG, "isFileExists() called")
-        return suspendCoroutine { continuation ->
-            GoogleDriveAuthorizationManager.runWithAuthorisation { drive: Drive ->
-                val file = getMyFile(drive)
-                Log.d(TAG, "isFileExists() = ${file != null}")
-                continuation.resume(file != null)
+        return withContext(Dispatchers.IO) {
+            suspendCoroutine { continuation ->
+                GoogleDriveAuthorizationManager.runWithAuthorisation { drive: Drive ->
+                    val file = getMyFile(drive)
+                    Log.d(TAG, "isFileExists() = ${file != null}")
+                    continuation.resume(file != null)
+                }
             }
         }
     }
@@ -162,35 +183,48 @@ class GoogleDriveRepository<T>(
         "Don't use directly from outside this class. " +
                 "It is only public to let reified parameter for this or dependent functions"
     )
-    fun getMyFile(drive: Drive) = drive.files().list()
-        .setQ("name='$fileName' and 'me' in owners")
-        .setSpaces("drive")
-        .setFields("files(id, name)")
-        .execute()
-        .files
-        .firstOrNull()
+    fun getMyFile(drive: Drive) = try {
+        drive.files().list()
+            .setQ("name='$fileName' and 'me' in owners")
+            .setSpaces("drive")
+            .setFields("files(id, name)")
+            .execute()
+            .files
+            .firstOrNull()
+    } catch (e: IOException) {
+        Log.e(TAG, "Failed to get my file", e)
+        null
+    }
 
     @Deprecated(
         "Don't use directly from outside this class. " +
                 "It is only public to let reified parameter for this or dependent functions"
     )
-    suspend fun createFile() {
+    suspend fun createFile(): Boolean {
         Log.d(TAG, "createFile() called")
-        return suspendCoroutine { continuation ->
-            GoogleDriveAuthorizationManager.runWithAuthorisation { drive: Drive ->
-                val me = drive.about().get()
-                    .setFields("user(emailAddress, me)")
-                    .execute().user
+        return withContext(Dispatchers.IO) {
+            suspendCoroutine { continuation ->
+                GoogleDriveAuthorizationManager.runWithAuthorisation { drive: Drive ->
+                    val result = try {
+                        val me = drive.about().get()
+                            .setFields("user(emailAddress, me)")
+                            .execute().user
 
-                Log.d(TAG, "createFile(): me = $me")
+                        Log.d(TAG, "createFile(): me = $me")
 
-                val file = File().apply {
-                    name = fileName
+                        val file = File().apply {
+                            name = fileName
+                        }
+                        drive.files().create(file)
+                            .setFields("id")
+                            .execute()
+                        true
+                    } catch (e: IOException) {
+                        Log.e(TAG, "Failed to create a file", e)
+                        false
+                    }
+                    continuation.resume(result)
                 }
-                drive.files().create(file)
-                    .setFields("id")
-                    .execute()
-                continuation.resume(Unit)
             }
         }
     }

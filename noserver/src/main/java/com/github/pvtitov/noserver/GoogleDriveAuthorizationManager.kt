@@ -6,6 +6,7 @@ import android.content.Intent
 import android.util.Log
 import com.github.pvtitov.noserver.NoServerActivity.Companion.AUTHENTICATION_EXTRA_KEY
 import com.github.pvtitov.noserver.NoServerActivity.Companion.AUTHORIZATION_EXTRA_KEY
+import com.github.pvtitov.noserver.NoServerActivity.Companion.FINISH_EXTRA_KEY
 import com.github.pvtitov.noserver.NoServerActivity.Companion.LOGOUT_EXTRA_KEY
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import com.google.api.services.drive.Drive
@@ -38,6 +39,7 @@ object GoogleDriveAuthorizationManager {
                 context.startActivity(
                     Intent(context, NoServerActivity::class.java).apply {
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
                         putExtra(AUTHENTICATION_EXTRA_KEY, true)
                     }
                 )
@@ -46,11 +48,26 @@ object GoogleDriveAuthorizationManager {
     }
 
     fun logout() {
+        Log.d(TAG, "logout()")
         NoServerApplication.applicationContext?.let { context ->
             context.startActivity(
                 Intent(context, NoServerActivity::class.java).apply {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
                     putExtra(LOGOUT_EXTRA_KEY, true)
+                }
+            )
+        }
+    }
+
+    private fun finish() {
+        Log.d(TAG, "finish()")
+        NoServerApplication.applicationContext?.let { context ->
+            context.startActivity(
+                Intent(context, NoServerActivity::class.java).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                    putExtra(FINISH_EXTRA_KEY, true)
                 }
             )
         }
@@ -94,6 +111,7 @@ object GoogleDriveAuthorizationManager {
             action.invoke()
             this.action = null
             Log.d(TAG, "handleUserRecoverableAuthException(): action succeeded")
+            finish()
         } catch (e: UserRecoverableAuthIOException) {
             Log.d(
                 TAG,
@@ -106,12 +124,14 @@ object GoogleDriveAuthorizationManager {
                 context.startActivity(
                     Intent(context, NoServerActivity::class.java).apply {
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
                         putExtra(AUTHORIZATION_EXTRA_KEY, intent)
                     }
                 )
             }
         } catch (e: Throwable) {
             Log.e(TAG, "handleUserRecoverableAuthException(): action failed: $e, ${e.message}, ${e.cause}", e)
+            finish()
         }
     }
 }

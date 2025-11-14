@@ -2,11 +2,8 @@ package com.github.pvtitov.noserver
 
 import android.app.Activity
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
-import android.view.ViewGroup
-import android.widget.FrameLayout
 import kotlinx.coroutines.*
 
 
@@ -22,17 +19,17 @@ internal class NoServerActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d(TAG, "onCreate()")
-        launchAuthorization()
+        Log.d(TAG, "onCreate(): $this")
+        handleStartingIntent()
     }
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         Log.d(TAG, "onNewIntent()")
-        launchAuthorization()
+        handleStartingIntent()
     }
 
-    private fun launchAuthorization() {
+    private fun handleStartingIntent() {
         coroutineScope.launch(Dispatchers.IO) {
             val extras = intent.extras ?: run {
                 finish()
@@ -85,6 +82,7 @@ internal class NoServerActivity : Activity() {
         internal const val AUTHENTICATION_EXTRA_KEY = "AUTHENTICATION_EXTRA_KEY"
         internal const val AUTHORIZATION_EXTRA_KEY = "AUTHORIZATION_EXTRA_KEY"
         internal const val LOGOUT_EXTRA_KEY = "LOGOUT_EXTRA_KEY"
+        internal const val FINISH_EXTRA_KEY = "FINISH_EXTRA_KEY"
         private const val AUTHORIZATION_REQUEST_CODE = 14
         private const val TAG = "NoServerActivity"
     }

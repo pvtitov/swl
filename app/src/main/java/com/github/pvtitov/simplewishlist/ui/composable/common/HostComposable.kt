@@ -19,7 +19,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.pvtitov.simplewishlist.R
-import com.github.pvtitov.simplewishlist.ui.composable.element.IndicatorComposable
 import com.github.pvtitov.simplewishlist.ui.viewmodel.MainViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -39,7 +38,6 @@ fun HostComposable(
     }
 
     val currentLogin by viewModel.currentLoginFlow.collectAsStateWithLifecycle("")
-    val isDataUpdated by viewModel.isWishListUpdatedState.collectAsStateWithLifecycle(false)
 
     val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
 
@@ -63,14 +61,6 @@ fun HostComposable(
             contentComposable()
         }
         Row {
-            AnimatedVisibility(
-                visible = isControlsVisible,
-                modifier = Modifier
-                    .padding(start = paddingL, top = paddingL)
-                    .align(Alignment.CenterVertically)
-            ) {
-                IndicatorComposable(isIgnited = isDataUpdated)
-            }
             AnimatedVisibility(
                 visible = isControlsVisible,
                 modifier = Modifier

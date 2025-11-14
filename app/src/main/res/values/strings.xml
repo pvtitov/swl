@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Awl. - Ещё один вишлист</string>
+    <string name="app_name">Another Wish List</string>
 
     <string name="host_button_logout">Выйти</string>
     <string name="host_button_friends">Друзья</string>

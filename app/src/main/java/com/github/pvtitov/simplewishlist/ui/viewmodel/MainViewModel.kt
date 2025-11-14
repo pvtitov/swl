@@ -23,39 +23,13 @@ class MainViewModel : ViewModel() {
     private val _errorState = MutableStateFlow<Error?>(null)
     val errorState: StateFlow<Error?> = _errorState.asStateFlow()
 
-    private var downloadedWishList: WishList? = null
-        set(value) {
-            field = value
-            modifiedWishList = value
-        }
-    private var modifiedWishList: WishList? = null
-        set(value) {
-            field = value
-            _isWishListUpdatedState.value = value != null && value != downloadedWishList
-        }
-
-    private val _isWishListUpdatedState = MutableStateFlow(false)
-    val isWishListUpdatedState: StateFlow<Boolean> = _isWishListUpdatedState.asStateFlow()
-
-    private suspend fun upload() {
-        val data = modifiedWishList ?: return
-
-        val isUploaded = withContext(Dispatchers.Main) {
-            _compositeRepository.upload(data)
-            true
-        }
-        if (isUploaded) {
-            downloadedWishList = modifiedWishList
-        } else {
-            _errorState.emit(Error("Failed to upload user data"))
-        }
-    }
+    private var myWishList: WishList? = null
 
     private suspend fun downloadMine(): WishList? {
         return withContext(Dispatchers.IO) {
             _compositeRepository.getMyLogin()?.let { login -> _currentUserState.value = User(login = login) }
             _compositeRepository.downloadMine()?.also {
-                downloadedWishList = it
+                myWishList = it
             }
         }
     }
@@ -63,7 +37,7 @@ class MainViewModel : ViewModel() {
     private suspend fun download(login: String): WishList? {
         return withContext(Dispatchers.IO) {
             _compositeRepository.download(login)?.also {
-                downloadedWishList = it
+                myWishList = it
             }
         }
     }
@@ -84,7 +58,7 @@ class MainViewModel : ViewModel() {
     suspend fun onClickSaveNewFriend(newFriend: User) {
         addFriendLocally(newFriend)
         if (_compositeRepository.addFriend(newFriend.login)) {
-
+            _compositeRepository
             openUsersScreen()
         }
     }
@@ -98,7 +72,8 @@ class MainViewModel : ViewModel() {
     }
 
     suspend fun onClickSaveNewWish(oldWish: Wish?, newWish: Wish) {
-        modifyWish(oldWish, newWish)
+        createEditOrDeleteWish(oldWish, newWish)
+        myWishList?.let { _compositeRepository.upload(it) }
         openWishListScreen()
     }
 
@@ -115,7 +90,8 @@ class MainViewModel : ViewModel() {
     }
 
     suspend fun onClickConfirmDeleteWish(wish: Wish) {
-        modifyWish(wish, null)
+        createEditOrDeleteWish(wish, null)
+        myWishList?.let { _compositeRepository.upload(it) }
         openWishListScreen()
     }
 
@@ -129,15 +105,13 @@ class MainViewModel : ViewModel() {
     }
 
     private suspend fun openWishListScreen() {
-        _currentScreenState.emit(WishListScreen(modifiedWishList))
         downloadMine()
+        _currentScreenState.value = WishListScreen(myWishList)
     }
 
     private suspend fun openUsersScreen() {
-        val userList = modifiedWishList
-            ?.friends
-            ?: emptyList()
-        _currentScreenState.emit(UsersScreen(userList))
+        downloadMine()
+        _currentScreenState.value = UsersScreen(myWishList?.friends ?: emptyList())
     }
 
     private fun openAddFriendScreen() {
@@ -161,15 +135,15 @@ class MainViewModel : ViewModel() {
     }
 
     private suspend fun openUserWishListScreen(user: User) {
-        val wishlist = TODO("load user $user wishlist")
-        _currentScreenState.emit(WishListScreen(wishlist))
+        val wishlist = download(user.login)
+        _currentScreenState.value = WishListScreen(wishlist)
     }
 
-    private fun modifyWish(
+    private fun createEditOrDeleteWish(
         oldWish: Wish?,
         newWish: Wish?
     ) {
-        val oldWishList = modifiedWishList?.wishes ?: emptyList()
+        val oldWishList = myWishList?.wishes ?: emptyList()
         val oldWishIndex = oldWishList.indexOf(oldWish)
 
         val newWishList: List<Wish> = when {
@@ -193,31 +167,31 @@ class MainViewModel : ViewModel() {
             else -> oldWishList
         }
 
-        modifiedWishList = WishList(
-            friends = modifiedWishList?.friends ?: emptyList(),
+        myWishList = WishList(
+            friends = myWishList?.friends ?: emptyList(),
             wishes = newWishList,
-            promises = modifiedWishList?.promises ?: emptyMap()
+            promises = myWishList?.promises ?: emptyMap()
         )
     }
 
     private fun addFriendLocally(
         newFriend: User
     ) {
-        val oldFriendsList = modifiedWishList?.friends ?: emptyList()
+        val oldFriendsList = myWishList?.friends ?: emptyList()
 
         val newWishList: List<User> = oldFriendsList + newFriend
 
-        modifiedWishList = WishList(
+        myWishList = WishList(
             friends = newWishList,
-            wishes = modifiedWishList?.wishes ?: emptyList(),
-            promises = modifiedWishList?.promises ?: emptyMap()
+            wishes = myWishList?.wishes ?: emptyList(),
+            promises = myWishList?.promises ?: emptyMap()
         )
     }
 
     private suspend fun cleanUp() {
-        downloadedWishList = null
-        _currentUserState.emit(null)
-        _errorState.emit(null)
+        myWishList = null
+        _currentUserState.value = null
+        _errorState.value = null
     }
 
     companion object {
