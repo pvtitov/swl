@@ -17,7 +17,7 @@ class MainViewModel : ViewModel() {
 
     private val _currentUserState: MutableStateFlow<User?> = MutableStateFlow(null)
     val currentLoginFlow: StateFlow<String?> = _currentUserState
-        .map { it?.name }
+        .map { it?.login }
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     private val _errorState = MutableStateFlow<Error?>(null)
@@ -53,6 +53,7 @@ class MainViewModel : ViewModel() {
 
     private suspend fun downloadMine(): WishList? {
         return withContext(Dispatchers.IO) {
+            _compositeRepository.getMyLogin()?.let { login -> _currentUserState.value = User(login = login) }
             _compositeRepository.downloadMine()?.also {
                 downloadedWishList = it
             }
@@ -74,6 +75,18 @@ class MainViewModel : ViewModel() {
 
     suspend fun onClickUsers() {
         openUsersScreen()
+    }
+
+    suspend fun onClickAddFriend() {
+        openAddFriendScreen()
+    }
+
+    suspend fun onClickSaveNewFriend(newFriend: User) {
+        addFriendLocally(newFriend)
+        if (_compositeRepository.addFriend(newFriend.login)) {
+
+            openUsersScreen()
+        }
     }
 
     suspend fun onClickWishList() {
@@ -112,6 +125,7 @@ class MainViewModel : ViewModel() {
 
     suspend fun onClickLogout() {
         _compositeRepository.logout()
+        _currentUserState.value = null
     }
 
     private suspend fun openWishListScreen() {
@@ -124,6 +138,10 @@ class MainViewModel : ViewModel() {
             ?.friends
             ?: emptyList()
         _currentScreenState.emit(UsersScreen(userList))
+    }
+
+    private fun openAddFriendScreen() {
+        _currentScreenState.value = AddFriendScreen
     }
 
     private fun openWishScreen(wish: Wish) {
@@ -178,6 +196,20 @@ class MainViewModel : ViewModel() {
         modifiedWishList = WishList(
             friends = modifiedWishList?.friends ?: emptyList(),
             wishes = newWishList,
+            promises = modifiedWishList?.promises ?: emptyMap()
+        )
+    }
+
+    private fun addFriendLocally(
+        newFriend: User
+    ) {
+        val oldFriendsList = modifiedWishList?.friends ?: emptyList()
+
+        val newWishList: List<User> = oldFriendsList + newFriend
+
+        modifiedWishList = WishList(
+            friends = newWishList,
+            wishes = modifiedWishList?.wishes ?: emptyList(),
             promises = modifiedWishList?.promises ?: emptyMap()
         )
     }

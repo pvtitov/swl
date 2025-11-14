@@ -120,6 +120,24 @@ fun HostComposable(
                 FloatingActionButton(
                     onClick = {
                         coroutineScope.launch {
+                            viewModel.onClickAddFriend()
+                        }
+                    },
+                ) {
+                    Text(
+                        modifier = Modifier.padding(paddingL),
+                        text = stringResource(id = R.string.host_button_add_friend)
+                    )
+                }
+            }
+            AnimatedVisibility(
+                visible = isControlsVisible,
+                modifier = Modifier
+                    .padding(start = paddingL, bottom = paddingL)
+            ) {
+                FloatingActionButton(
+                    onClick = {
+                        coroutineScope.launch {
                             viewModel.onClickUsers()
                         }
                     },

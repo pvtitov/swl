@@ -32,6 +32,24 @@ class GoogleDriveRepository<T>(
         }
     }
 
+    suspend fun getMyLogin(): String? {
+        Log.d(TAG, "getMyLogin() called")
+        return suspendCoroutine { continuation ->
+            GoogleDriveAuthorizationManager.runWithAuthorisation { drive: Drive ->
+                val login = try {
+                    drive.about().get()
+                        .setFields("user(emailAddress, me)")
+                        .execute()
+                        .user.emailAddress
+                } catch (e: IOException) {
+                    Log.e(TAG, "Failed to get current user login", e)
+                    null
+                }
+                continuation.resume(login)
+            }
+        }
+    }
+
     /**
      * Call without parameter to load currently authenticated user data or provider user's e-mail as [login]
      */
@@ -47,12 +65,12 @@ class GoogleDriveRepository<T>(
                 val file = drive.files().list()
                     .setQ(searchQuery)
                     .setSpaces("drive")
-                    .setFields("files(id, name, owners, ownedByMe)")
+                    .setFields("files(id, name, owners, ownedByMe, permissions)")
                     .execute()
                     .files
                     .firstOrNull()
 
-                Log.d(TAG, "download(): file = $file")
+                Log.d(TAG, "download(): file = $file, permissions = ${file?.permissions}")
 
                 val data = if (file != null) {
                     val outputStream = ByteArrayOutputStream()

@@ -17,6 +17,12 @@ class CompositeRepository {
         initializer = null
     }
 
+    suspend fun getMyLogin(): String? {
+        Log.d(TAG, "getMyLogin()")
+        initializer?.invoke()
+        return googleDriveRepository.getMyLogin()
+    }
+
     suspend fun downloadMine(): WishList? {
         Log.d(TAG, "downloadMine()")
         initializer?.invoke()

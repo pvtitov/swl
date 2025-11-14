@@ -124,7 +124,7 @@ fun EditWishComposable(
                     .padding(top = paddingL)
             ) {
                 Text(
-                    text = stringResource(id = R.string.wish_button_save),
+                    text = stringResource(id = R.string.button_save),
                     style = MaterialTheme.typography.titleMedium
                 )
             }

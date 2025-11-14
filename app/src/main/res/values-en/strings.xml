@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">Awl. - Another wishlist</string>
+
+    <string name="host_button_logout">Logout</string>
+    <string name="host_button_friends">Friends</string>
+    <string name="host_button_add_friend">New friend</string>
+    <string name="host_button_wish_list">My wishlist</string>
+    <string name="host_button_new_wish">New wish</string>
+
+    <string name="button_save">Save</string>
+
+    <string name="wish_button_edit">Edit</string>
+    <string name="wish_button_delete">Delete</string>
+    <string name="wish_button_confirm_delete">Confirm deletion</string>
+    <string name="wish_field_title">Title</string>
+    <string name="wish_field_description">Description</string>
+    <string name="wish_field_image_url">Link to image</string>
+    <string name="wish_field_url">Link to the wish</string>
+
+    <string name="friend_field_name">Name</string>
+    <string name="friend_field_login">Login</string>
+
+</resources>

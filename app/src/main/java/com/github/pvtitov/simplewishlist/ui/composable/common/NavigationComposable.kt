@@ -27,8 +27,13 @@ fun NavigationComposable(
                 viewModel = viewModel
             ) {
                 when (val screen = screenModel) {
-                    is UsersScreen ->
+                    is UsersScreen -> {
                         UserListComposable(screen.users, viewModel, coroutineScope)
+                    }
+
+                    is AddFriendScreen -> {
+                        NewFriendComposable(viewModel, coroutineScope)
+                    }
 
                     is WishListScreen -> {
                         WishListComposable(

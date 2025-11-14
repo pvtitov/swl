@@ -8,6 +8,8 @@ sealed interface Screen
 
 data class UsersScreen(val users: List<User>) : Screen
 
+data object AddFriendScreen : Screen
+
 data class WishListScreen(val wishList: WishList?) : Screen
 
 data class WishScreen(val wish: Wish) : Screen
