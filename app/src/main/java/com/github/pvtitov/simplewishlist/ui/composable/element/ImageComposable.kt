@@ -20,13 +20,8 @@ fun ImageComposable(
     @DrawableRes failurePlaceholderId: Int,
 ) {
     if (imageUrl != null) {
-        val imageLoader = ImageLoader.Builder(LocalContext.current).components {
-                add(OkHttpNetworkFetcherFactory())
-            }.build()
-
         AsyncImage(
             model = imageUrl,
-            imageLoader = imageLoader,
             contentDescription = null,
             modifier = modifier,
             contentScale = ContentScale.Crop,

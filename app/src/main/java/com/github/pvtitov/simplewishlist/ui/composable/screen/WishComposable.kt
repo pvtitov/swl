@@ -53,7 +53,7 @@ fun WishComposable(
                     .aspectRatio(1f)
                     .fillMaxWidth()
                     .clip(CircleShape),
-                imageUrl = wish.wishUrl,
+                imageUrl = wish.imageUrl,
                 loadingPlaceholderId = R.drawable.ic_placeholder_24,
                 failurePlaceholderId = R.drawable.ic_placeholder_24,
             )

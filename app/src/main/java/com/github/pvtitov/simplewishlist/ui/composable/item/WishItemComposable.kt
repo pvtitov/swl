@@ -61,7 +61,7 @@ fun WishItemComposable(
                     .width(imageSize)
                     .height(imageSize)
                     .clip(CircleShape),
-                imageUrl = wish.wishUrl,
+                imageUrl = wish.imageUrl,
                 loadingPlaceholderId = R.drawable.ic_placeholder_24,
                 failurePlaceholderId = R.drawable.ic_placeholder_24,
             )
