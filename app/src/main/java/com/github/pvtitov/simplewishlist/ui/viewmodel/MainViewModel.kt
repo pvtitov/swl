@@ -1,5 +1,6 @@
 package com.github.pvtitov.simplewishlist.ui.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.pvtitov.simplewishlist.domain.model.User
@@ -10,6 +11,7 @@ import com.github.pvtitov.simplewishlist.utils.DI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
+import kotlin.math.log
 
 class MainViewModel : ViewModel() {
 
@@ -45,6 +47,7 @@ class MainViewModel : ViewModel() {
     private val _currentScreenState: MutableStateFlow<Screen> =
         MutableStateFlow(WishListScreen(null))
     val currentScreenState: StateFlow<Screen> = _currentScreenState
+        .onEach { Log.d(TAG, "current screen state = $it") }
         .stateIn(viewModelScope, SharingStarted.Eagerly, WishListScreen(null))
 
     suspend fun onClickUsers() {
@@ -58,7 +61,7 @@ class MainViewModel : ViewModel() {
     suspend fun onClickSaveNewFriend(newFriend: User) {
         addFriendLocally(newFriend)
         if (_compositeRepository.addFriend(newFriend.login)) {
-            _compositeRepository
+            myWishList?.let { _compositeRepository.upload(it) }
             openUsersScreen()
         }
     }
@@ -169,6 +172,7 @@ class MainViewModel : ViewModel() {
             else -> oldWishList
         }
 
+        Log.d(TAG, "createEditOrDeleteWish(), friends = ${myWishList?.friends}")
         myWishList = WishList(
             friends = myWishList?.friends ?: emptyList(),
             wishes = newWishList,
@@ -181,10 +185,11 @@ class MainViewModel : ViewModel() {
     ) {
         val oldFriendsList = myWishList?.friends ?: emptyList()
 
-        val newWishList: List<User> = oldFriendsList + newFriend
+        val newFriendList: List<User> = oldFriendsList + newFriend
 
+        Log.d(TAG, "addFriendLocally(), newFriendList = $newFriendList")
         myWishList = WishList(
-            friends = newWishList,
+            friends = newFriendList,
             wishes = myWishList?.wishes ?: emptyList(),
             promises = myWishList?.promises ?: emptyMap()
         )
@@ -198,5 +203,6 @@ class MainViewModel : ViewModel() {
 
     companion object {
         private const val INDEX_NOT_FOUND = -1
+        private const val TAG = "MainViewModel"
     }
 }
