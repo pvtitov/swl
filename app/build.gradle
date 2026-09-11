@@ -5,6 +5,12 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.serialization' version '2.2.21'
 }
 
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withInputStream { localProperties.load(it) }
+}
+
 android {
     namespace 'com.github.pvtitov.simplewishlist'
     compileSdk 36
@@ -15,6 +21,11 @@ android {
         targetSdk 36
         versionCode 2
         versionName "1.1"
+
+        // Each app registers its own Google Cloud OAuth web client ID and passes it to
+        // NoServer.configure() at runtime — noserver can't bake one in itself since an OAuth
+        // client ID is tied to a specific app's package name and signing certificate.
+        buildConfigField "String", "GOOGLE_WEB_CLIENT_ID", "${localProperties.getProperty('GOOGLE_WEB_CLIENT_ID')}"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -39,6 +50,7 @@ android {
     }
     buildFeatures {
         compose true
+        buildConfig true
     }
     composeOptions {
         kotlinCompilerExtensionVersion '1.3.2'
@@ -69,7 +81,7 @@ dependencies {
 
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0"
 
-    implementation 'com.github.pvtitov:noserver:1.0.0'
+    implementation 'com.github.pvtitov:noserver:1.0.1'
 
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.mockito:mockito-core:5.20.0'
