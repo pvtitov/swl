@@ -4,54 +4,42 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project overview
 
-"Simple Wish List" is an Android app (Kotlin, Jetpack Compose) that lets a user maintain a wish list and share it with friends without a dedicated backend server. Sharing is currently implemented via Google Drive (each user's wish list is a JSON file in their own Drive; friends are granted read permission on it) and via manual JSON file export/import as a fallback. Root project name is `Simple Wish List`; the Gradle module directories are `app` and `noserver`.
+"Simple Wish List" is an Android app (Kotlin, Jetpack Compose) that lets a user maintain a wish list and share it with friends without a dedicated backend server. Sharing is currently implemented via Google Drive (each user's wish list is a JSON file in their own Drive; friends are granted read permission on it) and via manual JSON file export/import as a fallback. Root project name is `Simple Wish List`; the only Gradle module is `app` — the Drive/sharing SDK (`noserver`) was extracted into its own repository (see "`noserver` is now an external dependency" below).
 
 ## Build system
 
-Gradle with Groovy DSL for `app`, Kotlin DSL for `noserver`. AGP 8.12.3, Kotlin 2.2.21, compileSdk/targetSdk 36, minSdk 23, JVM target 17.
+Gradle with Groovy DSL. AGP 8.12.3, Kotlin 2.2.21, compileSdk/targetSdk 36, minSdk 23, JVM target 17.
 
 Common commands (run from repo root):
 
 ```
 ./gradlew assembleDebug              # build the app module
-./gradlew build                      # build everything (app + noserver)
+./gradlew build                      # build everything
 ./gradlew test                       # run all JVM unit tests
 ./gradlew :app:testDebugUnitTest     # run app module unit tests only
-./gradlew :noserver:testDebugUnitTest    # run noserver module unit tests only
 ./gradlew test --tests "*.ClassName"                 # run a single test class
 ./gradlew test --tests "*.ClassName.methodName"      # run a single test method
 ./gradlew connectedAndroidTest       # run instrumented tests (needs a device/emulator)
 ./gradlew lint                       # Android lint
 ```
 
-There is currently no meaningful unit test coverage in either module — the only files under `src/test`/`src/androidTest` are the stock Android-Studio-generated `ExampleUnitTest`/`ExampleInstrumentedTest` stubs. `app`'s test dependencies (JUnit4, Mockito, MockK, mockito-kotlin, kotlinx-coroutines-test) are wired up in `build.gradle` but unused so far. Treat `./gradlew test` as a build-health check, not a correctness signal, until real tests exist.
+There is currently no meaningful unit test coverage in `app` — the only file under `src/androidTest` is the stock Android-Studio-generated `ExampleInstrumentedTest` stub. `app`'s test dependencies (JUnit4, Mockito, MockK, mockito-kotlin, kotlinx-coroutines-test) are wired up in `build.gradle` but unused so far. Treat `./gradlew test` as a build-health check, not a correctness signal, until real tests exist. (`noserver` does have real unit test coverage now — see its own repo.)
 
 No ktlint/detekt/editorconfig is configured; style follows plain Android Studio Kotlin defaults.
 
-### Required local configuration
+### `noserver` is now an external dependency — and isn't actually published yet
 
-The `noserver` module reads `GOOGLE_WEB_CLIENT_ID` out of `local.properties` (via `gradleLocalProperties`) and injects it as a `BuildConfig` field for Google Sign-In / Drive API auth. A build will fail without this key set in `local.properties` (not checked into git).
+`noserver` used to be a module in this repo (`implementation project(':noserver')`, later `implementation 'com.github.pvtitov:noserver:1.0.0'` resolved from an in-repo `local-repo/`). It has since been extracted to its own standalone repository at `../noserver` (sibling directory, not yet pushed to GitHub) so it can be a real, independently-versioned SDK shared across apps rather than a copy embedded in this monorepo.
 
-### `noserver` is consumed as a published AAR, not a source dependency
+`app/build.gradle` still depends on `implementation 'com.github.pvtitov:noserver:1.0.0'` — the coordinate string is unchanged — but `settings.gradle` now resolves it from `https://jitpack.io` instead of `local-repo`. **This will not resolve, and `./gradlew :app:assembleDebug` will fail, until the `noserver` repo is actually pushed to GitHub as `pvtitov/noserver` (public) and tagged `1.0.0`.** See that repo's `README.md` for the exact remaining steps. Until then, to build `app` locally you have two options: (a) finish the JitPack setup described there, or (b) temporarily point `settings.gradle` back at a local Maven repo (`mavenLocal()`, after running `./gradlew publishToMavenLocal` inside `../noserver`) as a stopgap.
 
-`app` depends on `noserver` via Maven coordinates (`implementation 'com.github.pvtitov:noserver:1.0.0'` in `app/build.gradle`), resolved from an in-repo local Maven repository at `local-repo/` (declared as a `dependencyResolutionManagement` repository in `settings.gradle`). It is **not** `implementation project(':noserver')` — that project dependency was deliberately removed so `noserver` behaves like a real standalone SDK artifact (publishable, versioned) even though it still lives in this repo for convenience.
-
-Practical consequence: editing code under `noserver/` has **no effect on `app`** until you republish it:
-
-```
-./gradlew :noserver:publishReleasePublicationToLocalRepoRepository   # regenerates local-repo/
-```
-
-Bump the `version` in `noserver/build.gradle.kts`'s `publishing {}` block when you do this (Gradle/Maven will otherwise happily reuse a stale cached resolution of the same version), then update the version string in `app/build.gradle` to match, then rebuild `app`. `local-repo/` is checked into git (small — one AAR + POM/module metadata per version) so a clean checkout builds without anyone needing to run the publish task first.
-
-In `noserver/build.gradle.kts`, `kotlinx-serialization-json` is declared `api` (not `implementation`) deliberately: `GoogleDriveRepository`/`JsonUtils` expose `public inline fun <reified T>` members whose bodies reference `kotlinx.serialization.json.Json`, so consumers need that dependency on their own compile classpath, not just noserver's.
+`app` no longer needs `GOOGLE_WEB_CLIENT_ID` in its own `local.properties` at all — that's only read at `noserver`'s own build/publish time (in its own repo now) and baked into the published AAR's `BuildConfig`.
 
 ## Architecture
 
-Two Gradle modules:
+One Gradle module:
 
-- **`app`** (`com.github.pvtitov.simplewishlist`) — the UI and app-level domain logic, built with Jetpack Compose and a single shared `MainViewModel` (no navigation library; screens are modeled as a sealed `Screen` state and switched in `NavigationComposable`).
-- **`noserver`** (`com.github.pvtitov.noserver`) — an Android library module providing "serverless" data sync/sharing backends (Google Drive today; manual file export as a fallback), packaged as a small SDK and consumed by `app` as a published AAR (see "`noserver` is consumed as a published AAR" above), not a source/project dependency.
+- **`app`** (`com.github.pvtitov.simplewishlist`) — the UI and app-level domain logic, built with Jetpack Compose and a single shared `MainViewModel` (no navigation library; screens are modeled as a sealed `Screen` state and switched in `NavigationComposable`). Depends on the external `noserver` SDK (see above) for Google-Drive-backed data sync.
 
 ### `app` module layering
 
@@ -63,11 +51,11 @@ Two Gradle modules:
 - `ui/model/Screen` — sealed hierarchy of navigation states (`WishListScreen`, `UsersScreen`, `AddFriendScreen`, `WishScreen`, `NewWishScreen`, `EditWishScreen`, `DeleteWishScreen`), each carrying whatever data that screen needs (e.g. `WishListScreen(myWishList)`), consumed by `ui/composable/common/NavigationComposable`.
 - `ui/composable/{common,element,item,screen}` — Compose UI, split into shared scaffolding (`common`), small reusable pieces (`element`), list-row items (`item`), and full screens (`screen`).
 
-### `noserver` module
+### `noserver` SDK (external — lives at `../noserver`)
 
-- `GoogleDriveRepository<T>` — generic Drive-backed store for a single JSON file named `fileName`. Auth/Drive-client access goes through `GoogleDriveAuthorizationManager.runWithGoogleDrive { drive -> ... }`, which wraps `GoogleDriveAuthenticator`/`GoogleDriveAuthorizer` (Credential Manager + Google Sign-In). All I/O runs on a dedicated single-thread executor context and older Drive calls are bridged to coroutines with `suspendCoroutine`. Several low-level members (`isFileExists`, `getMyFile`, `createFile`) are `@Deprecated` "public but don't call directly" — they exist only because Kotlin requires `reified` inline call sites to see them; treat them as private implementation detail.
-- This is effectively the module's entire public API surface today, plus `JsonUtils` (internal JSON (de)serialization helper) and the manifest-declared `NoServerActivity`/`NoServerApplication` used internally for the auth flow.
-- An in-progress rewrite of the sharing layer (`protocol/`: `NoServer`, `ShareProtocol`, `SharingManager`, `SigningManager`, `Interactor`, per-backend repositories) was removed from the working tree — it was unused scaffolding that didn't compile (`NoServer.kt` referenced an undefined type `T`, `ShareProtocolImpl`/`SigningManagerImpl` didn't implement their abstract members) and was breaking the build of the whole module, hence `app`, entirely. It's recoverable from git history (commit `a79c874`, "protocol in progress. might not compile") if that rewrite is picked back up — at that point it should probably live in its own Gradle module so its build state can't take down the published SDK again.
+`GoogleDriveRepository<T>` — generic Drive-backed store for a single JSON file named `fileName`. Auth/Drive-client access goes through `GoogleDriveAuthorizationManager.runWithGoogleDrive { drive -> ... }`, which wraps `GoogleDriveAuthenticator`/`GoogleDriveAuthorizer` (Credential Manager + Google Sign-In). All I/O runs on a dedicated single-thread executor context and older Drive calls are bridged to coroutines with `suspendCoroutine`. This is effectively its entire public API surface, plus `JsonUtils` (internal JSON (de)serialization helper) and the manifest-declared `NoServerActivity`/`NoServerApplication` used internally for the auth flow. Full details, consumer requirements, and unit tests now live in that repo, not here — see its `README.md`.
+
+An earlier in-progress rewrite of the sharing layer (`protocol/`: `NoServer`, `ShareProtocol`, `SharingManager`, `SigningManager`, `Interactor`, per-backend repositories) was scaffolding that didn't compile and was deleted before extraction (commit `a79c874` in this repo's history, "protocol in progress. might not compile", has the last copy if that rewrite is ever picked back up).
 
 ## Repository hygiene
 

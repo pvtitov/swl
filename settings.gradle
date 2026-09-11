@@ -10,9 +10,8 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven { url 'local-repo' }
+        maven { url 'https://jitpack.io' }
     }
 }
 rootProject.name = "Simple Wish List"
 include ':app'
-include ':noserver'
