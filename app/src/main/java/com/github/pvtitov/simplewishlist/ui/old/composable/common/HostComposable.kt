@@ -1,4 +1,4 @@
-package com.github.pvtitov.simplewishlist.ui.composable.common
+package com.github.pvtitov.simplewishlist.ui.old.composable.common
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
@@ -19,7 +19,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.pvtitov.simplewishlist.R
-import com.github.pvtitov.simplewishlist.ui.viewmodel.MainViewModel
+import com.github.pvtitov.simplewishlist.ui.old.viewmodel.MainViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 

@@ -1,4 +1,4 @@
-package com.github.pvtitov.simplewishlist.ui.composable.screen
+package com.github.pvtitov.simplewishlist.ui.old.composable.screen
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,12 +22,11 @@ import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withLink
 import androidx.compose.ui.tooling.preview.Preview
 import com.github.pvtitov.simplewishlist.R
 import com.github.pvtitov.simplewishlist.domain.model.Wish
-import com.github.pvtitov.simplewishlist.ui.composable.element.ImageComposable
-import com.github.pvtitov.simplewishlist.ui.viewmodel.MainViewModel
+import com.github.pvtitov.simplewishlist.ui.old.composable.element.ImageComposable
+import com.github.pvtitov.simplewishlist.ui.old.viewmodel.MainViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 

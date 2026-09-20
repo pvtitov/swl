@@ -8,8 +8,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import com.github.pvtitov.simplewishlist.ui.composable.common.NavigationComposable
-import com.github.pvtitov.simplewishlist.ui.viewmodel.MainViewModel
+import com.github.pvtitov.simplewishlist.ui.old.composable.common.NavigationComposable as OldNavigationComposable
+import com.github.pvtitov.simplewishlist.ui.old.viewmodel.MainViewModel
 import com.github.pvtitov.simplewishlist.utils.DI
+import com.github.pvtitov.simplewishlist.utils.FeatureFlags
 
 class MainActivity : ComponentActivity() {
     private val mainViewModel: MainViewModel by viewModels()
@@ -22,15 +24,15 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            NavigationComposable(
-                viewModel = mainViewModel,
-                modifier = Modifier.fillMaxSize(),
-                coroutineScope = lifecycleScope
-            )
+            if (FeatureFlags.NEW_DESIGN) {
+                NavigationComposable()
+            } else {
+                OldNavigationComposable(
+                    viewModel = mainViewModel,
+                    modifier = Modifier.fillMaxSize(),
+                    coroutineScope = lifecycleScope
+                )
+            }
         }
-    }
-
-    companion object {
-        private const val TAG = "MainActivity"
     }
 }

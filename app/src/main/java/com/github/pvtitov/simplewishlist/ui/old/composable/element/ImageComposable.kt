@@ -1,4 +1,4 @@
-package com.github.pvtitov.simplewishlist.ui.composable.element
+package com.github.pvtitov.simplewishlist.ui.old.composable.element
 
 import android.util.Log
 import androidx.annotation.DrawableRes

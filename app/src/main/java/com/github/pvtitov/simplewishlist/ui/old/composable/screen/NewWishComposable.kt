@@ -1,8 +1,8 @@
-package com.github.pvtitov.simplewishlist.ui.composable.screen
+package com.github.pvtitov.simplewishlist.ui.old.composable.screen
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import com.github.pvtitov.simplewishlist.ui.viewmodel.MainViewModel
+import com.github.pvtitov.simplewishlist.ui.old.viewmodel.MainViewModel
 import kotlinx.coroutines.CoroutineScope
 
 @Preview

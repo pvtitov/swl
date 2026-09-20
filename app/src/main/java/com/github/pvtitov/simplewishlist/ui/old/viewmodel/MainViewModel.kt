@@ -1,4 +1,4 @@
-package com.github.pvtitov.simplewishlist.ui.viewmodel
+package com.github.pvtitov.simplewishlist.ui.old.viewmodel
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -6,12 +6,18 @@ import androidx.lifecycle.viewModelScope
 import com.github.pvtitov.simplewishlist.domain.model.User
 import com.github.pvtitov.simplewishlist.domain.model.Wish
 import com.github.pvtitov.simplewishlist.domain.model.WishList
-import com.github.pvtitov.simplewishlist.ui.model.*
+import com.github.pvtitov.simplewishlist.ui.old.model.AddFriendScreen
+import com.github.pvtitov.simplewishlist.ui.old.model.DeleteWishScreen
+import com.github.pvtitov.simplewishlist.ui.old.model.EditWishScreen
+import com.github.pvtitov.simplewishlist.ui.old.model.NewWishScreen
+import com.github.pvtitov.simplewishlist.ui.old.model.Screen
+import com.github.pvtitov.simplewishlist.ui.old.model.UsersScreen
+import com.github.pvtitov.simplewishlist.ui.old.model.WishListScreen
+import com.github.pvtitov.simplewishlist.ui.old.model.WishScreen
 import com.github.pvtitov.simplewishlist.utils.DI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
-import kotlin.math.log
 
 class MainViewModel : ViewModel() {
 
@@ -21,9 +27,6 @@ class MainViewModel : ViewModel() {
     val currentLoginFlow: StateFlow<String?> = _currentUserState
         .map { it?.login }
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
-
-    private val _errorState = MutableStateFlow<Error?>(null)
-    val errorState: StateFlow<Error?> = _errorState.asStateFlow()
 
     private var myWishList: WishList? = null
 
@@ -193,12 +196,6 @@ class MainViewModel : ViewModel() {
             wishes = myWishList?.wishes ?: emptyList(),
             promises = myWishList?.promises ?: emptyMap()
         )
-    }
-
-    private suspend fun cleanUp() {
-        myWishList = null
-        _currentUserState.value = null
-        _errorState.value = null
     }
 
     companion object {

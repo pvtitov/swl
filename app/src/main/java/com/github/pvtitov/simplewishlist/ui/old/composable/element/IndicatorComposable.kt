@@ -1,4 +1,4 @@
-package com.github.pvtitov.simplewishlist.ui.composable.element
+package com.github.pvtitov.simplewishlist.ui.old.composable.element
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.height

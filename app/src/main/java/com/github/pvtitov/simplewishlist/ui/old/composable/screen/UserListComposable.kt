@@ -1,15 +1,11 @@
-package com.github.pvtitov.simplewishlist.ui.composable.screen
+package com.github.pvtitov.simplewishlist.ui.old.composable.screen
 
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.tooling.preview.Preview
-import com.github.pvtitov.simplewishlist.R
 import com.github.pvtitov.simplewishlist.domain.model.User
-import com.github.pvtitov.simplewishlist.ui.composable.item.UserItemComposable
-import com.github.pvtitov.simplewishlist.ui.viewmodel.MainViewModel
+import com.github.pvtitov.simplewishlist.ui.old.composable.item.UserItemComposable
+import com.github.pvtitov.simplewishlist.ui.old.viewmodel.MainViewModel
 import kotlinx.coroutines.CoroutineScope
 
 @Preview
