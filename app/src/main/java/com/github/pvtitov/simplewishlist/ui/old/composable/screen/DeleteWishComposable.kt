@@ -37,8 +37,8 @@ fun DeleteWishComposable(
     viewModel: MainViewModel = MainViewModel(),
     coroutineScope: CoroutineScope
 ) {
-    val paddingS = dimensionResource(id = R.dimen.padding_s)
-    val paddingL = dimensionResource(id = R.dimen.padding_l)
+    val paddingS = dimensionResource(id = R.dimen.padding_xs)
+    val paddingL = dimensionResource(id = R.dimen.padding_m)
 
     Card {
         Column(

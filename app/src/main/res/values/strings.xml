@@ -21,4 +21,24 @@
     <string name="friend_field_name">Имя</string>
     <string name="friend_field_login">Логин</string>
 
+    <!-- New design -->
+
+    <string name="app_title">Another wishlist</string>
+    <string name="app_subtitle">Что ты на самом деле хочешь</string>
+    <string name="cancel_button">Отмена</string>
+    <string name="save_button">Сохранить</string>
+    <string name="agreement_announcement_start">"Продолжая, вы соглашаетесь с нашими "</string>
+    <string name="agreement_announcement_and">" и "</string>
+    <string name="agreement_announcement_terms">Условиями</string>
+    <string name="agreement_announcement_privacy_policy">Политикой конфиденциальности</string>
+    <string name="my_wishes_title">Мои желания</string>
+    <string name="new_wish_title">Новое желание</string>
+    <string name="edit_wish_title">Редактировать желание</string>
+    <string name="friends_title">Друзья</string>
+
+    <string name="back_content_description">Назад</string>
+    <string name="sign_in_with_google_content_description">Войти через Google</string>
+
+    <string name="terms_url" translatable="false">https://docs.google.com/document/d/19_vNFMKqCI65SHUyQ5wmhyVERrpKqNgTIA0tMMImLuI</string>
+    <string name="privacy_policy_url" translatable="false">https://docs.google.com/document/d/1DatFuqs-Nf20-y8V7xUhK9MIregl5pomz3teesFz2iU</string>
 </resources>

@@ -32,9 +32,9 @@ fun UserItemComposable(
     isFirst: Boolean = false,
     coroutineScope: CoroutineScope
 ) {
-    val paddingS = dimensionResource(id = R.dimen.padding_s)
-    val paddingM = dimensionResource(id = R.dimen.padding_m)
-    val paddingL = dimensionResource(id = R.dimen.padding_l)
+    val paddingS = dimensionResource(id = R.dimen.padding_xs)
+    val paddingM = dimensionResource(id = R.dimen.padding_s)
+    val paddingL = dimensionResource(id = R.dimen.padding_m)
     val imageSize = dimensionResource(id = R.dimen.user_item_image_size)
     val topPadding = if (isFirst) paddingL else paddingM
 

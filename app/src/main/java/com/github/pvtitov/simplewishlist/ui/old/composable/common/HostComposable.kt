@@ -30,8 +30,8 @@ fun HostComposable(
     viewModel: MainViewModel = MainViewModel(),
     contentComposable: @Composable () -> Unit = PREVIEW_CONTENT_COMPOSABLE,
 ) {
-    val paddingS = dimensionResource(id = R.dimen.padding_s)
-    val paddingL = dimensionResource(id = R.dimen.padding_l)
+    val paddingS = dimensionResource(id = R.dimen.padding_xs)
+    val paddingL = dimensionResource(id = R.dimen.padding_m)
 
     var isControlsVisible by remember {
         mutableStateOf(true)
@@ -73,7 +73,7 @@ fun HostComposable(
                     modifier = Modifier
                         .background(
                             color = MaterialTheme.colorScheme.secondaryContainer,
-                            shape = RoundedCornerShape(dimensionResource(id = R.dimen.corner_radius))
+                            shape = RoundedCornerShape(dimensionResource(id = R.dimen.corner_radius_xs))
                         )
                         .padding(paddingS)
                 )

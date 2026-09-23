@@ -83,7 +83,7 @@ private val darkScheme = darkColorScheme(
 )
 
 @Composable
-fun SimpleWishListTheme(
+fun AnotherWishListTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {

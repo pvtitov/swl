@@ -13,7 +13,7 @@ import com.github.pvtitov.simplewishlist.ui.old.model.NewWishScreen
 import com.github.pvtitov.simplewishlist.ui.old.model.UsersScreen
 import com.github.pvtitov.simplewishlist.ui.old.model.WishListScreen
 import com.github.pvtitov.simplewishlist.ui.old.model.WishScreen
-import com.github.pvtitov.simplewishlist.ui.old.theme.SimpleWishListTheme
+import com.github.pvtitov.simplewishlist.ui.old.theme.AnotherWishListTheme
 import com.github.pvtitov.simplewishlist.ui.old.viewmodel.MainViewModel
 import kotlinx.coroutines.CoroutineScope
 
@@ -23,7 +23,7 @@ fun NavigationComposable(
     modifier: Modifier,
     coroutineScope: CoroutineScope
 ) {
-    SimpleWishListTheme {
+    AnotherWishListTheme {
         Surface(
             modifier = modifier
         ) {

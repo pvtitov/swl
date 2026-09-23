@@ -4,17 +4,15 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.github.pvtitov.simplewishlist.R
 import com.github.pvtitov.simplewishlist.ui.composable.screen.*
 import com.github.pvtitov.simplewishlist.ui.model.Screen
@@ -23,6 +21,11 @@ import com.github.pvtitov.simplewishlist.ui.theme.AwlTheme
 @Preview
 @Composable
 fun NavigationComposable() {
+    val paddingM = dimensionResource(R.dimen.padding_m)
+    val backContentDescription = stringResource(R.string.back_content_description)
+    val myWishesTitle = stringResource(R.string.my_wishes_title)
+    val friendsTitle = stringResource(R.string.friends_title)
+
     AwlTheme {
         Surface {
             val navigation: Navigation = remember {
@@ -40,7 +43,6 @@ fun NavigationComposable() {
                                     currentScreen is Screen.Wishes
                                             || currentScreen is Screen.MyWish
                                             || currentScreen is Screen.Wish
-                                            || currentScreen is Screen.Login
                                     )
                         }
 
@@ -67,6 +69,7 @@ fun NavigationComposable() {
             }
 
             Column(
+                modifier = Modifier.padding(paddingM),
                 verticalArrangement = Arrangement.Bottom,
             ) {
                 val currentScreen = navigation.currentScreenState.value
@@ -77,7 +80,7 @@ fun NavigationComposable() {
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.ic_back_24),
-                            contentDescription = "Back"
+                            contentDescription = backContentDescription
                         )
                     }
                 }
@@ -89,7 +92,7 @@ fun NavigationComposable() {
                     contentAlignment = Alignment.Center
                 ) {
                     when (currentScreen) {
-                        is Screen.Login -> LoginScreen()
+                        is Screen.Login -> LoginScreen(navigation)
                         is Screen.MyWishes -> MyWishesScreen()
                         is Screen.NewWish -> NewWishScreen()
                         is Screen.MyWish -> MyWishScreen(currentScreen.wishIndex)
@@ -99,38 +102,27 @@ fun NavigationComposable() {
                     }
                 }
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    SelectableButton(
-                        resId = R.drawable.ic_heart_24,
-                        contentDescription = "Login",
-                        screenRepresented = Screen.Login,
-                        currentScreen = currentScreen,
-                        navigation = navigation,
-                    )
-                    SelectableButton(
-                        resId = R.drawable.ic_heart_24,
-                        contentDescription = "MyWishes",
-                        screenRepresented = Screen.MyWishes,
-                        currentScreen = currentScreen,
-                        navigation = navigation,
-                    )
-                    SelectableButton(
-                        resId = R.drawable.ic_heart_24,
-                        contentDescription = "NewWish",
-                        screenRepresented = Screen.NewWish,
-                        currentScreen = currentScreen,
-                        navigation = navigation,
-                    )
-                    SelectableButton(
-                        resId = R.drawable.ic_heart_24,
-                        contentDescription = "Friends",
-                        screenRepresented = Screen.Friends,
-                        currentScreen = currentScreen,
-                        navigation = navigation,
-                    )
+                val isBottomBarAvailable = currentScreen is Screen.MyWishes || currentScreen is Screen.Friends
+                if (isBottomBarAvailable) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceAround
+                    ) {
+                        SelectableButton(
+                            resId = R.drawable.ic_heart_24,
+                            contentDescription = myWishesTitle,
+                            screenRepresented = Screen.MyWishes,
+                            currentScreen = currentScreen,
+                            navigation = navigation,
+                        )
+                        SelectableButton(
+                            resId = R.drawable.ic_friends_24,
+                            contentDescription = friendsTitle,
+                            screenRepresented = Screen.Friends,
+                            currentScreen = currentScreen,
+                            navigation = navigation,
+                        )
+                    }
                 }
             }
         }
@@ -146,26 +138,32 @@ fun SelectableButton(
     navigation: Navigation,
     modifier: Modifier = Modifier
 ) {
-    Box(
+    val paddingM = dimensionResource(R.dimen.padding_m)
+    val paddingL = dimensionResource(R.dimen.padding_l)
+    val paddingXL = dimensionResource(R.dimen.padding_xl)
+
+    Button(
+        onClick = { navigation.open(screenRepresented) },
         modifier = modifier
-            .wrapContentSize()
+            .size(paddingXL, paddingL)
             .background(
                 color = if (currentScreen == screenRepresented) {
                     MaterialTheme.colorScheme.primaryContainer
                 } else {
                     Color.Transparent
                 },
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(paddingM)
             )
     ) {
-        IconButton(
-            onClick = { navigation.open(screenRepresented) },
-        ) {
-            Icon(
-                painter = painterResource(resId),
-                contentDescription = contentDescription
-            )
-        }
+        Icon(
+            painter = painterResource(resId),
+            contentDescription = contentDescription,
+            tint = if (currentScreen == screenRepresented) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                LocalContentColor.current
+            }
+        )
     }
 }
 

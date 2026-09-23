@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- old design -->
+    <dimen name="wish_item_height">128dp</dimen>
+    <dimen name="wish_item_image_size">96dp</dimen>
+    <dimen name="user_item_image_size">48dp</dimen>
+    <dimen name="indicator_size">16dp</dimen>
+
+    <dimen name="padding_xxs">2dp</dimen>
+    <dimen name="padding_xs">4dp</dimen>
+    <dimen name="padding_s">8dp</dimen>
+    <dimen name="padding_m">16dp</dimen>
+    <dimen name="padding_l">32dp</dimen>
+    <dimen name="padding_xl">64dp</dimen>
+    <dimen name="padding_xxl">128dp</dimen>
+
+    <dimen name="corner_radius_xs">4dp</dimen>
+    <dimen name="corner_radius_m">16dp</dimen>
+
+    <dimen name="logo_size">256dp</dimen>
+</resources>

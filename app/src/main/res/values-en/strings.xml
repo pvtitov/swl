@@ -20,4 +20,21 @@
     <string name="friend_field_name">Name</string>
     <string name="friend_field_login">Login</string>
 
+    <!-- New design -->
+
+    <string name="app_title">Another wishlist</string>
+    <string name="app_subtitle">What you really want</string>
+    <string name="cancel_button">Cancel</string>
+    <string name="save_button">Save</string>
+    <string name="agreement_announcement_start">"By continuing, you agree to our "</string>
+    <string name="agreement_announcement_and">" and "</string>
+    <string name="agreement_announcement_terms">Terms</string>
+    <string name="agreement_announcement_privacy_policy">Privacy Policy</string>
+    <string name="my_wishes_title">My wishes</string>
+    <string name="new_wish_title">New wish</string>
+    <string name="edit_wish_title">Edit wish</string>
+    <string name="friends_title">Friends</string>
+
+    <string name="back_content_description">Back</string>
+    <string name="sign_in_with_google_content_description">Sign in with Google</string>
 </resources>
