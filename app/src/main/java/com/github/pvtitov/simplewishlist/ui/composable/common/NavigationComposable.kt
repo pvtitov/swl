@@ -9,6 +9,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import com.github.pvtitov.simplewishlist.R
 import com.github.pvtitov.simplewishlist.ui.composable.screen.*
@@ -42,6 +43,40 @@ fun NavigationComposable(
     AwlTheme {
         Scaffold(
             modifier = modifier,
+            topBar = {
+                @OptIn(ExperimentalMaterial3Api::class)
+                TopAppBar(
+                    title = {
+                        val title = when (currentScreen) {
+                            is Screen.Friends -> stringResource(R.string.friends_title)
+                            is Screen.MyWishes -> stringResource(R.string.my_wishes_title)
+                            is Screen.NewFriend -> stringResource(R.string.new_friend_title)
+                            is Screen.NewWish -> stringResource(R.string.new_wish_title)
+                            else -> null
+                        }
+                        if (title != null) {
+                            Text(
+                                text = title,
+                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.headlineSmall,
+                                softWrap = false
+                            )
+                        }
+                    },
+                    navigationIcon = {
+                        if (navigation.isBackAvailable) {
+                            IconButton(
+                                onClick = { navigation.back() },
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_back_24),
+                                    contentDescription = backContentDescription
+                                )
+                            }
+                        }
+                    }
+                )
+            },
             bottomBar = {
                 if (isBottomBarAvailable) {
                     NavigationBar(windowInsets = NavigationBarDefaults.windowInsets) {
@@ -94,17 +129,6 @@ fun NavigationComposable(
                 modifier = Modifier.padding(contentPadding),
                 verticalArrangement = Arrangement.Bottom,
             ) {
-                if (navigation.isBackAvailable) {
-                    IconButton(
-                        onClick = { navigation.back() },
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_back_24),
-                            contentDescription = backContentDescription
-                        )
-                    }
-                }
-
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
