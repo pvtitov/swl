@@ -1,15 +1,12 @@
 package com.github.pvtitov.simplewishlist.ui.composable.common
 
-import androidx.annotation.DrawableRes
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -20,60 +17,57 @@ import com.github.pvtitov.simplewishlist.ui.theme.AwlTheme
 
 @Preview
 @Composable
-fun NavigationComposable() {
-    val paddingM = dimensionResource(R.dimen.padding_m)
+fun NavigationComposable(
+    modifier: Modifier = Modifier
+) {
+    val currentScreenState = rememberSaveable { mutableStateOf<Screen>(Screen.Login) }
+    val screensBackStackState = rememberSaveable { mutableStateListOf<Screen>() }
+
+    val navigation: Navigation = createNavigation(currentScreenState, screensBackStackState)
+
     val backContentDescription = stringResource(R.string.back_content_description)
     val myWishesTitle = stringResource(R.string.my_wishes_title)
     val friendsTitle = stringResource(R.string.friends_title)
 
+    val navigationBarDestinations = remember { listOf(Screen.MyWishes, Screen.Friends) }
+    val navigationBarIcons = remember { listOf(R.drawable.ic_heart_24, R.drawable.ic_friends_24) }
+    val navigationBarTitles = remember { listOf(myWishesTitle, friendsTitle) }
+
+    val currentScreen by navigation.currentScreenState
+
+    val isBottomBarAvailable = currentScreen is Screen.MyWishes || currentScreen is Screen.Friends
+
     AwlTheme {
-        Surface {
-            val navigation: Navigation = remember {
-                object : Navigation {
-                    private val _currentScreenState = mutableStateOf<Screen>(Screen.Login)
-                    private val _screensBackStackState = mutableStateListOf<Screen>()
-
-                    override val currentScreenState: State<Screen>
-                        get() = _currentScreenState
-
-                    override val isBackAvailable: Boolean
-                        get() {
-                            val currentScreen = _currentScreenState.value
-                            return _screensBackStackState.isNotEmpty() && (
-                                    currentScreen is Screen.Wishes
-                                            || currentScreen is Screen.MyWish
-                                            || currentScreen is Screen.Wish
+        Scaffold(
+            modifier = modifier,
+            bottomBar = {
+                if (isBottomBarAvailable) {
+                    NavigationBar(windowInsets = NavigationBarDefaults.windowInsets) {
+                        navigationBarDestinations.forEachIndexed { index, screen ->
+                            val title = navigationBarTitles[index]
+                            val iconRes = navigationBarIcons[index]
+                            NavigationBarItem(
+                                selected = screen == currentScreen,
+                                onClick = {
+                                    navigation.open(screen)
+                                },
+                                icon = {
+                                    Icon(
+                                        painterResource(iconRes),
+                                        contentDescription = title
                                     )
-                        }
-
-                    override fun open(screen: Screen) {
-                        saveToBackStack(currentScreenState.value)
-                        _currentScreenState.value = screen
-                    }
-
-                    override fun back() {
-                        val previousScreen = _screensBackStackState.removeLastOrNull()
-                        if (previousScreen != null) _currentScreenState.value = previousScreen
-                    }
-
-                    private fun saveToBackStack(screen: Screen) {
-                        when (screen) {
-                            is Screen.Friends,
-                            is Screen.MyWishes,
-                            is Screen.Wishes -> _screensBackStackState.add(screen)
-
-                            else -> _screensBackStackState.clear()
+                                },
+                                label = { Text(title) }
+                            )
                         }
                     }
                 }
             }
-
+        ) { contentPadding ->
             Column(
-                modifier = Modifier.padding(paddingM),
+                modifier = Modifier.padding(contentPadding),
                 verticalArrangement = Arrangement.Bottom,
             ) {
-                val currentScreen = navigation.currentScreenState.value
-
                 if (navigation.isBackAvailable) {
                     IconButton(
                         onClick = { navigation.back() },
@@ -91,37 +85,14 @@ fun NavigationComposable() {
                         .weight(1F),
                     contentAlignment = Alignment.Center
                 ) {
-                    when (currentScreen) {
+                    when (val screen = currentScreen) {
                         is Screen.Login -> LoginScreen(navigation)
                         is Screen.MyWishes -> MyWishesScreen()
                         is Screen.NewWish -> NewWishScreen()
-                        is Screen.MyWish -> MyWishScreen(currentScreen.wishIndex)
+                        is Screen.MyWish -> MyWishScreen(screen.wishIndex)
                         is Screen.Friends -> FriendsScreen()
-                        is Screen.Wishes -> WishesScreen(currentScreen.friendIndex)
-                        is Screen.Wish -> WishScreen(currentScreen.friendIndex, currentScreen.wishIndex)
-                    }
-                }
-
-                val isBottomBarAvailable = currentScreen is Screen.MyWishes || currentScreen is Screen.Friends
-                if (isBottomBarAvailable) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceAround
-                    ) {
-                        SelectableButton(
-                            resId = R.drawable.ic_heart_24,
-                            contentDescription = myWishesTitle,
-                            screenRepresented = Screen.MyWishes,
-                            currentScreen = currentScreen,
-                            navigation = navigation,
-                        )
-                        SelectableButton(
-                            resId = R.drawable.ic_friends_24,
-                            contentDescription = friendsTitle,
-                            screenRepresented = Screen.Friends,
-                            currentScreen = currentScreen,
-                            navigation = navigation,
-                        )
+                        is Screen.Wishes -> WishesScreen(screen.friendIndex)
+                        is Screen.Wish -> WishScreen(screen.friendIndex, screen.wishIndex)
                     }
                 }
             }
@@ -129,41 +100,43 @@ fun NavigationComposable() {
     }
 }
 
-@Composable
-fun SelectableButton(
-    @DrawableRes resId: Int,
-    contentDescription: String,
-    screenRepresented: Screen,
-    currentScreen: Screen,
-    navigation: Navigation,
-    modifier: Modifier = Modifier
-) {
-    val paddingM = dimensionResource(R.dimen.padding_m)
-    val paddingL = dimensionResource(R.dimen.padding_l)
-    val paddingXL = dimensionResource(R.dimen.padding_xl)
+fun createNavigation(
+    currentScreenState: MutableState<Screen>,
+    screensBackStackState: SnapshotStateList<Screen>
+): Navigation {
+    return object : Navigation {
+        override val currentScreenState: State<Screen>
+            get() = currentScreenState
 
-    Button(
-        onClick = { navigation.open(screenRepresented) },
-        modifier = modifier
-            .size(paddingXL, paddingL)
-            .background(
-                color = if (currentScreen == screenRepresented) {
-                    MaterialTheme.colorScheme.primaryContainer
-                } else {
-                    Color.Transparent
-                },
-                shape = RoundedCornerShape(paddingM)
-            )
-    ) {
-        Icon(
-            painter = painterResource(resId),
-            contentDescription = contentDescription,
-            tint = if (currentScreen == screenRepresented) {
-                MaterialTheme.colorScheme.primary
-            } else {
-                LocalContentColor.current
+        override val isBackAvailable: Boolean
+            get() {
+                val currentScreen = currentScreenState.value
+                return screensBackStackState.isNotEmpty() && (
+                        currentScreen is Screen.Wishes
+                                || currentScreen is Screen.MyWish
+                                || currentScreen is Screen.Wish
+                        )
             }
-        )
+
+        override fun open(screen: Screen) {
+            saveToBackStack(currentScreenState.value)
+            currentScreenState.value = screen
+        }
+
+        override fun back() {
+            val previousScreen = screensBackStackState.removeLastOrNull()
+            if (previousScreen != null) currentScreenState.value = previousScreen
+        }
+
+        private fun saveToBackStack(screen: Screen) {
+            when (screen) {
+                is Screen.Friends,
+                is Screen.MyWishes,
+                is Screen.Wishes -> screensBackStackState.add(screen)
+
+                else -> screensBackStackState.clear()
+            }
+        }
     }
 }
 

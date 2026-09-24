@@ -1,6 +1,10 @@
 package com.github.pvtitov.simplewishlist.ui.model
 
-sealed interface Screen {
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
+sealed interface Screen: Parcelable {
     data object Login : Screen
     data object MyWishes : Screen
     data object NewWish : Screen

@@ -20,7 +20,6 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.github.pvtitov.simplewishlist.R
 import com.github.pvtitov.simplewishlist.ui.composable.common.Navigation
 import com.github.pvtitov.simplewishlist.ui.model.Screen
@@ -34,6 +33,7 @@ fun LoginScreen(
     val paddingL = dimensionResource(R.dimen.padding_l)
     val paddingXL = dimensionResource(R.dimen.padding_xl)
     val logoSize = dimensionResource(R.dimen.logo_size)
+    val googleButtonHeight = dimensionResource(R.dimen.google_button_height)
     val title = stringResource(R.string.app_title)
     val subtitle = stringResource(R.string.app_subtitle)
     val signInWithGoogleContentDescription = stringResource(R.string.sign_in_with_google_content_description)
@@ -77,7 +77,7 @@ fun LoginScreen(
 
             OutlinedButton(
                 onClick = { navigation.open(Screen.MyWishes) },
-                modifier = Modifier.height(40.dp),
+                modifier = Modifier.height(googleButtonHeight),
                 contentPadding = PaddingValues.Zero
             ) {
                 Image(
@@ -166,5 +166,4 @@ private val PREVIEW_NAVIGATION = object : Navigation {
 
     override fun back() {
     }
-
 }
