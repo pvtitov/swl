@@ -26,6 +26,8 @@ fun NavigationComposable(
     val navigation: Navigation = createNavigation(currentScreenState, screensBackStackState)
 
     val backContentDescription = stringResource(R.string.back_content_description)
+    val newWishContentDescription = stringResource(R.string.new_wish_title)
+    val newFriendContentDescription = stringResource(R.string.new_friend_title)
     val myWishesTitle = stringResource(R.string.my_wishes_title)
     val friendsTitle = stringResource(R.string.friends_title)
 
@@ -62,6 +64,30 @@ fun NavigationComposable(
                         }
                     }
                 }
+            },
+            floatingActionButton = {
+                if (currentScreen is Screen.MyWishes || currentScreen is Screen.Friends) {
+                    FloatingActionButton(
+                        onClick = {
+                            navigation.open(
+                                if (currentScreen is Screen.Friends) {
+                                    Screen.NewFriend
+                                } else {
+                                    Screen.NewWish
+                                }
+                            )
+                        },
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_add_24),
+                            contentDescription = if (currentScreen is Screen.Friends) {
+                                newFriendContentDescription
+                            } else {
+                                newWishContentDescription
+                            }
+                        )
+                    }
+                }
             }
         ) { contentPadding ->
             Column(
@@ -89,6 +115,7 @@ fun NavigationComposable(
                         is Screen.Login -> LoginScreen(navigation)
                         is Screen.MyWishes -> MyWishesScreen()
                         is Screen.NewWish -> NewWishScreen()
+                        is Screen.NewFriend -> NewFriendScreen()
                         is Screen.MyWish -> MyWishScreen(screen.wishIndex)
                         is Screen.Friends -> FriendsScreen()
                         is Screen.Wishes -> WishesScreen(screen.friendIndex)
@@ -115,6 +142,8 @@ fun createNavigation(
                         currentScreen is Screen.Wishes
                                 || currentScreen is Screen.MyWish
                                 || currentScreen is Screen.Wish
+                                || currentScreen is Screen.NewWish
+                                || currentScreen is Screen.NewFriend
                         )
             }
 

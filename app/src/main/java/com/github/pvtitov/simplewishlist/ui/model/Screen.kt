@@ -8,6 +8,7 @@ sealed interface Screen: Parcelable {
     data object Login : Screen
     data object MyWishes : Screen
     data object NewWish : Screen
+    data object NewFriend : Screen
     data class MyWish(val wishIndex: Int) : Screen
     data object Friends : Screen
     data class Wishes(val friendIndex: Int) : Screen
