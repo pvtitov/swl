@@ -1,16 +1,26 @@
 package com.github.pvtitov.simplewishlist.ui.composable.common
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.painter.ColorPainter
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.github.pvtitov.simplewishlist.R
 import com.github.pvtitov.simplewishlist.ui.composable.screen.*
 import com.github.pvtitov.simplewishlist.ui.model.Screen
@@ -31,6 +41,9 @@ fun NavigationComposable(
     val newFriendContentDescription = stringResource(R.string.new_friend_title)
     val myWishesTitle = stringResource(R.string.my_wishes_title)
     val friendsTitle = stringResource(R.string.friends_title)
+    val saveButton = stringResource(R.string.save_button)
+
+    val paddingM = dimensionResource(R.dimen.padding_m)
 
     val navigationBarDestinations = remember { listOf(Screen.MyWishes, Screen.Friends) }
     val navigationBarIcons = remember { listOf(R.drawable.ic_heart_24, R.drawable.ic_friends_24) }
@@ -63,6 +76,7 @@ fun NavigationComposable(
                             )
                         }
                     },
+                    modifier = Modifier.padding(horizontal = paddingM),
                     navigationIcon = {
                         if (navigation.isBackAvailable) {
                             IconButton(
@@ -73,6 +87,20 @@ fun NavigationComposable(
                                     contentDescription = backContentDescription
                                 )
                             }
+                        }
+                    },
+                    actions = {
+                        if (currentScreen is Screen.NewWish || currentScreen is Screen.NewFriend) {
+                            Button(
+                                onClick = {
+                                    // TODO save
+                                    navigation.back()
+                                }
+                            ) {
+                                Text(saveButton)
+                            }
+                        } else if (currentScreen is Screen.MyWishes || currentScreen is Screen.Friends) {
+                            Avatar()
                         }
                     }
                 )
@@ -112,6 +140,7 @@ fun NavigationComposable(
                                 }
                             )
                         },
+                        modifier = Modifier.padding(paddingM)
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.ic_add_24),
@@ -149,6 +178,24 @@ fun NavigationComposable(
             }
         }
     }
+}
+
+@Composable
+fun Avatar() {
+    val borderWidth = 2.dp
+    Image(
+        painter = ColorPainter(MaterialTheme.colorScheme.primaryContainer),
+        contentDescription = null,
+        contentScale = ContentScale.Crop,
+        modifier = Modifier
+            .size(40.dp)
+            .border(
+                BorderStroke(borderWidth, MaterialTheme.colorScheme.primary),
+                CircleShape
+            )
+            .padding(borderWidth)
+            .clip(CircleShape)
+    )
 }
 
 fun createNavigation(
