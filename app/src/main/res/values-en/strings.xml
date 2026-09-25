@@ -36,6 +36,9 @@
     <string name="edit_wish_title">Edit wish</string>
     <string name="friends_title">Friends</string>
 
+    <string name="link">Link</string>
+    <string name="more">More</string>
+
     <string name="back_content_description">Back</string>
     <string name="sign_in_with_google_content_description">Sign in with Google</string>
 </resources>

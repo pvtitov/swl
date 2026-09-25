@@ -13,14 +13,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.ColorPainter
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.github.pvtitov.simplewishlist.R
 import com.github.pvtitov.simplewishlist.ui.composable.screen.*
 import com.github.pvtitov.simplewishlist.ui.model.Screen
@@ -182,13 +180,15 @@ fun NavigationComposable(
 
 @Composable
 fun Avatar() {
-    val borderWidth = 2.dp
+    val borderWidth = dimensionResource(R.dimen.border_width)
+    val avatarM = dimensionResource(R.dimen.avatar_m)
+
     Image(
         painter = ColorPainter(MaterialTheme.colorScheme.primaryContainer),
         contentDescription = null,
         contentScale = ContentScale.Crop,
         modifier = Modifier
-            .size(40.dp)
+            .size(avatarM)
             .border(
                 BorderStroke(borderWidth, MaterialTheme.colorScheme.primary),
                 CircleShape
