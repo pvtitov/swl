@@ -1,7 +1,6 @@
 package com.github.pvtitov.simplewishlist.ui.composable.common
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -19,6 +18,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import coil3.compose.AsyncImage
 import com.github.pvtitov.simplewishlist.R
 import com.github.pvtitov.simplewishlist.ui.composable.screen.*
 import com.github.pvtitov.simplewishlist.ui.model.Screen
@@ -117,7 +117,8 @@ fun NavigationComposable(
                                 icon = {
                                     Icon(
                                         painterResource(iconRes),
-                                        contentDescription = title
+                                        contentDescription = title,
+                                        tint = MaterialTheme.colorScheme.primary
                                     )
                                 },
                                 label = { Text(title) }
@@ -164,12 +165,12 @@ fun NavigationComposable(
                 ) {
                     when (val screen = currentScreen) {
                         is Screen.Login -> LoginScreen(navigation)
-                        is Screen.MyWishes -> MyWishesScreen()
+                        is Screen.MyWishes -> MyWishesScreen(navigation)
                         is Screen.NewWish -> NewWishScreen()
                         is Screen.NewFriend -> NewFriendScreen()
                         is Screen.MyWish -> MyWishScreen(screen.wishIndex)
-                        is Screen.Friends -> FriendsScreen()
-                        is Screen.Wishes -> WishesScreen(screen.friendIndex)
+                        is Screen.Friends -> FriendsScreen(navigation)
+                        is Screen.Wishes -> WishesScreen(screen.friendIndex, navigation)
                         is Screen.Wish -> WishScreen(screen.friendIndex, screen.wishIndex)
                     }
                 }
@@ -179,14 +180,13 @@ fun NavigationComposable(
 }
 
 @Composable
-fun Avatar() {
+fun Avatar(url: String = PREVIEW_URL) {
     val borderWidth = dimensionResource(R.dimen.border_width)
     val avatarM = dimensionResource(R.dimen.avatar_m)
 
-    Image(
-        painter = ColorPainter(MaterialTheme.colorScheme.primaryContainer),
+    AsyncImage(
+        model = url,
         contentDescription = null,
-        contentScale = ContentScale.Crop,
         modifier = Modifier
             .size(avatarM)
             .border(
@@ -194,7 +194,10 @@ fun Avatar() {
                 CircleShape
             )
             .padding(borderWidth)
-            .clip(CircleShape)
+            .clip(CircleShape),
+        placeholder = ColorPainter(MaterialTheme.colorScheme.primaryContainer),
+        error = ColorPainter(MaterialTheme.colorScheme.primaryContainer),
+        contentScale = ContentScale.Crop,
     )
 }
 
@@ -246,3 +249,6 @@ interface Navigation {
     fun open(screen: Screen)
     fun back()
 }
+
+private const val PREVIEW_URL =
+    "https://img.magnific.com/free-photo/closeup-scarlet-macaw-from-side-view-scarlet-macaw-closeup-head_488145-3540.jpg?semt=ais_hybrid&w=740&q=80"

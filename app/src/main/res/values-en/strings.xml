@@ -38,6 +38,7 @@
 
     <string name="link">Link</string>
     <string name="more">More</string>
+    <string name="delete">Delete</string>
 
     <string name="back_content_description">Back</string>
     <string name="sign_in_with_google_content_description">Sign in with Google</string>

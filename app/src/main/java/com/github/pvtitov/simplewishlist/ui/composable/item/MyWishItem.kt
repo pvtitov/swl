@@ -1,5 +1,6 @@
 package com.github.pvtitov.simplewishlist.ui.composable.item
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -34,11 +35,16 @@ fun MyWishItem(
 
     val link = stringResource(R.string.link)
     val more = stringResource(R.string.more)
+    val delete = stringResource(R.string.delete)
 
     val isImageVisibleState = remember { mutableStateOf(!url.isNullOrEmpty()) }
+    val expandedState = remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier.wrapContentHeight()
+            .clickable {
+                navigation.open(Screen.MyWish(wishIndex = myWish.wishIndex))
+            }
     ) {
         Box(
             modifier = Modifier.fillMaxWidth()
@@ -94,18 +100,31 @@ fun MyWishItem(
                 )
             }
 
-            IconButton(
-                onClick = {
-                    // TODO
-                },
+            Column(
                 modifier = Modifier.align(Alignment.TopEnd)
-                    .padding(paddingM),
-                colors = IconButtonDefaults.iconButtonColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
             ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_more_20),
-                    contentDescription = more,
-                )
+                IconButton(
+                    onClick = {
+                        expandedState.value = true
+                    },
+                    modifier = Modifier.padding(paddingM),
+                    colors = IconButtonDefaults.iconButtonColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_more_20),
+                        contentDescription = more,
+                    )
+                }
+
+                DropdownMenu(
+                    expanded = expandedState.value,
+                    onDismissRequest = { expandedState.value = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text(delete) },
+                        onClick = { expandedState.value = false }
+                    )
+                }
             }
         }
     }

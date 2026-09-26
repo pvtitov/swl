@@ -42,6 +42,7 @@
 
     <string name="link">Ссылка</string>
     <string name="more">Ещё</string>
+    <string name="delete">Удалить</string>
 
     <string name="terms_url" translatable="false">https://docs.google.com/document/d/19_vNFMKqCI65SHUyQ5wmhyVERrpKqNgTIA0tMMImLuI</string>
     <string name="privacy_policy_url" translatable="false">https://docs.google.com/document/d/1DatFuqs-Nf20-y8V7xUhK9MIregl5pomz3teesFz2iU</string>
