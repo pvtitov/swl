@@ -20,7 +20,7 @@ class MainActivity : ComponentActivity() {
     private val mainViewModel: MainViewModel by viewModels()
 
     init {
-        DI.init(this)
+        DI.init()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
