@@ -42,4 +42,10 @@
 
     <string name="back_content_description">Back</string>
     <string name="sign_in_with_google_content_description">Sign in with Google</string>
+
+    <string name="wish_image_url_field">Image URL</string>
+    <string name="wish_image_title_field">Title</string>
+    <string name="wish_image_description_field">Description</string>
+    <string name="wish_image_link_field">Link</string>
+    <string name="wish_image_placeholder">No image</string>
 </resources>
