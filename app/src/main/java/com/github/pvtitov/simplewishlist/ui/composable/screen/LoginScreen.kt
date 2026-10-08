@@ -5,7 +5,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
@@ -22,6 +21,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import com.github.pvtitov.simplewishlist.R
 import com.github.pvtitov.simplewishlist.ui.composable.common.Navigation
+import com.github.pvtitov.simplewishlist.ui.composable.element.GoogleSignInButton
 import com.github.pvtitov.simplewishlist.ui.model.Screen
 
 @Preview
@@ -33,10 +33,8 @@ fun LoginScreen(
     val paddingL = dimensionResource(R.dimen.padding_l)
     val paddingXL = dimensionResource(R.dimen.padding_xl)
     val logoSize = dimensionResource(R.dimen.logo_size)
-    val googleButtonHeight = dimensionResource(R.dimen.google_button_height)
     val title = stringResource(R.string.app_title)
     val subtitle = stringResource(R.string.app_subtitle)
-    val signInWithGoogleContentDescription = stringResource(R.string.sign_in_with_google_content_description)
     val cancelButton = stringResource(R.string.cancel_button)
 
     Box(
@@ -75,16 +73,9 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.size(paddingXL))
 
-            OutlinedButton(
-                onClick = { navigation.open(Screen.MyWishes) },
-                modifier = Modifier.height(googleButtonHeight),
-                contentPadding = PaddingValues.Zero
-            ) {
-                Image(
-                    painter = painterResource(R.drawable.ic_google_button),
-                    contentDescription = signInWithGoogleContentDescription
-                )
-            }
+            GoogleSignInButton(
+                onClick = { navigation.open(Screen.MyWishes) }
+            )
 
             Spacer(modifier = Modifier.size(paddingM))
 

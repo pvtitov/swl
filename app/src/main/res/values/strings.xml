@@ -38,7 +38,7 @@
     <string name="friends_title">Друзья</string>
 
     <string name="back_content_description">Назад</string>
-    <string name="sign_in_with_google_content_description">Войти через Google</string>
+    <string name="sign_in_with_google">Войти с аккаунтом Google</string>
 
     <string name="link">Ссылка</string>
     <string name="more">Ещё</string>
