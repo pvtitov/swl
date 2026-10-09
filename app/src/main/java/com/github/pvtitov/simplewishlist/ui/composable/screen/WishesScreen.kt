@@ -1,6 +1,11 @@
 package com.github.pvtitov.simplewishlist.ui.composable.screen
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
@@ -44,7 +49,7 @@ fun WishesScreen(
         item {
             Row {
                 AsyncImage(
-                    model = "https://img.magnific.com/free-photo/closeup-scarlet-macaw-from-side-view-scarlet-macaw-closeup-head_488145-3540.jpg?semt=ais_hybrid&w=740&q=80",
+                    model = null, // TODO
                     contentDescription = null,
                     modifier = Modifier
                         .align(Alignment.CenterVertically)
@@ -72,13 +77,9 @@ fun WishesScreen(
         wishesState.value.forEach { wish ->
             item {
                 WishItem(
-                    wish, url = when (wish.wishIndex) {
-                        0 -> null
-                        1 -> "https://img.magnific.com/free-photo/closeup-scarlet-macaw-from-side-view-scarlet-macaw-closeup-head_488145-3540.jpg?semt=ais_hybrid&w=740&q=80"
-                        2 -> ""
-                        3 -> "https://img.magnific.com/free-photo/closeup-scarlet-macaw-from-side-view-scarlet-macaw-closeup-head.jpg"
-                        else -> if (wish.wishIndex % 2 == 0) "https://img.magnific.com/free-photo/closeup-scarlet-macaw-from-side-view-scarlet-macaw-closeup-head_488145-3540.jpg?semt=ais_hybrid&w=740&q=80" else null
-                    }
+                    wish = wish,
+                    navigation = navigation,
+                    url = null // TODO
                 )
             }
         }

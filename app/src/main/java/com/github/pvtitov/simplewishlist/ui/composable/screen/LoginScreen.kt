@@ -2,7 +2,13 @@ package com.github.pvtitov.simplewishlist.ui.composable.screen
 
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -14,10 +20,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.*
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.tooling.preview.Preview
 import com.github.pvtitov.simplewishlist.R
 import com.github.pvtitov.simplewishlist.ui.composable.common.Navigation
@@ -101,7 +111,8 @@ private fun TermsAndPrivacyPolicy(
     val agreementAnnouncementStart = stringResource(R.string.agreement_announcement_start)
     val agreementAnnouncementAnd = stringResource(R.string.agreement_announcement_and)
     val agreementAnnouncementTerms = stringResource(R.string.agreement_announcement_terms)
-    val agreementAnnouncementPrivacyPolicy = stringResource(R.string.agreement_announcement_privacy_policy)
+    val agreementAnnouncementPrivacyPolicy =
+        stringResource(R.string.agreement_announcement_privacy_policy)
     val termsUrl = stringResource(R.string.terms_url)
     val privacyPolicyUrl = stringResource(R.string.privacy_policy_url)
 

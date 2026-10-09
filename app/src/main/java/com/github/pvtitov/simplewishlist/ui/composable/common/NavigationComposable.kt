@@ -2,10 +2,35 @@ package com.github.pvtitov.simplewishlist.ui.composable.common
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarDefaults
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
@@ -18,17 +43,27 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import com.github.pvtitov.simplewishlist.R
-import com.github.pvtitov.simplewishlist.ui.composable.screen.*
+import com.github.pvtitov.simplewishlist.ui.composable.screen.FriendsScreen
+import com.github.pvtitov.simplewishlist.ui.composable.screen.LoginScreen
+import com.github.pvtitov.simplewishlist.ui.composable.screen.MyWishScreen
+import com.github.pvtitov.simplewishlist.ui.composable.screen.MyWishesScreen
+import com.github.pvtitov.simplewishlist.ui.composable.screen.NewFriendScreen
+import com.github.pvtitov.simplewishlist.ui.composable.screen.NewWishScreen
+import com.github.pvtitov.simplewishlist.ui.composable.screen.WishScreen
+import com.github.pvtitov.simplewishlist.ui.composable.screen.WishesScreen
 import com.github.pvtitov.simplewishlist.ui.model.Screen
 import com.github.pvtitov.simplewishlist.ui.theme.AwlTheme
+import com.github.pvtitov.simplewishlist.ui.viewmodel.AwlViewModel
 
 @Preview
 @Composable
 fun NavigationComposable(
     modifier: Modifier = Modifier
 ) {
+    val viewModel = viewModel<AwlViewModel>()
     val currentScreenState = rememberSaveable { mutableStateOf<Screen>(Screen.Login) }
     val screensBackStackState = rememberSaveable { mutableStateListOf<Screen>() }
 
@@ -88,7 +123,7 @@ fun NavigationComposable(
                         }
                     },
                     actions = {
-                        if (currentScreen is Screen.NewWish || currentScreen is Screen.NewFriend) {
+                        if (currentScreen is Screen.NewWish || currentScreen is Screen.NewFriend || currentScreen is Screen.MyWish) {
                             Button(
                                 onClick = {
                                     // TODO save
@@ -183,22 +218,40 @@ fun NavigationComposable(
 fun Avatar(url: String = PREVIEW_URL) {
     val borderWidth = dimensionResource(R.dimen.border_width)
     val avatarM = dimensionResource(R.dimen.avatar_m)
+    val logoutText = stringResource(R.string.logout)
 
-    AsyncImage(
-        model = url,
-        contentDescription = null,
-        modifier = Modifier
-            .size(avatarM)
-            .border(
-                BorderStroke(borderWidth, MaterialTheme.colorScheme.primary),
-                CircleShape
+    val expandedState = remember { mutableStateOf(false) }
+
+    Box {
+        AsyncImage(
+            model = url,
+            contentDescription = null,
+            modifier = Modifier
+                .size(avatarM)
+                .border(
+                    BorderStroke(borderWidth, MaterialTheme.colorScheme.primary),
+                    CircleShape
+                )
+                .padding(borderWidth)
+                .clip(CircleShape)
+                .clickable {
+                    expandedState.value = true
+                },
+            placeholder = ColorPainter(MaterialTheme.colorScheme.primaryContainer),
+            error = ColorPainter(MaterialTheme.colorScheme.primaryContainer),
+            contentScale = ContentScale.Crop,
+        )
+
+        DropdownMenu(
+            expanded = expandedState.value,
+            onDismissRequest = { expandedState.value = false }
+        ) {
+            DropdownMenuItem(
+                text = { Text(logoutText) },
+                onClick = { expandedState.value = false }
             )
-            .padding(borderWidth)
-            .clip(CircleShape),
-        placeholder = ColorPainter(MaterialTheme.colorScheme.primaryContainer),
-        error = ColorPainter(MaterialTheme.colorScheme.primaryContainer),
-        contentScale = ContentScale.Crop,
-    )
+        }
+    }
 }
 
 fun createNavigation(
@@ -250,5 +303,4 @@ interface Navigation {
     fun back()
 }
 
-private const val PREVIEW_URL =
-    "https://img.magnific.com/free-photo/closeup-scarlet-macaw-from-side-view-scarlet-macaw-closeup-head_488145-3540.jpg?semt=ais_hybrid&w=740&q=80"
+private const val PREVIEW_URL = ""

@@ -42,10 +42,13 @@
 
     <string name="back_content_description">Back</string>
     <string name="sign_in_with_google">Sign in with Google</string>
+    <string name="logout">Exit</string>
 
     <string name="wish_image_url_field">Image URL</string>
     <string name="wish_image_title_field">Title</string>
     <string name="wish_image_description_field">Description</string>
     <string name="wish_image_link_field">Link</string>
     <string name="wish_image_placeholder">No image</string>
+    <string name="friend_name_field">Name</string>
+    <string name="friend_login_field">Login</string>
 </resources>

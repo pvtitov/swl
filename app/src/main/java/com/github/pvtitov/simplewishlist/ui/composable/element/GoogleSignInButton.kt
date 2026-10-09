@@ -60,7 +60,8 @@ fun GoogleSignInButton(
 ) {
     // Follows the theme actually applied rather than the system setting, so the button
     // matches the screen it sits on even if the app forces a theme.
-    val colors = if (MaterialTheme.colorScheme.background.luminance() < 0.5f) DarkColors else LightColors
+    val colors =
+        if (MaterialTheme.colorScheme.background.luminance() < 0.5f) DarkColors else LightColors
 
     Surface(
         onClick = onClick,

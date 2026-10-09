@@ -39,6 +39,7 @@
 
     <string name="back_content_description">Назад</string>
     <string name="sign_in_with_google">Войти с аккаунтом Google</string>
+    <string name="logout">Выйти</string>
 
     <string name="link">Ссылка</string>
     <string name="more">Ещё</string>
@@ -52,4 +53,6 @@
     <string name="wish_image_description_field">Описание</string>
     <string name="wish_image_link_field">Ссылка на желание</string>
     <string name="wish_image_placeholder">Нет картинки</string>
+    <string name="friend_name_field">Имя</string>
+    <string name="friend_login_field">Логин</string>
 </resources>

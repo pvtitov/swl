@@ -39,7 +39,15 @@ fun imagePreviewPlaceholder(): Painter {
     val iconSizePx = with(density) { dimensionResource(R.dimen.icon_m).toPx() }
     val spacingPx = with(density) { dimensionResource(R.dimen.padding_s).toPx() }
 
-    return remember(backgroundColor, contentColor, textStyle, text, iconPainter, iconSizePx, spacingPx) {
+    return remember(
+        backgroundColor,
+        contentColor,
+        textStyle,
+        text,
+        iconPainter,
+        iconSizePx,
+        spacingPx
+    ) {
         object : Painter() {
             // Unspecified so Coil stretches the placeholder over the whole image bounds
             // instead of scaling a fixed-size bitmap with the AsyncImage's ContentScale.

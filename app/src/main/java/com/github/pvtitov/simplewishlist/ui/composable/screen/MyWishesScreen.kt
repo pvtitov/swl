@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -11,11 +12,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.pvtitov.simplewishlist.R
 import com.github.pvtitov.simplewishlist.ui.composable.common.Navigation
 import com.github.pvtitov.simplewishlist.ui.composable.item.MyWishItem
-import androidx.compose.runtime.State
+import com.github.pvtitov.simplewishlist.ui.model.Screen
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import com.github.pvtitov.simplewishlist.ui.model.Screen
 
 @Preview
 @Composable
@@ -35,13 +35,7 @@ fun MyWishesScreen(
                 MyWishItem(
                     myWish = myWish,
                     navigation = navigation,
-                    url = when (myWish.wishIndex) {
-                        0 -> null
-                        1 -> "https://img.magnific.com/free-photo/closeup-scarlet-macaw-from-side-view-scarlet-macaw-closeup-head_488145-3540.jpg?semt=ais_hybrid&w=740&q=80"
-                        2 -> ""
-                        3 -> "https://img.magnific.com/free-photo/closeup-scarlet-macaw-from-side-view-scarlet-macaw-closeup-head.jpg"
-                        else -> if (myWish.wishIndex % 2 == 0) "https://img.magnific.com/free-photo/closeup-scarlet-macaw-from-side-view-scarlet-macaw-closeup-head_488145-3540.jpg?semt=ais_hybrid&w=740&q=80" else null
-                    }
+                    url = null // TODO
                 )
             }
         }
