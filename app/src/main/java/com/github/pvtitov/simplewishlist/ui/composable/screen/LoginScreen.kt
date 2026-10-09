@@ -37,7 +37,8 @@ import com.github.pvtitov.simplewishlist.ui.model.Screen
 @Preview
 @Composable
 fun LoginScreen(
-    navigation: Navigation = PREVIEW_NAVIGATION
+    navigation: Navigation = PREVIEW_NAVIGATION,
+    onTopBarTitle: (String) -> Unit = {}
 ) {
     val paddingM = dimensionResource(R.dimen.padding_m)
     val paddingL = dimensionResource(R.dimen.padding_l)

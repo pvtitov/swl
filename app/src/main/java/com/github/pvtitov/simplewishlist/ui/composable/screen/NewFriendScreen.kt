@@ -20,12 +20,17 @@ import com.github.pvtitov.simplewishlist.R
 
 @Preview
 @Composable
-fun NewFriendScreen() {
+fun NewFriendScreen(
+    onTopBarTitle: (String) -> Unit = {}
+) {
     val (name, setName) = remember { mutableStateOf<String?>(null) }
     val (login, setLogin) = remember { mutableStateOf<String?>(null) }
     val paddingM = dimensionResource(id = R.dimen.padding_m)
     val nameField = stringResource(R.string.friend_field_name)
     val loginField = stringResource(R.string.friend_field_login)
+
+    val topBarTitle = stringResource(R.string.new_friend_title)
+    onTopBarTitle(topBarTitle) // TODO replace test implementation
 
     Column(
         modifier = Modifier

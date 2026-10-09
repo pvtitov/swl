@@ -32,7 +32,8 @@ import com.github.pvtitov.simplewishlist.ui.composable.element.imagePreviewPlace
 @Composable
 fun WishScreen(
     friendIndex: Int = PREVIEW_INDEX,
-    wishIndex: Int = PREVIEW_INDEX
+    wishIndex: Int = PREVIEW_INDEX,
+    onTopBarTitle: (String) -> Unit = {}
 ) {
     val paddingM = dimensionResource(id = R.dimen.padding_m)
     val imagePreviewHeight = dimensionResource(id = R.dimen.wish_image_preview_height)
@@ -43,6 +44,7 @@ fun WishScreen(
     val description: String? = remember { null }
     val wishUrl: String? = remember { null }
 
+    onTopBarTitle("wish $wishIndex") // TODO replace test implementation
 
     Column(
         modifier = Modifier

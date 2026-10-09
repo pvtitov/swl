@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -33,7 +34,10 @@ import com.github.pvtitov.simplewishlist.ui.composable.element.imagePreviewPlace
 
 @Preview
 @Composable
-fun MyWishScreen(wishIndex: Int = PREVIEW_INDEX) {
+fun MyWishScreen(
+    wishIndex: Int = PREVIEW_INDEX,
+    onTopBarTitle: (String) -> Unit = {}
+) {
     val (imageUrl, setImageUrl) = remember { mutableStateOf<String?>(null) }
     val (title, setTitle) = remember { mutableStateOf<String?>(null) }
     val (description, setDescription) = remember { mutableStateOf<String?>(null) }
@@ -49,6 +53,8 @@ fun MyWishScreen(wishIndex: Int = PREVIEW_INDEX) {
     val descriptionField = stringResource(R.string.wish_field_description)
     val linkField = stringResource(R.string.wish_field_url)
 
+    onTopBarTitle("wish $wishIndex") // TODO replace test implementation
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -57,6 +63,7 @@ fun MyWishScreen(wishIndex: Int = PREVIEW_INDEX) {
     ) {
         val modifier = Modifier.fillMaxWidth()
         val nextFieldKeyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+
         AsyncImage(
             model = imageUrl,
             contentDescription = null,

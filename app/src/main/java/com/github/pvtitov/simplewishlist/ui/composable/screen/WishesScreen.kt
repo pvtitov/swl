@@ -35,7 +35,8 @@ import kotlinx.coroutines.flow.asStateFlow
 @Composable
 fun WishesScreen(
     friendIndex: Int = PREVIEW_INDEX,
-    navigation: Navigation = PREVIEW_NAVIGATION
+    navigation: Navigation = PREVIEW_NAVIGATION,
+    onTopBarTitle: (String) -> Unit = {}
 ) {
     val wishesState = stubWishes().collectAsStateWithLifecycle()
 

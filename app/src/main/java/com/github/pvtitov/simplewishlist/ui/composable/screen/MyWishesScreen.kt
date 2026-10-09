@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.pvtitov.simplewishlist.R
@@ -20,11 +21,15 @@ import kotlinx.coroutines.flow.asStateFlow
 @Preview
 @Composable
 fun MyWishesScreen(
-    navigation: Navigation = PREVIEW_NAVIGATION
+    navigation: Navigation = PREVIEW_NAVIGATION,
+    onTopBarTitle: (String) -> Unit = {}
 ) {
     val wishesState = stubWishes().collectAsStateWithLifecycle()
 
     val paddingM = dimensionResource(R.dimen.padding_m)
+
+    val topBarTitle = stringResource(R.string.my_wishes_title)
+    onTopBarTitle(topBarTitle) // TODO replace test implementation
 
     LazyColumn(
         contentPadding = PaddingValues(paddingM),

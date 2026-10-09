@@ -56,18 +56,20 @@ import com.github.pvtitov.simplewishlist.ui.composable.screen.WishScreen
 import com.github.pvtitov.simplewishlist.ui.composable.screen.WishesScreen
 import com.github.pvtitov.simplewishlist.ui.model.Screen
 import com.github.pvtitov.simplewishlist.ui.theme.AwlTheme
-import com.github.pvtitov.simplewishlist.ui.viewmodel.AwlViewModel
+import com.github.pvtitov.simplewishlist.ui.viewmodel.NavViewModel
 
 @Preview
 @Composable
 fun NavigationComposable(
     modifier: Modifier = Modifier
 ) {
-    val viewModel = viewModel<AwlViewModel>()
+    val navViewModel = viewModel<NavViewModel>()
+
     val currentScreenState = rememberSaveable { mutableStateOf<Screen>(Screen.Login) }
     val screensBackStackState = rememberSaveable { mutableStateListOf<Screen>() }
 
-    val navigation: Navigation = createNavigation(currentScreenState, screensBackStackState)
+    val navigation: Navigation =
+        remember { createNavigation(currentScreenState, screensBackStackState) }
 
     val backContentDescription = stringResource(R.string.back_content_description)
     val newWishContentDescription = stringResource(R.string.new_wish_title)
@@ -86,6 +88,8 @@ fun NavigationComposable(
 
     val isBottomBarAvailable = currentScreen is Screen.MyWishes || currentScreen is Screen.Friends
 
+    val (topBarTitle, setTopBarTitle) = remember { mutableStateOf<String?>(null) }
+
     AwlTheme {
         Scaffold(
             modifier = modifier,
@@ -93,16 +97,9 @@ fun NavigationComposable(
                 @OptIn(ExperimentalMaterial3Api::class)
                 TopAppBar(
                     title = {
-                        val title = when (currentScreen) {
-                            is Screen.Friends -> stringResource(R.string.friends_title)
-                            is Screen.MyWishes -> stringResource(R.string.my_wishes_title)
-                            is Screen.NewFriend -> stringResource(R.string.new_friend_title)
-                            is Screen.NewWish -> stringResource(R.string.new_wish_title)
-                            else -> null
-                        }
-                        if (title != null) {
+                        if (topBarTitle != null) {
                             Text(
-                                text = title,
+                                text = topBarTitle,
                                 fontWeight = FontWeight.Bold,
                                 style = MaterialTheme.typography.headlineSmall,
                                 softWrap = false
@@ -198,15 +195,17 @@ fun NavigationComposable(
                         .weight(1F),
                     contentAlignment = Alignment.Center
                 ) {
+                    val updateTitle: (String) -> Unit = { setTopBarTitle(it) }
+                    updateTitle("")
                     when (val screen = currentScreen) {
                         is Screen.Login -> LoginScreen(navigation)
-                        is Screen.MyWishes -> MyWishesScreen(navigation)
-                        is Screen.NewWish -> NewWishScreen()
-                        is Screen.NewFriend -> NewFriendScreen()
-                        is Screen.MyWish -> MyWishScreen(screen.wishIndex)
-                        is Screen.Friends -> FriendsScreen(navigation)
+                        is Screen.MyWishes -> MyWishesScreen(navigation, updateTitle)
+                        is Screen.NewWish -> NewWishScreen(updateTitle)
+                        is Screen.NewFriend -> NewFriendScreen(updateTitle)
+                        is Screen.MyWish -> MyWishScreen(screen.wishIndex, updateTitle)
+                        is Screen.Friends -> FriendsScreen(navigation, updateTitle)
                         is Screen.Wishes -> WishesScreen(screen.friendIndex, navigation)
-                        is Screen.Wish -> WishScreen(screen.friendIndex, screen.wishIndex)
+                        is Screen.Wish -> WishScreen(screen.friendIndex, screen.wishIndex, updateTitle)
                     }
                 }
             }
