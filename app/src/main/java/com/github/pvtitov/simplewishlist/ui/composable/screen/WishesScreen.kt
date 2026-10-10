@@ -11,8 +11,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -21,25 +19,18 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.github.pvtitov.simplewishlist.R
-import com.github.pvtitov.simplewishlist.ui.composable.common.Navigation
 import com.github.pvtitov.simplewishlist.ui.composable.item.WishItem
-import com.github.pvtitov.simplewishlist.ui.model.Screen
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import com.github.pvtitov.simplewishlist.ui.model.Friend
+import com.github.pvtitov.simplewishlist.ui.model.Wish
 
-@Preview
 @Composable
 fun WishesScreen(
-    friendIndex: Int = PREVIEW_INDEX,
-    navigation: Navigation = PREVIEW_NAVIGATION,
-    onTopBarTitle: (String) -> Unit = {}
+    friend: Friend,
+    wishes: List<Wish>,
+    onWishClicked: (Int) -> Unit,
 ) {
-    val wishesState = stubWishes().collectAsStateWithLifecycle()
-
     val paddingM = dimensionResource(R.dimen.padding_m)
     val avatarSizeM = dimensionResource(R.dimen.avatar_m)
 
@@ -65,47 +56,33 @@ fun WishesScreen(
                     modifier = Modifier.padding(start = paddingM)
                 ) {
                     Text(
-                        text = "My friend's name",
+                        text = friend.name,
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.titleLarge,
                     )
                     Text(
-                        text = "mail@example.com",
+                        text = friend.login,
                     )
                 }
             }
         }
-        wishesState.value.forEach { wish ->
+        wishes.forEachIndexed { index, wish ->
             item {
                 WishItem(
                     wish = wish,
-                    navigation = navigation,
-                    url = null // TODO
+                    onClick = { onWishClicked(index) }
                 )
             }
         }
     }
 }
 
-private fun stubWishes(): StateFlow<List<Screen.Wish>> {
-    return MutableStateFlow(
-        List(20) { i ->
-            Screen.Wish(0, i)
-        }
-    ).asStateFlow()
+@Preview
+@Composable
+fun WishesScreenPreview() {
+    WishesScreen(
+        Friend("name", "login", 0, null),
+        listOf(Wish(null, null, null, null)),
+        {}
+    )
 }
-
-private val PREVIEW_NAVIGATION = object : Navigation {
-    override val currentScreenState: State<Screen>
-        get() = mutableStateOf(Screen.Login)
-
-    override val isBackAvailable: Boolean
-        get() = false
-
-    override fun open(screen: Screen) {
-    }
-
-    override fun back() {
-    }
-}
-private const val PREVIEW_INDEX = -1

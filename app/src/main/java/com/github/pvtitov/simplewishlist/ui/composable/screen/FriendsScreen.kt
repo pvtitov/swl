@@ -5,34 +5,25 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.pvtitov.simplewishlist.R
-import com.github.pvtitov.simplewishlist.ui.composable.common.Navigation
 import com.github.pvtitov.simplewishlist.ui.composable.item.FriendItem
-import com.github.pvtitov.simplewishlist.ui.model.Screen
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import com.github.pvtitov.simplewishlist.ui.model.Friend
 
-@Preview
 @Composable
 fun FriendsScreen(
-    navigation: Navigation = PREVIEW_NAVIGATION,
-    onTopBarTitle: (String) -> Unit = { }
+    friends: List<Friend>,
+    onFriendClicked: (Int) -> Unit,
+    onTopBarTitle: (String) -> Unit
 ) {
-    val friendsState = stubFriends().collectAsStateWithLifecycle()
-
     val paddingM = dimensionResource(R.dimen.padding_m)
 
     val topBarTitle = stringResource(R.string.friends_title)
-    onTopBarTitle(topBarTitle) // TODO replace test implementation
+    onTopBarTitle(topBarTitle)
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -40,32 +31,23 @@ fun FriendsScreen(
         verticalArrangement = Arrangement.spacedBy(paddingM),
         horizontalAlignment = Alignment.Start
     ) {
-        friendsState.value.forEach { friendIndex ->
+        friends.forEachIndexed { index, friend ->
             item {
                 FriendItem(
-                    friendIndex = friendIndex,
-                    navigation = navigation,
-                    url = null // TODO
+                    friend = friend,
+                    onClick = { onFriendClicked(index) }
                 )
             }
         }
     }
 }
 
-private fun stubFriends(): StateFlow<List<Int>> {
-    return MutableStateFlow((0..20).toList()).asStateFlow()
-}
-
-private val PREVIEW_NAVIGATION = object : Navigation {
-    override val currentScreenState: State<Screen>
-        get() = mutableStateOf(Screen.Login)
-
-    override val isBackAvailable: Boolean
-        get() = false
-
-    override fun open(screen: Screen) {
-    }
-
-    override fun back() {
-    }
+@Preview
+@Composable
+fun FriendsScreenPreview() {
+    FriendsScreen(
+        friends = listOf(Friend("name", "login", 0, null)),
+        onFriendClicked = {},
+        onTopBarTitle = {}
+    )
 }

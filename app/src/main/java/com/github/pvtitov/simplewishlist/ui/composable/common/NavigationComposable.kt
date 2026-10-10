@@ -3,14 +3,13 @@ package com.github.pvtitov.simplewishlist.ui.composable.common
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,6 +24,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
@@ -32,6 +32,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,6 +44,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import com.github.pvtitov.simplewishlist.R
@@ -63,7 +65,7 @@ import com.github.pvtitov.simplewishlist.ui.viewmodel.NavViewModel
 fun NavigationComposable(
     modifier: Modifier = Modifier
 ) {
-    val navViewModel = viewModel<NavViewModel>()
+    val navViewModel = viewModel<NavViewModel>(factory = NavViewModel.Factory)
 
     val currentScreenState = rememberSaveable { mutableStateOf<Screen>(Screen.Login) }
     val screensBackStackState = rememberSaveable { mutableStateListOf<Screen>() }
@@ -89,6 +91,17 @@ fun NavigationComposable(
     val isBottomBarAvailable = currentScreen is Screen.MyWishes || currentScreen is Screen.Friends
 
     val (topBarTitle, setTopBarTitle) = remember { mutableStateOf<String?>(null) }
+    var isSaveClicked by remember { mutableStateOf(false) }
+
+    val avatarUrl by navViewModel.avatarUrlFlow.collectAsStateWithLifecycle()
+    val isAuthorized by navViewModel.isAuthorizedFlow.collectAsStateWithLifecycle()
+
+    val isLoading by navViewModel.isLoadingFlow.collectAsStateWithLifecycle()
+
+    LaunchedEffect(isAuthorized) {
+        val screen = if (isAuthorized) Screen.MyWishes else Screen.Login
+        navigation.open(screen)
+    }
 
     AwlTheme {
         Scaffold(
@@ -123,14 +136,19 @@ fun NavigationComposable(
                         if (currentScreen is Screen.NewWish || currentScreen is Screen.NewFriend || currentScreen is Screen.MyWish) {
                             Button(
                                 onClick = {
-                                    // TODO save
+                                    isSaveClicked = true
                                     navigation.back()
                                 }
                             ) {
                                 Text(saveButton)
                             }
                         } else if (currentScreen is Screen.MyWishes || currentScreen is Screen.Friends) {
-                            Avatar()
+                            Avatar(
+                                url = avatarUrl,
+                                onLogout = {
+                                    navViewModel.logout()
+                                }
+                            )
                         }
                     }
                 )
@@ -185,28 +203,69 @@ fun NavigationComposable(
                 }
             }
         ) { contentPadding ->
-            Column(
-                modifier = Modifier.padding(contentPadding),
-                verticalArrangement = Arrangement.Bottom,
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(contentPadding),
+                contentAlignment = Alignment.Center
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .weight(1F),
-                    contentAlignment = Alignment.Center
-                ) {
-                    val updateTitle: (String) -> Unit = { setTopBarTitle(it) }
-                    updateTitle("")
-                    when (val screen = currentScreen) {
-                        is Screen.Login -> LoginScreen(navigation)
-                        is Screen.MyWishes -> MyWishesScreen(navigation, updateTitle)
-                        is Screen.NewWish -> NewWishScreen(updateTitle)
-                        is Screen.NewFriend -> NewFriendScreen(updateTitle)
-                        is Screen.MyWish -> MyWishScreen(screen.wishIndex, updateTitle)
-                        is Screen.Friends -> FriendsScreen(navigation, updateTitle)
-                        is Screen.Wishes -> WishesScreen(screen.friendIndex, navigation)
-                        is Screen.Wish -> WishScreen(screen.friendIndex, screen.wishIndex, updateTitle)
-                    }
+                val updateTitle: (String) -> Unit = { setTopBarTitle(it) }
+                updateTitle("")
+                when (val screen = currentScreen) {
+                    is Screen.Login -> LoginScreen(
+                        onLoginWithGoogle = { navViewModel.loginWithGoogle() }
+                    )
+
+                    is Screen.MyWishes -> MyWishesScreen(
+                        onMyWishClicked = { navigation.open(Screen.MyWish(it)) },
+                        onTopBarTitle = updateTitle
+                    )
+
+                    is Screen.NewWish -> NewWishScreen(
+                        onTopBarTitle = updateTitle,
+                        isSaveClicked = isSaveClicked,
+                        onSaveClickHandled = { isSaveClicked = false }
+                    )
+
+                    is Screen.NewFriend -> NewFriendScreen(
+                        onTopBarTitle = updateTitle,
+                        isSaveClicked = isSaveClicked,
+                        onSaveClickHandled = { isSaveClicked = false }
+                    )
+
+                    is Screen.MyWish -> MyWishScreen(
+                        wishIndex = screen.wishIndex,
+                        onTopBarTitle = updateTitle,
+                        isSaveClicked = isSaveClicked,
+                        onSaveClickHandled = { isSaveClicked = false }
+                    )
+
+                    is Screen.Friends -> FriendsScreen(
+                        onFriendClicked = { navigation.open(Screen.Wishes(it)) },
+                        onTopBarTitle = updateTitle
+                    )
+
+                    is Screen.Wishes -> WishesScreen(
+                        friendIndex = screen.friendIndex,
+                        onWishClicked = { friendIndex, wishIndex ->
+                            navigation.open(
+                                Screen.Wish(
+                                    friendIndex,
+                                    wishIndex
+                                )
+                            )
+                        },
+                    )
+
+                    is Screen.Wish -> WishScreen(
+                        friendIndex = screen.friendIndex,
+                        wishIndex = screen.wishIndex,
+                        onTopBarTitle = updateTitle
+                    )
+                }
+
+                if (isLoading) {
+                    CircularProgressIndicator()
                 }
             }
         }
@@ -214,12 +273,15 @@ fun NavigationComposable(
 }
 
 @Composable
-fun Avatar(url: String = PREVIEW_URL) {
+fun Avatar(
+    url: String? = null,
+    onLogout: () -> Unit = {},
+) {
     val borderWidth = dimensionResource(R.dimen.border_width)
     val avatarM = dimensionResource(R.dimen.avatar_m)
     val logoutText = stringResource(R.string.logout)
 
-    val expandedState = remember { mutableStateOf(false) }
+    var isExpanded by remember { mutableStateOf(false) }
 
     Box {
         AsyncImage(
@@ -234,7 +296,7 @@ fun Avatar(url: String = PREVIEW_URL) {
                 .padding(borderWidth)
                 .clip(CircleShape)
                 .clickable {
-                    expandedState.value = true
+                    isExpanded = true
                 },
             placeholder = ColorPainter(MaterialTheme.colorScheme.primaryContainer),
             error = ColorPainter(MaterialTheme.colorScheme.primaryContainer),
@@ -242,12 +304,15 @@ fun Avatar(url: String = PREVIEW_URL) {
         )
 
         DropdownMenu(
-            expanded = expandedState.value,
-            onDismissRequest = { expandedState.value = false }
+            expanded = isExpanded,
+            onDismissRequest = { isExpanded = false }
         ) {
             DropdownMenuItem(
                 text = { Text(logoutText) },
-                onClick = { expandedState.value = false }
+                onClick = {
+                    onLogout()
+                    isExpanded = false
+                }
             )
         }
     }
@@ -276,6 +341,7 @@ fun createNavigation(
         override fun open(screen: Screen) {
             saveToBackStack(currentScreenState.value)
             currentScreenState.value = screen
+
         }
 
         override fun back() {
@@ -301,5 +367,3 @@ interface Navigation {
     fun open(screen: Screen)
     fun back()
 }
-
-private const val PREVIEW_URL = ""

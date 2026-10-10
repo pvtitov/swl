@@ -8,11 +8,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -31,12 +31,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import coil3.compose.AsyncImage
 import com.github.pvtitov.simplewishlist.R
 import com.github.pvtitov.simplewishlist.ui.composable.element.imagePreviewPlaceholder
+import com.github.pvtitov.simplewishlist.ui.model.Wish
 
-@Preview
 @Composable
 fun MyWishScreen(
-    wishIndex: Int = PREVIEW_INDEX,
-    onTopBarTitle: (String) -> Unit = {}
+    wish: Wish,
+    onTopBarTitle: (String) -> Unit,
+    isSaveClicked: Boolean,
+    onSaveClickHandled: () -> Unit
 ) {
     val (imageUrl, setImageUrl) = remember { mutableStateOf<String?>(null) }
     val (title, setTitle) = remember { mutableStateOf<String?>(null) }
@@ -46,14 +48,19 @@ fun MyWishScreen(
     val imagePreviewHeight = dimensionResource(id = R.dimen.wish_image_preview_height)
     val borderWidth = dimensionResource(id = R.dimen.border_width)
     val imagePreviewCornerRadius = dimensionResource(id = R.dimen.corner_radius_m)
-    val imagePreviewShape = remember { RoundedCornerShape(imagePreviewCornerRadius)}
+    val imagePreviewShape = remember { RoundedCornerShape(imagePreviewCornerRadius) }
     val borderColor = MaterialTheme.colorScheme.secondary
     val imageUrlField = stringResource(R.string.wish_image_url_field)
     val titleField = stringResource(R.string.wish_field_title)
     val descriptionField = stringResource(R.string.wish_field_description)
     val linkField = stringResource(R.string.wish_field_url)
 
-    onTopBarTitle("wish $wishIndex") // TODO replace test implementation
+    LaunchedEffect(isSaveClicked) {
+        // TODO viewModel.save()
+        onSaveClickHandled()
+    }
+
+    wish.title?.let { onTopBarTitle(it) }
 
     Column(
         modifier = Modifier
@@ -140,4 +147,13 @@ fun MyWishScreen(
     }
 }
 
-private const val PREVIEW_INDEX = -1
+@Preview
+@Composable
+fun MyWishScreenPreview() {
+    MyWishScreen(
+        Wish("title", "description", null, null),
+        {},
+        false,
+        {}
+    )
+}

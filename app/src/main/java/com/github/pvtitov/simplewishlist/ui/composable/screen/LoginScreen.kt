@@ -13,8 +13,6 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
@@ -30,15 +28,11 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.tooling.preview.Preview
 import com.github.pvtitov.simplewishlist.R
-import com.github.pvtitov.simplewishlist.ui.composable.common.Navigation
 import com.github.pvtitov.simplewishlist.ui.composable.element.GoogleSignInButton
-import com.github.pvtitov.simplewishlist.ui.model.Screen
 
-@Preview
 @Composable
 fun LoginScreen(
-    navigation: Navigation = PREVIEW_NAVIGATION,
-    onTopBarTitle: (String) -> Unit = {}
+    onLoginWithGoogle: () -> Unit
 ) {
     val paddingM = dimensionResource(R.dimen.padding_m)
     val paddingL = dimensionResource(R.dimen.padding_l)
@@ -85,7 +79,7 @@ fun LoginScreen(
             Spacer(modifier = Modifier.size(paddingXL))
 
             GoogleSignInButton(
-                onClick = { navigation.open(Screen.MyWishes) }
+                onClick = { onLoginWithGoogle() }
             )
 
             Spacer(modifier = Modifier.size(paddingM))
@@ -157,16 +151,8 @@ private fun TermsAndPrivacyPolicy(
     )
 }
 
-private val PREVIEW_NAVIGATION = object : Navigation {
-    override val currentScreenState: State<Screen>
-        get() = mutableStateOf(Screen.Login)
-
-    override val isBackAvailable: Boolean
-        get() = false
-
-    override fun open(screen: Screen) {
-    }
-
-    override fun back() {
-    }
+@Preview
+@Composable
+fun LoginScreenPreview() {
+    LoginScreen({})
 }

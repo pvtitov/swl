@@ -10,8 +10,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -22,28 +20,27 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import coil3.compose.AsyncImage
 import com.github.pvtitov.simplewishlist.R
-import com.github.pvtitov.simplewishlist.ui.composable.common.Navigation
-import com.github.pvtitov.simplewishlist.ui.model.Screen
+import com.github.pvtitov.simplewishlist.ui.model.Friend
 
-@Preview
 @Composable
 fun FriendItem(
-    friendIndex: Int = PREVIEW_FRIEND_INDEX,
-    navigation: Navigation = PREVIEW_NAVIGATION,
-    url: String? = null,
+    friend: Friend,
+    onClick: () -> Unit,
 ) {
     val avatarSizeM = dimensionResource(R.dimen.avatar_m)
     val paddingM = dimensionResource(R.dimen.padding_m)
+
+    val (name, login, _, imageUrl) = friend
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                navigation.open(Screen.Wishes(friendIndex))
+                onClick()
             }
     ) {
         AsyncImage(
-            model = url,
+            model = imageUrl,
             contentDescription = null,
             modifier = Modifier
                 .align(Alignment.CenterVertically)
@@ -58,29 +55,22 @@ fun FriendItem(
             modifier = Modifier.padding(start = paddingM)
         ) {
             Text(
-                text = "My friend's name",
+                text = name,
                 fontWeight = FontWeight.Bold,
                 style = MaterialTheme.typography.titleMedium,
             )
             Text(
-                text = "mail@example.com",
+                text = login,
             )
         }
     }
 }
 
-private val PREVIEW_NAVIGATION = object : Navigation {
-    override val currentScreenState: State<Screen>
-        get() = mutableStateOf(Screen.Login)
-
-    override val isBackAvailable: Boolean
-        get() = false
-
-    override fun open(screen: Screen) {
-    }
-
-    override fun back() {
-    }
+@Preview
+@Composable
+fun FriendItemPreview() {
+    FriendItem(
+        friend = Friend("name", "login@mail.com", 0, null),
+        onClick = {}
+    )
 }
-
-private const val PREVIEW_FRIEND_INDEX = 0

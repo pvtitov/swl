@@ -27,24 +27,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import coil3.compose.AsyncImage
 import com.github.pvtitov.simplewishlist.R
 import com.github.pvtitov.simplewishlist.ui.composable.element.imagePreviewPlaceholder
+import com.github.pvtitov.simplewishlist.ui.model.Wish
 
-@Preview
 @Composable
 fun WishScreen(
-    friendIndex: Int = PREVIEW_INDEX,
-    wishIndex: Int = PREVIEW_INDEX,
-    onTopBarTitle: (String) -> Unit = {}
+    wish: Wish,
+    onTopBarTitle: (String) -> Unit
 ) {
     val paddingM = dimensionResource(id = R.dimen.padding_m)
     val imagePreviewHeight = dimensionResource(id = R.dimen.wish_image_preview_height)
     val imagePreviewCornerRadius = dimensionResource(id = R.dimen.corner_radius_m)
     val imagePreviewShape = remember { RoundedCornerShape(imagePreviewCornerRadius) }
-    val imageUrl: String? = remember { null }
-    val title: String? = remember { null }
-    val description: String? = remember { null }
-    val wishUrl: String? = remember { null }
+    val (title, description, url, imageUrl) = wish
 
-    onTopBarTitle("wish $wishIndex") // TODO replace test implementation
+    title?.let { onTopBarTitle(it) }
 
     Column(
         modifier = Modifier
@@ -80,12 +76,12 @@ fun WishScreen(
             )
         }
 
-        if (wishUrl != null) {
+        if (url != null) {
             Text(
                 text = buildAnnotatedString {
                     withLink(
                         link = LinkAnnotation.Url(
-                            url = wishUrl,
+                            url = url,
                             styles = TextLinkStyles(
                                 style = SpanStyle(
                                     color = MaterialTheme.colorScheme.primary,
@@ -94,7 +90,7 @@ fun WishScreen(
                             )
                         )
                     ) {
-                        append(wishUrl)
+                        append(url)
                     }
                 },
                 modifier = modifier,
@@ -105,4 +101,11 @@ fun WishScreen(
     }
 }
 
-private const val PREVIEW_INDEX = -1
+@Preview
+@Composable
+fun WishScreenPreview() {
+    WishScreen(
+        Wish(null, null, null, null),
+        {}
+    )
+}

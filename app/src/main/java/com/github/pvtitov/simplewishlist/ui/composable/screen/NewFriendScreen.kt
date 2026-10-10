@@ -9,6 +9,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -18,10 +19,11 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import com.github.pvtitov.simplewishlist.R
 
-@Preview
 @Composable
 fun NewFriendScreen(
-    onTopBarTitle: (String) -> Unit = {}
+    onTopBarTitle: (String) -> Unit,
+    isSaveClicked: Boolean,
+    onSaveClickHandled: () -> Unit
 ) {
     val (name, setName) = remember { mutableStateOf<String?>(null) }
     val (login, setLogin) = remember { mutableStateOf<String?>(null) }
@@ -30,7 +32,12 @@ fun NewFriendScreen(
     val loginField = stringResource(R.string.friend_field_login)
 
     val topBarTitle = stringResource(R.string.new_friend_title)
-    onTopBarTitle(topBarTitle) // TODO replace test implementation
+    onTopBarTitle(topBarTitle)
+
+    LaunchedEffect(isSaveClicked) {
+        // TODO viewModel.save()
+        onSaveClickHandled()
+    }
 
     Column(
         modifier = Modifier
@@ -66,4 +73,14 @@ fun NewFriendScreen(
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
         )
     }
+}
+
+@Preview
+@Composable
+fun NewFriendScreenPreview() {
+    NewFriendScreen(
+        {},
+        false,
+        {}
+    )
 }

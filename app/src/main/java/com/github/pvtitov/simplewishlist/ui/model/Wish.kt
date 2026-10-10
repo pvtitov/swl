@@ -1,5 +1,8 @@
 package com.github.pvtitov.simplewishlist.ui.model
 
+import androidx.compose.runtime.Stable
+
+@Stable
 data class Wish(
     val title: String?,
     val description: String?,
