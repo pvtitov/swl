@@ -43,9 +43,8 @@ fun LoginScreen(
     val cancelButton = stringResource(R.string.cancel_button)
 
     Box(
-        modifier = Modifier
+        modifier = Modifier.fillMaxSize()
             .padding(paddingM)
-            .fillMaxSize()
     ) {
         Column(
             modifier = Modifier.align(Alignment.Center),

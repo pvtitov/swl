@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -29,12 +30,13 @@ import com.github.pvtitov.simplewishlist.ui.model.Wish
 fun WishesScreen(
     friend: Friend,
     wishes: List<Wish>,
-    onWishClicked: (Int) -> Unit,
+    onWishClicked: (Int) -> Unit
 ) {
     val paddingM = dimensionResource(R.dimen.padding_m)
     val avatarSizeM = dimensionResource(R.dimen.avatar_m)
 
     LazyColumn(
+        modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(paddingM),
         verticalArrangement = Arrangement.spacedBy(paddingM)
     ) {

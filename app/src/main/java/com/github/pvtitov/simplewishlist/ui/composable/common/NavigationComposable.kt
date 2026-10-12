@@ -56,16 +56,18 @@ import com.github.pvtitov.simplewishlist.ui.composable.screen.NewFriendScreen
 import com.github.pvtitov.simplewishlist.ui.composable.screen.NewWishScreen
 import com.github.pvtitov.simplewishlist.ui.composable.screen.WishScreen
 import com.github.pvtitov.simplewishlist.ui.composable.screen.WishesScreen
+import com.github.pvtitov.simplewishlist.ui.model.Friend
 import com.github.pvtitov.simplewishlist.ui.model.Screen
+import com.github.pvtitov.simplewishlist.ui.model.Wish
 import com.github.pvtitov.simplewishlist.ui.theme.AwlTheme
-import com.github.pvtitov.simplewishlist.ui.viewmodel.NavViewModel
+import com.github.pvtitov.simplewishlist.ui.viewmodel.AwlViewModel
 
 @Preview
 @Composable
 fun NavigationComposable(
     modifier: Modifier = Modifier
 ) {
-    val navViewModel = viewModel<NavViewModel>(factory = NavViewModel.Factory)
+    val viewModel = viewModel<AwlViewModel>(factory = AwlViewModel.Factory)
 
     val currentScreenState = rememberSaveable { mutableStateOf<Screen>(Screen.Login) }
     val screensBackStackState = rememberSaveable { mutableStateListOf<Screen>() }
@@ -93,10 +95,12 @@ fun NavigationComposable(
     val (topBarTitle, setTopBarTitle) = remember { mutableStateOf<String?>(null) }
     var isSaveClicked by remember { mutableStateOf(false) }
 
-    val avatarUrl by navViewModel.avatarUrlFlow.collectAsStateWithLifecycle()
-    val isAuthorized by navViewModel.isAuthorizedFlow.collectAsStateWithLifecycle()
+    val avatarUrl by viewModel.avatarUrlFlow.collectAsStateWithLifecycle()
+    val isAuthorized by viewModel.isAuthorizedFlow.collectAsStateWithLifecycle()
 
-    val isLoading by navViewModel.isLoadingFlow.collectAsStateWithLifecycle()
+    val isLoading by viewModel.isLoadingFlow.collectAsStateWithLifecycle()
+    val myWishList by viewModel.myWishListFlow.collectAsStateWithLifecycle()
+    val friendList by viewModel.friendListFlow.collectAsStateWithLifecycle()
 
     LaunchedEffect(isAuthorized) {
         val screen = if (isAuthorized) Screen.MyWishes else Screen.Login
@@ -146,7 +150,7 @@ fun NavigationComposable(
                             Avatar(
                                 url = avatarUrl,
                                 onLogout = {
-                                    navViewModel.logout()
+                                    viewModel.logout()
                                 }
                             )
                         }
@@ -213,10 +217,14 @@ fun NavigationComposable(
                 updateTitle("")
                 when (val screen = currentScreen) {
                     is Screen.Login -> LoginScreen(
-                        onLoginWithGoogle = { navViewModel.loginWithGoogle() }
+                        onLoginWithGoogle = {
+                            viewModel.loginWithGoogle()
+                            navigation.open(Screen.MyWishes)
+                        }
                     )
 
                     is Screen.MyWishes -> MyWishesScreen(
+                        wishes = myWishList,
                         onMyWishClicked = { navigation.open(Screen.MyWish(it)) },
                         onTopBarTitle = updateTitle
                     )
@@ -233,35 +241,53 @@ fun NavigationComposable(
                         onSaveClickHandled = { isSaveClicked = false }
                     )
 
-                    is Screen.MyWish -> MyWishScreen(
-                        wishIndex = screen.wishIndex,
-                        onTopBarTitle = updateTitle,
-                        isSaveClicked = isSaveClicked,
-                        onSaveClickHandled = { isSaveClicked = false }
-                    )
+                    is Screen.MyWish -> {
+                        val wishIndex = screen.wishIndex
+                        val wish = myWishList[wishIndex]
+                        MyWishScreen(
+                            wish = wish,
+                            onTopBarTitle = updateTitle,
+                            isSaveClicked = isSaveClicked,
+                            onSaveClickHandled = { isSaveClicked = false }
+                        )
+                    }
 
                     is Screen.Friends -> FriendsScreen(
+                        friends = friendList,
                         onFriendClicked = { navigation.open(Screen.Wishes(it)) },
                         onTopBarTitle = updateTitle
                     )
 
-                    is Screen.Wishes -> WishesScreen(
-                        friendIndex = screen.friendIndex,
-                        onWishClicked = { friendIndex, wishIndex ->
-                            navigation.open(
-                                Screen.Wish(
-                                    friendIndex,
-                                    wishIndex
+                    is Screen.Wishes -> {
+                        val friendIndex = screen.friendIndex
+                        val friend = friendList[friendIndex]
+                        WishesScreen(
+                            friend = friend,
+                            wishes = emptyList(), // TODO collect from view model
+                            onWishClicked = { wishIndex ->
+                                navigation.open(
+                                    Screen.Wish(
+                                        friendIndex,
+                                        wishIndex
+                                    )
                                 )
-                            )
-                        },
-                    )
+                            }
+                        )
+                    }
 
-                    is Screen.Wish -> WishScreen(
-                        friendIndex = screen.friendIndex,
-                        wishIndex = screen.wishIndex,
-                        onTopBarTitle = updateTitle
-                    )
+                    is Screen.Wish -> {
+                        val friendIndex = screen.friendIndex
+                        val wishIndex = screen.wishIndex
+                        WishScreen(
+                            wish = Wish(
+                                null,
+                                null,
+                                null,
+                                null
+                            ), // TODO get from view model by index
+                            onTopBarTitle = updateTitle
+                        )
+                    }
                 }
 
                 if (isLoading) {

@@ -90,10 +90,10 @@ fun WishItem(
                 )
             }
 
-            url?.let {
+            if (!url.isNullOrBlank()) {
                 AssistChip(
                     onClick = {
-                        uriHandler.openUri(it)
+                        uriHandler.openUri(url)
                     },
                     label = {
                         Text(

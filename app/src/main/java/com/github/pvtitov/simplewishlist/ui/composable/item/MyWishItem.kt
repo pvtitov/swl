@@ -103,7 +103,7 @@ fun MyWishItem(
                     )
                 }
 
-                url?.let {
+                if (!url.isNullOrBlank()) {
                     AssistChip(
                         onClick = {
                             uriHandler.openUri(url)

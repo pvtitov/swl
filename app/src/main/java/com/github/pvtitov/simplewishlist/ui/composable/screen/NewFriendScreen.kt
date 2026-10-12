@@ -27,9 +27,9 @@ fun NewFriendScreen(
 ) {
     val (name, setName) = remember { mutableStateOf<String?>(null) }
     val (login, setLogin) = remember { mutableStateOf<String?>(null) }
-    val paddingM = dimensionResource(id = R.dimen.padding_m)
     val nameField = stringResource(R.string.friend_field_name)
     val loginField = stringResource(R.string.friend_field_login)
+    val paddingM = dimensionResource(id = R.dimen.padding_m)
 
     val topBarTitle = stringResource(R.string.new_friend_title)
     onTopBarTitle(topBarTitle)
@@ -40,8 +40,7 @@ fun NewFriendScreen(
     }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = Modifier.fillMaxSize()
             .padding(paddingM),
         verticalArrangement = Arrangement.Center
     ) {

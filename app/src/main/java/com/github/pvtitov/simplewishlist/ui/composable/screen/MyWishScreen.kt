@@ -63,18 +63,17 @@ fun MyWishScreen(
     wish.title?.let { onTopBarTitle(it) }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = Modifier.fillMaxSize()
             .padding(paddingM),
         verticalArrangement = Arrangement.spacedBy(paddingM)
     ) {
-        val modifier = Modifier.fillMaxWidth()
+        val modifierLocal = Modifier.fillMaxWidth()
         val nextFieldKeyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
 
         AsyncImage(
             model = imageUrl,
             contentDescription = null,
-            modifier = modifier
+            modifier = modifierLocal
                 .height(imagePreviewHeight)
                 .drawWithContent {
                     drawContent()
@@ -99,7 +98,7 @@ fun MyWishScreen(
         OutlinedTextField(
             value = imageUrl ?: "",
             onValueChange = { setImageUrl(it) },
-            modifier = modifier,
+            modifier = modifierLocal,
             label = {
                 Text(imageUrlField)
             },
@@ -112,7 +111,7 @@ fun MyWishScreen(
             onValueChange = {
                 setTitle(it)
             },
-            modifier = modifier,
+            modifier = modifierLocal,
             label = {
                 Text(titleField)
             },
@@ -125,7 +124,7 @@ fun MyWishScreen(
             onValueChange = {
                 setDescription(it)
             },
-            modifier = modifier,
+            modifier = modifierLocal,
             label = {
                 Text(descriptionField)
             },
@@ -137,7 +136,7 @@ fun MyWishScreen(
             onValueChange = {
                 setWishUrl(it)
             },
-            modifier = modifier,
+            modifier = modifierLocal,
             label = {
                 Text(linkField)
             },

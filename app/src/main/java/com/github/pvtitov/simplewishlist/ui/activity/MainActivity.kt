@@ -7,14 +7,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewmodel.ViewModelInitializer
-import androidx.lifecycle.viewmodel.plus
-import androidx.lifecycle.viewmodel.viewModelFactory
 import com.github.pvtitov.simplewishlist.ui.composable.common.NavigationComposable
 import com.github.pvtitov.simplewishlist.ui.old.viewmodel.MainViewModel
-import com.github.pvtitov.simplewishlist.ui.viewmodel.NavViewModel
 import com.github.pvtitov.simplewishlist.utils.DI
 import com.github.pvtitov.simplewishlist.utils.FeatureFlags
 import com.github.pvtitov.simplewishlist.ui.old.composable.common.NavigationComposable as OldNavigationComposable
