@@ -12,7 +12,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -35,15 +34,15 @@ import com.github.pvtitov.simplewishlist.ui.model.Wish
 
 @Composable
 fun MyWishScreen(
-    wish: Wish,
+    wish: Wish?,
     onTopBarTitle: (String) -> Unit,
     isSaveClicked: Boolean,
-    onSaveClickHandled: () -> Unit
+    onSaveClickHandled: (Wish) -> Unit
 ) {
-    val (imageUrl, setImageUrl) = remember { mutableStateOf<String?>(null) }
-    val (title, setTitle) = remember { mutableStateOf<String?>(null) }
-    val (description, setDescription) = remember { mutableStateOf<String?>(null) }
-    val (wishUrl, setWishUrl) = remember { mutableStateOf<String?>(null) }
+    val (imageUrl, setImageUrl) = remember { mutableStateOf(wish?.imageLink) }
+    val (title, setTitle) = remember { mutableStateOf(wish?.title) }
+    val (description, setDescription) = remember { mutableStateOf(wish?.description) }
+    val (wishUrl, setWishUrl) = remember { mutableStateOf(wish?.link) }
     val paddingM = dimensionResource(id = R.dimen.padding_m)
     val imagePreviewHeight = dimensionResource(id = R.dimen.wish_image_preview_height)
     val borderWidth = dimensionResource(id = R.dimen.border_width)
@@ -55,15 +54,22 @@ fun MyWishScreen(
     val descriptionField = stringResource(R.string.wish_field_description)
     val linkField = stringResource(R.string.wish_field_url)
 
-    LaunchedEffect(isSaveClicked) {
-        // TODO viewModel.save()
-        onSaveClickHandled()
+    if (isSaveClicked && !title.isNullOrBlank()) {
+        onSaveClickHandled(
+            Wish(
+                title = title,
+                description = description,
+                link = wishUrl,
+                imageLink = imageUrl,
+            )
+        )
     }
 
-    wish.title?.let { onTopBarTitle(it) }
+    title?.let { onTopBarTitle(it) }
 
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
             .padding(paddingM),
         verticalArrangement = Arrangement.spacedBy(paddingM)
     ) {

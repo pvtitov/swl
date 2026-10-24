@@ -56,9 +56,7 @@ import com.github.pvtitov.simplewishlist.ui.composable.screen.NewFriendScreen
 import com.github.pvtitov.simplewishlist.ui.composable.screen.NewWishScreen
 import com.github.pvtitov.simplewishlist.ui.composable.screen.WishScreen
 import com.github.pvtitov.simplewishlist.ui.composable.screen.WishesScreen
-import com.github.pvtitov.simplewishlist.ui.model.Friend
 import com.github.pvtitov.simplewishlist.ui.model.Screen
-import com.github.pvtitov.simplewishlist.ui.model.Wish
 import com.github.pvtitov.simplewishlist.ui.theme.AwlTheme
 import com.github.pvtitov.simplewishlist.ui.viewmodel.AwlViewModel
 
@@ -101,6 +99,7 @@ fun NavigationComposable(
     val isLoading by viewModel.isLoadingFlow.collectAsStateWithLifecycle()
     val myWishList by viewModel.myWishListFlow.collectAsStateWithLifecycle()
     val friendList by viewModel.friendListFlow.collectAsStateWithLifecycle()
+    val wishListByFriend by viewModel.wishListByFriendFlow.collectAsStateWithLifecycle()
 
     LaunchedEffect(isAuthorized) {
         val screen = if (isAuthorized) Screen.MyWishes else Screen.Login
@@ -232,13 +231,19 @@ fun NavigationComposable(
                     is Screen.NewWish -> NewWishScreen(
                         onTopBarTitle = updateTitle,
                         isSaveClicked = isSaveClicked,
-                        onSaveClickHandled = { isSaveClicked = false }
+                        onSaveClickHandled = {
+                            viewModel.addWish(it)
+                            isSaveClicked = false
+                        }
                     )
 
                     is Screen.NewFriend -> NewFriendScreen(
                         onTopBarTitle = updateTitle,
                         isSaveClicked = isSaveClicked,
-                        onSaveClickHandled = { isSaveClicked = false }
+                        onSaveClickHandled = { name, login ->
+                            viewModel.saveFriend(name, login)
+                            isSaveClicked = false
+                        }
                     )
 
                     is Screen.MyWish -> {
@@ -248,7 +253,10 @@ fun NavigationComposable(
                             wish = wish,
                             onTopBarTitle = updateTitle,
                             isSaveClicked = isSaveClicked,
-                            onSaveClickHandled = { isSaveClicked = false }
+                            onSaveClickHandled = {
+                                viewModel.editWish(wish, it)
+                                isSaveClicked = false
+                            }
                         )
                     }
 
@@ -261,9 +269,10 @@ fun NavigationComposable(
                     is Screen.Wishes -> {
                         val friendIndex = screen.friendIndex
                         val friend = friendList[friendIndex]
+                        val wishList = wishListByFriend[friendIndex]
                         WishesScreen(
                             friend = friend,
-                            wishes = emptyList(), // TODO collect from view model
+                            wishes = wishList,
                             onWishClicked = { wishIndex ->
                                 navigation.open(
                                     Screen.Wish(
@@ -278,13 +287,10 @@ fun NavigationComposable(
                     is Screen.Wish -> {
                         val friendIndex = screen.friendIndex
                         val wishIndex = screen.wishIndex
+                        val wishList = wishListByFriend[friendIndex]
+                        val wish = wishList[wishIndex]
                         WishScreen(
-                            wish = Wish(
-                                null,
-                                null,
-                                null,
-                                null
-                            ), // TODO get from view model by index
+                            wish = wish,
                             onTopBarTitle = updateTitle
                         )
                     }

@@ -6,26 +6,21 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.github.pvtitov.simplewishlist.data.CompositeRepository
+import com.github.pvtitov.simplewishlist.domain.interactor.Interactor
+import com.github.pvtitov.simplewishlist.domain.model.Status
+import com.github.pvtitov.simplewishlist.domain.model.User
 import com.github.pvtitov.simplewishlist.ui.model.Friend
 import com.github.pvtitov.simplewishlist.ui.model.Profile
 import com.github.pvtitov.simplewishlist.ui.model.Wish
 import com.github.pvtitov.simplewishlist.utils.DI
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
+
+typealias DomainWish = com.github.pvtitov.simplewishlist.domain.model.Wish
 
 class AwlViewModel(
     private val dispatcherIo: CoroutineDispatcher,
-    private val repository: CompositeRepository
+    private val interactor: Interactor
 ) : ViewModel() {
 
     private val defaultContext = dispatcherIo + CoroutineExceptionHandler { _, e ->
@@ -49,12 +44,12 @@ class AwlViewModel(
     private val _friendListFlow = MutableStateFlow<List<Friend>>(emptyList())
     val friendListFlow = _friendListFlow.asStateFlow()
 
-    private val _wishListByFriendFlow = MutableStateFlow<Map<Friend, List<Wish>>>(emptyMap())
+    private val _wishListByFriendFlow = MutableStateFlow<List<List<Wish>>>(emptyList())
     val wishListByFriendFlow = _wishListByFriendFlow.asStateFlow()
 
     fun logout() {
         viewModelScope.launch(defaultContext) {
-            repository.logout()
+            interactor.logout()
             _profileFlow.value = null
         }
     }
@@ -62,44 +57,134 @@ class AwlViewModel(
     fun loginWithGoogle() {
         viewModelScope.launch(defaultContext) {
             _isLoadingFlow.value = true
-            coroutineScope {
-                repository.getMyLogin()?.let { login ->
-                    // TODO get user avator url
-                    _profileFlow.value = Profile(
-                        avatarUrl = null
+            loadAllData()
+            _isLoadingFlow.value = false
+        }
+    }
+
+    private suspend fun loadAllData() {
+        coroutineScope {
+            (interactor.login() as? Status.Success)?.result?.let { user ->
+                // TODO get user avator url
+                _profileFlow.value = Profile(
+                    avatarUrl = null
+                )
+            }
+
+            val myWishList = (interactor.getMyWishList() as? Status.Success)?.result
+
+            val myWishListJob = launch {
+                val wishList = myWishList?.map { w ->
+                    Wish(
+                        title = w.title,
+                        description = w.description,
+                        link = w.url,
+                        imageLink = w.imageUrl
                     )
-                }
+                } ?: emptyList()
+                _myWishListFlow.value = wishList
+            }
 
-                val myData = repository.downloadMine()
+            val myFriendList = (interactor.getMyFriendList() as? Status.Success)?.result
 
-                myData?.let { wishList ->
-                    wishList.wishes.map { w ->
+            val myFriendListJob = launch {
+                val friendList = myFriendList
+                    ?.map { user ->
+                        Friend(
+                            name = user.name ?: "",
+                            login = "",
+                            wishesCount = -1,
+                            imageLink = null
+                        )
+                    } ?: emptyList()
+                _friendListFlow.value = friendList
+            }
+
+            val wishListsOfFriendsJobs = myFriendList?.mapIndexed { index, user ->
+                launch {
+                    val wishList = (interactor.getWishList(user) as Status.Success).result
+                    val wishListUi = wishList.map { w ->
                         Wish(
                             title = w.title,
                             description = w.description,
-                            link = w.wishUrl,
+                            link = w.url,
                             imageLink = w.imageUrl
                         )
                     }
-                }?.let {
-                    _myWishListFlow.value = it
-                }
+                    val updatedWishLists = _wishListByFriendFlow.value.toMutableList()
+                        .apply { add(index, wishListUi) }
+                        .toList()
 
-                myData?.let { wishlist ->
-                    wishlist.friends
-                        .map { f ->
-                            Friend(
-                                name = f.name ?: "",
-                                login = f.login,
-                                wishesCount = f.wishList?.wishes?.size ?: 0,
-                                imageLink = f.imageUrl
-                            )
-                        }
-                }?.let {
-                    _friendListFlow.value = it
+                    _wishListByFriendFlow.value = updatedWishLists
                 }
             }
-            _isLoadingFlow.value = false
+
+            buildList {
+                add(myWishListJob)
+                add(myFriendListJob)
+                wishListsOfFriendsJobs?.forEach(::add)
+            }.joinAll()
+        }
+    }
+
+    fun addWish(wish: Wish) {
+        viewModelScope.launch(defaultContext) {
+            interactor.addWish(
+                DomainWish(
+                    title = wish.title ?: "",
+                    description = wish.description,
+                    imageUrl = wish.imageLink,
+                    url = wish.link,
+                )
+            )
+            loadAllData()
+        }
+    }
+
+    fun saveFriend(name: String?, login: String) {
+        viewModelScope.launch(defaultContext) {
+            interactor.addFriend(User(id = "", name = name ?: login))
+            loadAllData()
+        }
+    }
+
+    fun editWish(original: Wish, modified: Wish) {
+        viewModelScope.launch(defaultContext) {
+            interactor.editWish(
+                originalWish = with(original) {
+                    DomainWish(
+                        title = title ?: "",
+                        description = description,
+                        imageUrl = imageLink,
+                        url = link,
+                    )
+                },
+                modifiedWish = with(modified) {
+                    DomainWish(
+                        title = title ?: "",
+                        description = description,
+                        imageUrl = imageLink,
+                        url = link,
+                    )
+                }
+            )
+            loadAllData()
+        }
+    }
+
+    fun deleteWish(wish: Wish) {
+        viewModelScope.launch(defaultContext) {
+            interactor.deleteWish(
+                wish = with(wish) {
+                    DomainWish(
+                        title = title ?: "",
+                        description = description,
+                        imageUrl = imageLink,
+                        url = link,
+                    )
+                }
+            )
+            loadAllData()
         }
     }
 
@@ -108,7 +193,7 @@ class AwlViewModel(
             initializer {
                 AwlViewModel(
                     dispatcherIo = Dispatchers.IO,
-                    repository = DI.compositeRepository
+                    interactor = DI.interactor
                 )
             }
         }

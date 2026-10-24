@@ -1,7 +1,6 @@
 package com.github.pvtitov.simplewishlist.ui.composable.screen
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.github.pvtitov.simplewishlist.R
@@ -11,19 +10,15 @@ import com.github.pvtitov.simplewishlist.ui.model.Wish
 fun NewWishScreen(
     onTopBarTitle: (String) -> Unit,
     isSaveClicked: Boolean,
-    onSaveClickHandled: () -> Unit
+    onSaveClickHandled: (Wish) -> Unit
 ) {
-    LaunchedEffect(isSaveClicked) {
-        // TODO viewModel.save()
-        onSaveClickHandled()
-    }
     val topBarTitle = stringResource(R.string.new_wish_title)
     onTopBarTitle(topBarTitle)
     MyWishScreen(
-        Wish(null, null, null, null),
+        null,
         {},
         isSaveClicked,
-        onSaveClickHandled = { onSaveClickHandled() }
+        onSaveClickHandled = { onSaveClickHandled(it) }
     )
 }
 

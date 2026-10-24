@@ -9,7 +9,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -23,7 +22,7 @@ import com.github.pvtitov.simplewishlist.R
 fun NewFriendScreen(
     onTopBarTitle: (String) -> Unit,
     isSaveClicked: Boolean,
-    onSaveClickHandled: () -> Unit
+    onSaveClickHandled: (String?, String) -> Unit
 ) {
     val (name, setName) = remember { mutableStateOf<String?>(null) }
     val (login, setLogin) = remember { mutableStateOf<String?>(null) }
@@ -34,13 +33,13 @@ fun NewFriendScreen(
     val topBarTitle = stringResource(R.string.new_friend_title)
     onTopBarTitle(topBarTitle)
 
-    LaunchedEffect(isSaveClicked) {
-        // TODO viewModel.save()
-        onSaveClickHandled()
+    if (isSaveClicked && !login.isNullOrBlank()) {
+        onSaveClickHandled(name, login)
     }
 
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
             .padding(paddingM),
         verticalArrangement = Arrangement.Center
     ) {
@@ -80,6 +79,6 @@ fun NewFriendScreenPreview() {
     NewFriendScreen(
         {},
         false,
-        {}
+        { _, _ -> }
     )
 }

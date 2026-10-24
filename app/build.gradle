@@ -27,6 +27,7 @@ android {
         // NoServer.configure() at runtime — noserver can't bake one in itself since an OAuth
         // client ID is tied to a specific app's package name and signing certificate.
         buildConfigField "String", "GOOGLE_WEB_CLIENT_ID", "${localProperties.getProperty('GOOGLE_WEB_CLIENT_ID')}"
+        buildConfigField "String", "GOOGLE_API_KEY", "${localProperties.getProperty('GOOGLE_API_KEY')}"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -82,7 +83,7 @@ dependencies {
 
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0"
 
-    implementation 'com.github.pvtitov:noserver:1.0.2'
+    implementation 'com.github.pvtitov:noserver:2.0.0'
 
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.mockito:mockito-core:5.20.0'
