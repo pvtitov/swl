@@ -22,7 +22,6 @@
 
     <!-- New design -->
 
-    <string name="app_title">Another wishlist</string>
     <string name="app_subtitle">What you really want</string>
     <string name="cancel_button">Cancel</string>
     <string name="save_button">Save</string>

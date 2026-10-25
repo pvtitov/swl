@@ -1,4 +1,4 @@
-package com.github.pvtitov.simplewishlist.ui.composable.common
+    package com.github.pvtitov.simplewishlist.ui.composable.common
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
@@ -225,7 +225,8 @@ fun NavigationComposable(
                     is Screen.MyWishes -> MyWishesScreen(
                         wishes = myWishList,
                         onMyWishClicked = { navigation.open(Screen.MyWish(it)) },
-                        onTopBarTitle = updateTitle
+                        onTopBarTitle = updateTitle,
+                        onDeleteWish = { viewModel.deleteWish(it) }
                     )
 
                     is Screen.NewWish -> NewWishScreen(

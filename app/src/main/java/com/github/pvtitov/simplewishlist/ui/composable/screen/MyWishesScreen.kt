@@ -17,7 +17,8 @@ import com.github.pvtitov.simplewishlist.ui.model.Wish
 fun MyWishesScreen(
     wishes: List<Wish>,
     onMyWishClicked: (Int) -> Unit,
-    onTopBarTitle: (String) -> Unit
+    onTopBarTitle: (String) -> Unit,
+    onDeleteWish: (Wish) -> Unit
 ) {
     val paddingM = dimensionResource(R.dimen.padding_m)
 
@@ -34,6 +35,7 @@ fun MyWishesScreen(
                 MyWishItem(
                     wish = wish,
                     onClick = { onMyWishClicked(index) },
+                    onDeleteWish = { onDeleteWish }
                 )
             }
         }
@@ -45,6 +47,7 @@ fun MyWishesScreen(
 fun MyWishesScreenPreview() {
     MyWishesScreen(
         listOf(Wish("title", "description", null, null)),
+        {},
         {},
         {}
     )

@@ -18,7 +18,7 @@ fun NewWishScreen(
         null,
         {},
         isSaveClicked,
-        onSaveClickHandled = { onSaveClickHandled(it) }
+        onSaveClickHandled = onSaveClickHandled::invoke
     )
 }
 

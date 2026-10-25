@@ -40,6 +40,7 @@ import com.github.pvtitov.simplewishlist.ui.model.Wish
 fun MyWishItem(
     wish: Wish,
     onClick: () -> Unit,
+    onDeleteWish: (Wish) -> Unit
 ) {
     val imageHeight = dimensionResource(R.dimen.wish_item_image_height)
     val paddingM = dimensionResource(R.dimen.padding_m)
@@ -156,7 +157,10 @@ fun MyWishItem(
                 ) {
                     DropdownMenuItem(
                         text = { Text(delete) },
-                        onClick = { expandedState.value = false }
+                        onClick = {
+                            expandedState.value = false
+                            onDeleteWish(wish)
+                        }
                     )
                 }
             }
@@ -169,6 +173,7 @@ fun MyWishItem(
 fun MyWishItemPreview() {
     MyWishItem(
         Wish("Title", "Description", null, null),
+        {},
         {}
     )
 }

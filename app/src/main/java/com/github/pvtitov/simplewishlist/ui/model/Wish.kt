@@ -1,8 +1,8 @@
 package com.github.pvtitov.simplewishlist.ui.model
 
-import androidx.compose.runtime.Stable
+import androidx.compose.runtime.Immutable
 
-@Stable
+@Immutable
 data class Wish(
     val title: String?,
     val description: String?,

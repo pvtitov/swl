@@ -23,7 +23,7 @@
 
     <!-- New design -->
 
-    <string name="app_title">Another wishlist</string>
+    <string name="app_title" translatable="false">Another wish list</string>
     <string name="app_subtitle">Что ты на самом деле хочешь</string>
     <string name="cancel_button">Отмена</string>
     <string name="save_button">Сохранить</string>

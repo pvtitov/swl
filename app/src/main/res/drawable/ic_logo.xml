@@ -1,0 +1,40 @@
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+        android:width="100dp"
+        android:height="129dp"
+        android:viewportWidth="420"
+        android:viewportHeight="540">
+
+    <!-- Left bow loop -->
+    <path
+            android:strokeColor="@android:color/white"
+            android:strokeWidth="28"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:pathData="M210,224 C175,190 126,135 77,146 C31,157 38,202 75,222 C111,242 166,247 210,224"/>
+
+    <!-- Center bow loop -->
+    <path
+            android:strokeColor="@android:color/white"
+            android:strokeWidth="28"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:pathData="M210,224 C188,188 167,134 178,83 C185,49 207,34 228,40 C259,48 271,78 263,112 C256,151 236,197 210,224"/>
+
+    <!-- Right bow loop -->
+    <path
+            android:strokeColor="@android:color/white"
+            android:strokeWidth="28"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:pathData="M210,224 C245,190 294,135 343,146 C389,157 382,202 345,222 C309,242 254,247 210,224"/>
+
+    <!-- Gift box -->
+    <path
+            android:strokeColor="@android:color/white"
+            android:strokeWidth="28"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:pathData="M58,275 L362,275 Q372,275 372,285 L372,484 Q372,494 362,494 L58,494 Q48,494 48,484 L48,285 Q48,275 58,275 Z"/>
+
+</vector>

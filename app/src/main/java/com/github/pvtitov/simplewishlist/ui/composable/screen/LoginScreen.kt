@@ -2,6 +2,7 @@ package com.github.pvtitov.simplewishlist.ui.composable.screen
 
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,12 +10,17 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -41,6 +47,8 @@ fun LoginScreen(
     val title = stringResource(R.string.app_title)
     val subtitle = stringResource(R.string.app_subtitle)
     val cancelButton = stringResource(R.string.cancel_button)
+    val imagePreviewCornerRadius = dimensionResource(id = R.dimen.corner_radius_m)
+    val imagePreviewShape = remember { RoundedCornerShape(imagePreviewCornerRadius) }
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -52,9 +60,14 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
-                painter = painterResource(R.drawable.ic_awl_logo),
+                painter = painterResource(R.drawable.ic_logo),
                 contentDescription = null,
-                modifier = Modifier.size(logoSize)
+                modifier = Modifier
+                    .size(logoSize)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary)
+                    .padding(paddingL),
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimary)
             )
 
             Spacer(modifier = Modifier.size(paddingL))
