@@ -8,31 +8,32 @@ import com.github.pvtitov.simplewishlist.domain.model.Status
 import com.github.pvtitov.simplewishlist.domain.model.User
 import com.github.pvtitov.simplewishlist.domain.model.Wish
 import com.github.pvtitov.simplewishlist.domain.repository.LocalRepository
-import com.github.pvtitov.simplewishlist.utils.Logger
+import com.github.pvtitov.simplewishlist.utils.logger.Logger
 
-class LocalRepositoryImpl(
+class LocalRepository(
     private val dataSource: LocalDataSource,
+    private val logger: Logger
 ) : LocalRepository {
 
     override suspend fun onLogin(user: User): Status<Unit> = runCatchingCancellable {
         dataSource.login(user.toData())
-            .also { Logger.debug(TAG, "onLogin() returns Status.Success($it)") }
+            .also { logger.debug(TAG, "onLogin() returns Status.Success($it)") }
     }
 
     override suspend fun onLogout(): Status<Unit> = runCatchingCancellable {
         dataSource.logout()
-            .also { Logger.debug(TAG, "onLogout() returns Status.Success($it)") }
+            .also { logger.debug(TAG, "onLogout() returns Status.Success($it)") }
     }
 
     override suspend fun getMyWishList(): Status<List<Wish>?> = runCatchingCancellable {
         dataSource.getMyWishList()?.wishList?.map { it.toDomain() }
-            .also { Logger.debug(TAG, "getMyWishList() returns Status.Success($it)") }
+            .also { logger.debug(TAG, "getMyWishList() returns Status.Success($it)") }
     }
 
     override suspend fun getWishList(user: User): Status<List<Wish>?> = runCatchingCancellable {
         val userDto = user.toData()
         dataSource.getFriendsWishList(userDto.shareToken)?.wishList?.map { it.toDomain() }
-            .also { Logger.debug(TAG, "getWishList() for user = $user returns Status.Success($it)") }
+            .also { logger.debug(TAG, "getWishList() for user = $user returns Status.Success($it)") }
     }
 
     override suspend fun saveMyWishList(
@@ -41,7 +42,7 @@ class LocalRepositoryImpl(
         val wishListDto = WishListDto(wishList.map { it.toData() })
         dataSource.saveMyWishList(wishListDto)
         wishList
-            .also { Logger.debug(TAG, "saveMyWishList() for wishList = $wishList returns Status.Success($it)") }
+            .also { logger.debug(TAG, "saveMyWishList() for wishList = $wishList returns Status.Success($it)") }
     }
 
     override suspend fun saveWishList(
@@ -52,18 +53,23 @@ class LocalRepositoryImpl(
         val wishListDto = WishListDto(wishList.map { it.toData() })
         dataSource.saveFriendsWishList(shareToken, wishListDto)
         wishList
-            .also { Logger.debug(TAG, "saveWishList() for user = $user, wishList = $wishList returns Status.Success($it)") }
+            .also {
+                logger.debug(
+                    TAG,
+                    "saveWishList() for user = $user, wishList = $wishList returns Status.Success($it)"
+                )
+            }
     }
 
     override suspend fun addFriend(user: User): Status<User> = runCatchingCancellable {
         dataSource.addFriend(user.toData())
         user
-            .also { Logger.debug(TAG, "addFriend() for user = $user returns Status.Success($it)") }
+            .also { logger.debug(TAG, "addFriend() for user = $user returns Status.Success($it)") }
     }
 
     override suspend fun getFriendList(): Status<List<User>?> = runCatchingCancellable {
         dataSource.getFriendList()?.friendList?.map { it.toDomain() }
-            .also { Logger.debug(TAG, "getFriendList() returns Status.Success($it)") }
+            .also { logger.debug(TAG, "getFriendList() returns Status.Success($it)") }
     }
 
     companion object {

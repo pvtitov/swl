@@ -1,18 +1,19 @@
 package com.github.pvtitov.simplewishlist.domain.interactor
 
-import com.github.pvtitov.simplewishlist.data.repository.LocalRepositoryImpl
-import com.github.pvtitov.simplewishlist.data.repository.RemoteRepositoryImpl
+import com.github.pvtitov.simplewishlist.data.repository.LocalRepository
+import com.github.pvtitov.simplewishlist.data.repository.RemoteRepository
 import com.github.pvtitov.simplewishlist.domain.model.Status
 import com.github.pvtitov.simplewishlist.domain.model.User
 import com.github.pvtitov.simplewishlist.domain.model.Wish
-import com.github.pvtitov.simplewishlist.utils.Logger
+import com.github.pvtitov.simplewishlist.utils.logger.Logger
 
 class InteractorImpl(
-    private val remoteRepository: RemoteRepositoryImpl,
-    private val localRepository: LocalRepositoryImpl
+    private val remoteRepository: RemoteRepository,
+    private val localRepository: LocalRepository,
+    private val logger: Logger
 ) : Interactor {
     override suspend fun login(): Status<User> {
-        Logger.debug(TAG, "login()")
+        logger.debug(TAG, "login()")
         return remoteRepository.login().also { result ->
             if (result is Status.Success) {
                 localRepository.onLogin(result.result)
@@ -21,7 +22,7 @@ class InteractorImpl(
     }
 
     override suspend fun logout(): Status<Unit> {
-        Logger.debug(TAG, "logout()")
+        logger.debug(TAG, "logout()")
         val remoteResult = remoteRepository.logout()
         if (remoteResult is Status.Failure) {
             return Status.Failure(remoteResult.error)
@@ -35,7 +36,7 @@ class InteractorImpl(
     }
 
     override suspend fun getMyWishList(): Status<List<Wish>> {
-        Logger.debug(TAG, "getMyWishList()")
+        logger.debug(TAG, "getMyWishList()")
         val localStatus = localRepository.getMyWishList()
         val localWishList = (localStatus as? Status.Success)?.result
         return if (localWishList != null) {
@@ -50,7 +51,7 @@ class InteractorImpl(
     }
 
     override suspend fun addWish(wish: Wish): Status<Unit> {
-        Logger.debug(TAG, "addWish(), wish = $wish")
+        logger.debug(TAG, "addWish(), wish = $wish")
         val wishListStatus = getMyWishList()
         val wishList = when (wishListStatus) {
             is Status.Success -> wishListStatus.result
@@ -68,7 +69,7 @@ class InteractorImpl(
         originalWish: Wish,
         modifiedWish: Wish
     ): Status<Unit> {
-        Logger.debug(TAG, "editWish(), original wish = $originalWish, modified wish = $modifiedWish")
+        logger.debug(TAG, "editWish(), original wish = $originalWish, modified wish = $modifiedWish")
         val wishListStatus = getMyWishList()
         val wishList = when (wishListStatus) {
             is Status.Success -> wishListStatus.result
@@ -91,7 +92,7 @@ class InteractorImpl(
     }
 
     override suspend fun deleteWish(wish: Wish): Status<Unit> {
-        Logger.debug(TAG, "deleteWish(), wish = $wish")
+        logger.debug(TAG, "deleteWish(), wish = $wish")
         val wishListStatus = getMyWishList()
         val wishList = when (wishListStatus) {
             is Status.Success -> wishListStatus.result
@@ -113,7 +114,7 @@ class InteractorImpl(
     }
 
     override suspend fun getMyFriendList(): Status<List<User>> {
-        Logger.debug(TAG, "getMyFriendList()")
+        logger.debug(TAG, "getMyFriendList()")
         return when (val status = localRepository.getFriendList()) {
             is Status.Failure -> Status.Failure(status.error)
             is Status.Success -> Status.Success(status.result ?: emptyList())
@@ -121,7 +122,7 @@ class InteractorImpl(
     }
 
     override suspend fun getWishList(user: User): Status<List<Wish>> {
-        Logger.debug(TAG, "getWishList(), user = $user")
+        logger.debug(TAG, "getWishList(), user = $user")
         val localStatus = localRepository.getWishList(user)
         val localWishList = (localStatus as? Status.Success)?.result
         return if (localWishList != null) {
@@ -136,7 +137,7 @@ class InteractorImpl(
     }
 
     override suspend fun addFriend(user: User): Status<User> {
-        Logger.debug(TAG, "addFriend(), user = $user")
+        logger.debug(TAG, "addFriend(), user = $user")
         return localRepository.addFriend(user)
     }
 

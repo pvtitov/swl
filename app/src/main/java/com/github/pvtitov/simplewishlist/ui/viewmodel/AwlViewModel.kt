@@ -13,7 +13,8 @@ import com.github.pvtitov.simplewishlist.ui.model.Friend
 import com.github.pvtitov.simplewishlist.ui.model.Profile
 import com.github.pvtitov.simplewishlist.ui.model.Wish
 import com.github.pvtitov.simplewishlist.utils.DI
-import com.github.pvtitov.simplewishlist.utils.Logger
+import com.github.pvtitov.simplewishlist.utils.logger.Logger
+import com.github.pvtitov.simplewishlist.utils.logger.LoggerDefault
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
@@ -21,7 +22,8 @@ typealias DomainWish = com.github.pvtitov.simplewishlist.domain.model.Wish
 
 class AwlViewModel(
     private val dispatcherIo: CoroutineDispatcher,
-    private val interactor: Interactor
+    private val interactor: Interactor,
+    private val logger: Logger
 ) : ViewModel() {
 
     private val defaultContext = dispatcherIo + CoroutineExceptionHandler { _, e ->
@@ -49,7 +51,7 @@ class AwlViewModel(
     val wishListByFriendFlow = _wishListByFriendFlow.asStateFlow()
 
     fun logout() {
-        Logger.debug(TAG, "logout()")
+        logger.debug(TAG, "logout()")
         viewModelScope.launch(defaultContext) {
             interactor.logout()
             _profileFlow.value = null
@@ -57,7 +59,7 @@ class AwlViewModel(
     }
 
     fun loginWithGoogle() {
-        Logger.debug(TAG, "loginWishGoogle()")
+        logger.debug(TAG, "loginWishGoogle()")
         viewModelScope.launch(defaultContext) {
             _isLoadingFlow.value = true
             loadAllData()
@@ -66,7 +68,7 @@ class AwlViewModel(
     }
 
     private suspend fun loadAllData() {
-        Logger.debug(TAG, "loadAllData()")
+        logger.debug(TAG, "loadAllData()")
         coroutineScope {
             (interactor.login() as? Status.Success)?.result?.let { user ->
                 // TODO get user avator url
@@ -132,7 +134,7 @@ class AwlViewModel(
     }
 
     fun addWish(wish: Wish) {
-        Logger.debug(TAG, "addWish(), wish = $wish")
+        logger.debug(TAG, "addWish(), wish = $wish")
         viewModelScope.launch(defaultContext) {
             interactor.addWish(
                 DomainWish(
@@ -147,7 +149,7 @@ class AwlViewModel(
     }
 
     fun saveFriend(name: String?, login: String) {
-        Logger.debug(TAG, "saveFriend(), name = $name, login = $login")
+        logger.debug(TAG, "saveFriend(), name = $name, login = $login")
         viewModelScope.launch(defaultContext) {
             interactor.addFriend(User(id = "", name = name ?: login))
             loadAllData()
@@ -155,7 +157,7 @@ class AwlViewModel(
     }
 
     fun editWish(original: Wish, modified: Wish) {
-        Logger.debug(TAG, "editWish(), original wish = $original, modified wish = $modified")
+        logger.debug(TAG, "editWish(), original wish = $original, modified wish = $modified")
         viewModelScope.launch(defaultContext) {
             interactor.editWish(
                 originalWish = with(original) {
@@ -180,7 +182,7 @@ class AwlViewModel(
     }
 
     fun deleteWish(wish: Wish) {
-        Logger.debug(TAG, "deleteWish(), wish = $wish")
+        logger.debug(TAG, "deleteWish(), wish = $wish")
         viewModelScope.launch(defaultContext) {
             interactor.deleteWish(
                 wish = with(wish) {
@@ -201,7 +203,8 @@ class AwlViewModel(
             initializer {
                 AwlViewModel(
                     dispatcherIo = Dispatchers.IO,
-                    interactor = DI.interactor
+                    interactor = DI.interactor,
+                    logger = LoggerDefault
                 )
             }
         }

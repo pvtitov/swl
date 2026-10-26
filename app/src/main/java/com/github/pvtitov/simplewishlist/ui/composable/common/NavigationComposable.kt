@@ -140,7 +140,6 @@ fun NavigationComposable(
                             Button(
                                 onClick = {
                                     isSaveClicked = true
-                                    navigation.back()
                                 }
                             ) {
                                 Text(saveButton)
@@ -235,6 +234,7 @@ fun NavigationComposable(
                         onSaveClickHandled = {
                             viewModel.addWish(it)
                             isSaveClicked = false
+                            navigation.back()
                         }
                     )
 
@@ -244,6 +244,7 @@ fun NavigationComposable(
                         onSaveClickHandled = { name, login ->
                             viewModel.saveFriend(name, login)
                             isSaveClicked = false
+                            navigation.back()
                         }
                     )
 
@@ -257,6 +258,7 @@ fun NavigationComposable(
                             onSaveClickHandled = {
                                 viewModel.editWish(wish, it)
                                 isSaveClicked = false
+                                navigation.back()
                             }
                         )
                     }

@@ -2,19 +2,21 @@ package com.github.pvtitov.simplewishlist.utils
 
 import com.github.pvtitov.noserver.NoServer
 import com.github.pvtitov.simplewishlist.BuildConfig
-import com.github.pvtitov.simplewishlist.data.datasource.LocalDataSource
-import com.github.pvtitov.simplewishlist.data.datasource.NoServerDataSource
-import com.github.pvtitov.simplewishlist.data.repository.LocalRepositoryImpl
-import com.github.pvtitov.simplewishlist.data.repository.RemoteRepositoryImpl
+import com.github.pvtitov.simplewishlist.data.datasource.LocalDataSourceImpl
+import com.github.pvtitov.simplewishlist.data.datasource.RemoteDataSourceImpl
+import com.github.pvtitov.simplewishlist.data.repository.LocalRepository
+import com.github.pvtitov.simplewishlist.data.repository.RemoteRepository
 import com.github.pvtitov.simplewishlist.domain.interactor.Interactor
 import com.github.pvtitov.simplewishlist.domain.interactor.InteractorImpl
+import com.github.pvtitov.simplewishlist.utils.logger.LoggerDefault
 
 object DI {
 
     val interactor: Interactor by lazy {
         InteractorImpl(
-            remoteRepository = RemoteRepositoryImpl(NoServerDataSource()),
-            localRepository = LocalRepositoryImpl(LocalDataSource())
+            remoteRepository = RemoteRepository(RemoteDataSourceImpl(), LoggerDefault),
+            localRepository = LocalRepository(LocalDataSourceImpl(), LoggerDefault),
+            logger = LoggerDefault
         )
     }
 
