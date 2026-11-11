@@ -1,6 +1,5 @@
 package com.github.pvtitov.simplewishlist.ui.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -13,29 +12,51 @@ import com.github.pvtitov.simplewishlist.ui.model.Friend
 import com.github.pvtitov.simplewishlist.ui.model.Profile
 import com.github.pvtitov.simplewishlist.ui.model.Wish
 import com.github.pvtitov.simplewishlist.utils.DI
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
 
 typealias DomainWish = com.github.pvtitov.simplewishlist.domain.model.Wish
 
 class AwlViewModel(
-    private val dispatcherIo: CoroutineDispatcher,
-    private val interactor: Interactor
+    private val interactor: Interactor,
+    dispatcherIo: CoroutineDispatcher = Dispatchers.IO
 ) : ViewModel() {
 
     private val logger = DI.logger
 
     private val defaultContext = dispatcherIo + CoroutineExceptionHandler { _, e ->
-        Log.e("AwlViewModel", "error in coroutine: $e", e)
+        logger.error(TAG, "error in coroutine: $e", e)
         _isLoadingFlow.value = false
     }
     private val _profileFlow = MutableStateFlow<Profile?>(null)
 
-    val isAuthorizedFlow: StateFlow<Boolean> = _profileFlow.map { it != null }
-        .stateIn(viewModelScope, SharingStarted.Lazily, _profileFlow.value != null)
+    val isAuthorizedFlow: StateFlow<Boolean> = _profileFlow
+        .map { it != null }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000L),
+            _profileFlow.value != null
+        )
 
-    val avatarUrlFlow: StateFlow<String?> = _profileFlow.map { it?.avatarUrl }
-        .stateIn(viewModelScope, SharingStarted.Lazily, _profileFlow.value?.avatarUrl)
+    val avatarUrlFlow: StateFlow<String?> = _profileFlow
+        .map { it?.avatarUrl }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000L),
+            _profileFlow.value?.avatarUrl
+        )
 
     private val _isLoadingFlow = MutableStateFlow(false)
     val isLoadingFlow = _isLoadingFlow.asStateFlow()
@@ -51,20 +72,23 @@ class AwlViewModel(
 
     fun logout() {
         logger.debug(TAG, "logout()")
+        _isLoadingFlow.value = true
         viewModelScope.launch(defaultContext) {
             interactor.logout()
             _profileFlow.value = null
+            _isLoadingFlow.value = false
         }
     }
 
     fun loginWithGoogle() {
-        logger.debug(TAG, "loginWishGoogle()")
+        logger.debug(TAG, "loginWithGoogle()")
         _isLoadingFlow.value = true
         viewModelScope.launch(defaultContext) {
-            (interactor.login() as? Status.Success)?.result?.let { user ->
-                logger.debug(TAG, "logged in successfully, user = $user")
-                // TODO get user avator url
+            val result = interactor.login()
+            val user = (result as? Status.Success)?.result
+            if (user != null) {
                 _profileFlow.value = Profile(
+                    // TODO get user avator url
                     avatarUrl = null
                 )
             }
@@ -228,7 +252,6 @@ class AwlViewModel(
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 AwlViewModel(
-                    dispatcherIo = Dispatchers.IO,
                     interactor = DI.interactor
                 )
             }

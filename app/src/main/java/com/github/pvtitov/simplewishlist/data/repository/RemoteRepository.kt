@@ -16,6 +16,7 @@ class RemoteRepositoryDefault(
     private val logger = DI.logger
 
     override suspend fun login(): Status<User> = runCatchingCancellable {
+        logger.debug(TAG, "login(), runCatchingCancellable")
         dataSource.login().toDomain()
             .also { logger.debug(TAG, "login() returns Status.Success($it)") }
     }

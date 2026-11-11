@@ -1,15 +1,14 @@
 package com.github.pvtitov.simplewishlist.domain.interactor
 
 import com.github.pvtitov.simplewishlist.data.repository.LocalRepository
-import com.github.pvtitov.simplewishlist.data.repository.RemoteRepositoryDefault
 import com.github.pvtitov.simplewishlist.domain.model.Status
 import com.github.pvtitov.simplewishlist.domain.model.User
 import com.github.pvtitov.simplewishlist.domain.model.Wish
+import com.github.pvtitov.simplewishlist.domain.repository.RemoteRepository
 import com.github.pvtitov.simplewishlist.utils.DI
-import com.github.pvtitov.simplewishlist.utils.logger.Logger
 
 class InteractorDefault(
-    private val remoteRepository: RemoteRepositoryDefault,
+    private val remoteRepository: RemoteRepository,
     private val localRepository: LocalRepository
 ) : Interactor {
 
@@ -73,7 +72,10 @@ class InteractorDefault(
         originalWish: Wish,
         modifiedWish: Wish
     ): Status<Unit> {
-        logger.debug(TAG, "editWish(), original wish = $originalWish, modified wish = $modifiedWish")
+        logger.debug(
+            TAG,
+            "editWish(), original wish = $originalWish, modified wish = $modifiedWish"
+        )
         val wishListStatus = getMyWishList()
         val wishList = when (wishListStatus) {
             is Status.Success -> wishListStatus.result

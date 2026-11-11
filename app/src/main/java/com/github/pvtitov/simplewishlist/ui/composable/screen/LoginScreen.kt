@@ -91,7 +91,7 @@ fun LoginScreen(
             Spacer(modifier = Modifier.size(paddingXL))
 
             GoogleSignInButton(
-                onClick = { onLoginWithGoogle() }
+                onClick = onLoginWithGoogle::invoke
             )
 
             Spacer(modifier = Modifier.size(paddingM))

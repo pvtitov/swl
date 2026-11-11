@@ -191,9 +191,7 @@ fun NavigationComposable(
 
                 when (val screen = currentScreen) {
                     is Screen.Login -> LoginScreen(
-                        onLoginWithGoogle = {
-                            viewModel.loginWithGoogle()
-                        }
+                        onLoginWithGoogle = viewModel::loginWithGoogle
                     )
 
                     is Screen.MyWishes -> MyWishesScreen(
