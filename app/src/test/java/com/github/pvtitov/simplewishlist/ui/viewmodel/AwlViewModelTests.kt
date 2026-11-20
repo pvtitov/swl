@@ -4,26 +4,26 @@ import com.github.pvtitov.simplewishlist.data.datasource.LocalDataSource
 import com.github.pvtitov.simplewishlist.data.datasource.RemoteDataSource
 import com.github.pvtitov.simplewishlist.data.model.FriendListDto
 import com.github.pvtitov.simplewishlist.data.model.UserDto
+import com.github.pvtitov.simplewishlist.data.model.WishDto
 import com.github.pvtitov.simplewishlist.data.model.WishListDto
 import com.github.pvtitov.simplewishlist.data.repository.LocalRepository
 import com.github.pvtitov.simplewishlist.data.repository.RemoteRepositoryDefault
 import com.github.pvtitov.simplewishlist.domain.interactor.Interactor
 import com.github.pvtitov.simplewishlist.domain.interactor.InteractorDefault
 import com.github.pvtitov.simplewishlist.domain.repository.RemoteRepository
+import com.github.pvtitov.simplewishlist.ui.model.Wish
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.withTimeout
-import org.junit.Assert
-import org.junit.Before
 import org.junit.Test
-import kotlin.time.Duration.Companion.milliseconds
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AwlViewModelTests {
@@ -35,24 +35,15 @@ class AwlViewModelTests {
     private lateinit var localDataSourceFake: LocalDataSource
     private lateinit var remoteDataSourceFake: RemoteDataSource
 
-    @Before
-    fun setup() {
-        localDataSourceFake = LocalDataSourceFake()
-        remoteDataSourceFake = RemoteDataSourceFake()
-        localRepository = LocalRepository(localDataSourceFake)
-        remoteRepository = RemoteRepositoryDefault(remoteDataSourceFake)
-        interactor = InteractorDefault(
-            remoteRepository = remoteRepository,
-            localRepository = localRepository,
-        )
-    }
-
     @Test
-    fun `WHEN login() successful THEN authorized and loading stops`() = runTest {
-        viewModel = AwlViewModel(interactor, UnconfinedTestDispatcher(testScheduler))
+    fun `WHEN login() successful THEN authorized`() = runTest {
+        prepareViewModel(
+            StandardTestDispatcher(testScheduler),
+            InitData(shouldLogin = false)
+        )
 
-        Assert.assertFalse(viewModel.isLoadingFlow.value)
-        Assert.assertFalse(viewModel.isAuthorizedFlow.value)
+        assertFalse(viewModel.isLoadingFlow.value)
+        assertFalse(viewModel.isAuthorizedFlow.value)
         val isAuthorizedJob = launch {
             viewModel.isAuthorizedFlow
                 .first { isAuthorised -> isAuthorised }
@@ -63,22 +54,22 @@ class AwlViewModelTests {
         }
 
         viewModel.loginWithGoogle()
-        Assert.assertTrue(viewModel.isLoadingFlow.value)
-        Assert.assertFalse(viewModel.isAuthorizedFlow.value)
+        assertTrue(viewModel.isLoadingFlow.value)
+        assertFalse(viewModel.isAuthorizedFlow.value)
 
         joinAll(isAuthorizedJob, isLoadingJob)
-        Assert.assertFalse(viewModel.isLoadingFlow.value)
-        Assert.assertTrue(viewModel.isAuthorizedFlow.value)
+        assertFalse(viewModel.isLoadingFlow.value)
+        assertTrue(viewModel.isAuthorizedFlow.value)
     }
 
     @Test
-    fun `WHEN logout() successful THEN not authorized and loading stops`() = runTest {
-        viewModel = AwlViewModel(interactor, UnconfinedTestDispatcher(testScheduler))
-        viewModel.loginWithGoogle()
-        viewModel.isAuthorizedFlow.first { isAuthorized -> isAuthorized}
+    fun `WHEN logout() successful THEN not authorized`() = runTest {
+        prepareViewModel(
+            StandardTestDispatcher(testScheduler)
+        )
 
-        Assert.assertFalse(viewModel.isLoadingFlow.value)
-        Assert.assertTrue(viewModel.isAuthorizedFlow.value)
+        assertFalse(viewModel.isLoadingFlow.value)
+        assertTrue(viewModel.isAuthorizedFlow.value)
         val isAuthorizedJob = launch {
             viewModel.isAuthorizedFlow
                 .first { isAuthorised -> !isAuthorised }
@@ -89,71 +80,136 @@ class AwlViewModelTests {
         }
 
         viewModel.logout()
-        Assert.assertTrue(viewModel.isLoadingFlow.value)
-        Assert.assertTrue(viewModel.isAuthorizedFlow.value)
+        assertTrue(viewModel.isLoadingFlow.value)
+        assertTrue(viewModel.isAuthorizedFlow.value)
 
         joinAll(isAuthorizedJob, isLoadingJob)
-        Assert.assertFalse(viewModel.isLoadingFlow.value)
-        Assert.assertFalse(viewModel.isAuthorizedFlow.value)
+        assertFalse(viewModel.isLoadingFlow.value)
+        assertFalse(viewModel.isAuthorizedFlow.value)
     }
 
-    private class LocalDataSourceFake : LocalDataSource {
-        private var user: UserDto? = null
-        private var myWishList: WishListDto? = null
-        private val wishLists: MutableMap<String, WishListDto?> = mutableMapOf()
-        private var friendList: FriendListDto? = null
+    @Test
+    fun `GIVEN no local and one remote my wish WHEN load my wish list successfully THEN wish list of that wish emitted`() =
+        runTest {
+            prepareViewModel(
+                StandardTestDispatcher(testScheduler),
+                InitData(
+                    myWishListRemote = WishListDto(
+                        listOf(
+                            WishDto("wish")
+                        )
+                    )
+                )
+            )
+
+            assertFalse(viewModel.isLoadingFlow.value)
+            assertTrue(viewModel.isAuthorizedFlow.value)
+            assertEquals(emptyList(), viewModel.myWishListFlow.value)
+
+            viewModel.loadMyWishList()
+            assertTrue(viewModel.isLoadingFlow.value)
+            viewModel.isLoadingFlow
+                .first { isLoading -> !isLoading }
+
+            assertEquals(listOf(Wish("wish", null, null, null)), viewModel.myWishListFlow.value)
+        }
+
+    private class InitData(
+        val shouldLogin: Boolean = true,
+        val myWishListLocal: WishListDto? = null,
+        val myWishListRemote: WishListDto? = null,
+    )
+
+    private suspend fun prepareViewModel(
+        testDispatcher: TestDispatcher,
+        initData: InitData = InitData(),
+    ) {
+        localDataSourceFake = LocalDataSourceFake(
+            myWishList = initData.myWishListLocal
+        )
+        remoteDataSourceFake = RemoteDataSourceFake(
+            myWishList = initData.myWishListRemote
+        )
+        localRepository = LocalRepository(localDataSourceFake)
+        remoteRepository = RemoteRepositoryDefault(remoteDataSourceFake)
+        interactor = InteractorDefault(
+            remoteRepository = remoteRepository,
+            localRepository = localRepository,
+        )
+        viewModel = AwlViewModel(interactor, testDispatcher)
+
+        if (initData.shouldLogin) {
+            viewModel.loginWithGoogle()
+            viewModel.isAuthorizedFlow.first { isAuthorized -> isAuthorized }
+        }
+    }
+
+    private class LocalDataSourceFake(
+        myWishList: WishListDto? = null
+    ) : LocalDataSource {
+        private var _user: UserDto? = null
+        private var _myWishList: WishListDto? = myWishList
+        private val _wishLists: MutableMap<String, WishListDto?> = mutableMapOf()
+        private var _friendList: FriendListDto? = null
 
         override suspend fun login(user: UserDto) {
-            this.user = user
+            this._user = user
         }
 
         override suspend fun getMyWishList(): WishListDto? {
-            return myWishList
+            return _myWishList
         }
 
         override suspend fun getFriendsWishList(friendsShareToken: String): WishListDto? {
-            return wishLists[friendsShareToken]
+            return _wishLists[friendsShareToken]
         }
 
         override suspend fun saveMyWishList(wishList: WishListDto) {
-            myWishList = wishList
+            _myWishList = wishList
         }
 
         override suspend fun saveFriendsWishList(
             friendsShareToken: String,
             wishList: WishListDto
         ) {
-            wishLists[friendsShareToken] = wishList
+            _wishLists[friendsShareToken] = wishList
         }
 
         override suspend fun addFriend(user: UserDto) {
-            friendList?.let { dto -> dto.copy(friendList = dto.friendList + user) }
+            _friendList?.let { dto -> dto.copy(friendList = dto.friendList + user) }
                 ?: FriendListDto(listOf(user))
         }
 
         override suspend fun getFriendList(): FriendListDto? {
-            return friendList
+            return _friendList
         }
 
         override suspend fun logout() {
-            this.user = null
+            this._user = null
         }
     }
 
-    private class RemoteDataSourceFake : RemoteDataSource {
+    private class RemoteDataSourceFake(
+        myWishList: WishListDto? = null
+    ) : RemoteDataSource {
+
+        private var _user: UserDto? = UserDto("Abc", "123")
+        private var _myWishList: WishListDto? = myWishList
+        private val _wishLists: MutableMap<String, WishListDto?> = mutableMapOf()
+
         override suspend fun login(): UserDto {
             delay(2000L)
-            return UserDto("Abc", "123")
+            return _user ?: error("login failed")
         }
 
         override suspend fun downloadMineWishList(): WishListDto? {
             delay(2000L)
-            return null
+            return _myWishList
         }
 
         override suspend fun downloadFriendsWishList(friendsShareToken: String): WishListDto? {
             delay(2000L)
-            return null
+            return _wishLists[friendsShareToken]
         }
 
         override suspend fun uploadMineWishList(wishList: WishListDto) {

@@ -86,6 +86,7 @@ dependencies {
     implementation 'com.github.pvtitov:noserver:2.0.0'
 
     testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.jetbrains.kotlin:kotlin-test:2.0.21'
     testImplementation 'org.mockito:mockito-core:5.20.0'
     testImplementation 'org.mockito.kotlin:mockito-kotlin:6.1.0'
     testImplementation 'io.mockk:mockk:1.14.6'
